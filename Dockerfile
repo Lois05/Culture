@@ -22,4 +22,4 @@ RUN php artisan route:cache
 EXPOSE 80
 
 # Commande corrigée : démarrer à la fois Nginx et PHP-FPM
-CMD php artisan migrate --force && supervisord -c /opt/docker/etc/supervisor.conf
+CMD php artisan migrate --force && sed -i 's/listen 80/listen 8080/g' /opt/docker/etc/supervisor.d/nginx.conf && supervisord -c /opt/docker/etc/supervisor.conf
