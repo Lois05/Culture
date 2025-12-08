@@ -1,0 +1,61 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->bigIncrements('id');        // clé primaire
+            $table->string('name');              // nom
+            $table->string('prenom');            // prénom
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');          // mot de passe
+            $table->enum('sexe', ['M', 'F'])->nullable();
+            $table->date('date_naissance')->nullable();
+            $table->timestamp('date_inscription')->useCurrent();
+            $table->string('statut')->default('actif');
+            $table->string('photo')->nullable();
+            $table->unsignedBigInteger('id_role')->nullable();
+            $table->unsignedBigInteger('id_langue')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+
+            // Clés étrangères
+            $table->foreign('id_role')->references('id')->on('roles')->onDelete('set null');
+            $table->foreign('id_langue')->references('id_langue')->on('langues')->onDelete('set null');
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+    }
+};
