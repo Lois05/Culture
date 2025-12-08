@@ -21,5 +21,5 @@ RUN php artisan route:cache
 # Exposer le port HTTP
 EXPOSE 80
 
-# Commande pour migrer la DB au démarrage et lancer php-fpm
-CMD php artisan migrate --force && php-fpm
+# Commande corrigée : démarrer à la fois Nginx et PHP-FPM
+CMD php artisan migrate --force && supervisord -c /opt/docker/etc/supervisor.conf
