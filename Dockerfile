@@ -1,6 +1,7 @@
 FROM webdevops/php-nginx:8.2
 
 WORKDIR /app
+ENV WEB_DOCUMENT_ROOT /app/public
 
 # Copier tout le projet
 COPY . /app
@@ -20,3 +21,6 @@ RUN php artisan route:cache
 
 # Exposer le port
 EXPOSE 80
+
+# Commande pour migrer la base de données automatiquement au démarrage
+CMD php artisan migrate --force && php-fpm
