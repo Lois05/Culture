@@ -1,26 +1,25 @@
+# Dockerfile Laravel pour Render - prêt à déployer
+
 FROM webdevops/php-nginx:8.2
 
+# Répertoire de travail
 WORKDIR /app
+
+# Racine web
 ENV WEB_DOCUMENT_ROOT /app/public
 
 # Copier tout le projet
 COPY . /app
 
-# Installer les dépendances Composer
-RUN composer install --optimize-autoloader --no-dev
+# Installer les dépendances PHP via Composer
+RUN composer install --no-dev --optimize-autoloader
 
-# Donner les permissions à Laravel
-RUN chmod -R 775 storage bootstrap/cache
-
-# Générer la clé Laravel
-RUN php artisan key:generate
-
-# Cache config + routes
+# Mettre en cache la config et les routes
 RUN php artisan config:cache
 RUN php artisan route:cache
 
-# Exposer le port
+# Exposer le port HTTP
 EXPOSE 80
 
-# Commande pour migrer la base de données automatiquement au démarrage
+# Commande pour migrer la DB au démarrage et lancer php-fpm
 CMD php artisan migrate --force && php-fpm
