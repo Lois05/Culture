@@ -1,32 +1,29 @@
-# Dockerfile Laravel - Configuration FINALE
+# Dockerfile avec SQLite - Ça va MARCHER
 FROM php:8.2-alpine
 
 WORKDIR /var/www/html
 
-RUN apk add --no-cache curl \
-    && docker-php-ext-install pdo pdo_mysql \
+RUN apk add --no-cache curl sqlite \
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . .
 
-# Configuration CORRECTE pour votre MySQL Railway
+# FORCER SQLite - Pas besoin de variables d'environnement
 RUN composer install --no-dev --optimize-autoloader --no-scripts \
     && cp .env.example .env \
-    # CONFIGURATION MYSQL CORRECTE
-    && echo "DB_CONNECTION=mysql" >> .env \
-    && echo "DB_HOST=mysql.railway.internal" >> .env \
-    && echo "DB_PORT=3306" >> .env \
-    && echo "DB_DATABASE=railway" >> .env \
-    && echo "DB_USERNAME=root" >> .env \
-    && echo "DB_PASSWORD=XsCCYyzyImuyXlZdNOhCFYDiBRqvZlXv" >> .env \
-    # CONFIGURATION APPLICATION
-    && echo "APP_ENV=production" >> .env \
-    && echo "APP_DEBUG=true" >> .env \
-    && echo "APP_URL=https://culture-production-38e2.up.railway.app" >> .env \
-    # LARAVEL SETUP
+    # REMPLACER MySQL par SQLite
+    && sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env \
+    && sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env \
+    && sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env \
+    && sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/database.sqlite/' .env \
+    && sed -i 's/DB_USERNAME=.*/DB_USERNAME=/' .env \
+    && sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=/' .env \
+    && touch database/database.sqlite \
     && php artisan key:generate --force \
     && mkdir -p storage/framework/{sessions,views,cache} \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && php artisan migrate --force
 
 EXPOSE 8080
 
