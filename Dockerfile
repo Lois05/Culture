@@ -11,6 +11,10 @@ ENV WEB_DOCUMENT_ROOT /app/public
 # Copier tout le projet
 COPY . /app
 
+# Corriger la configuration PHP-FPM
+RUN echo "listen = 127.0.0.1:9000" >> /opt/docker/etc/php/php-fpm.d/application.conf \
+    && echo "listen.allowed_clients = 127.0.0.1" >> /opt/docker/etc/php/php-fpm.d/application.conf
+
 # Installer les dépendances PHP via Composer
 RUN composer install --no-dev --optimize-autoloader
 
@@ -21,5 +25,5 @@ RUN php artisan route:cache
 # Exposer le port HTTP
 EXPOSE 80
 
-# Commande corrigée : démarrer à la fois Nginx et PHP-FPM
-CMD php artisan migrate --force && sed -i 's/listen 80/listen 8080/g' /opt/docker/etc/supervisor.d/nginx.conf && supervisord -c /opt/docker/etc/supervisor.conf
+# Commande pour migrer la DB au démarrage et lancer php-fpm
+CMD php artisan migrate --force && supervisord -c /opt/docker/etc/supervisor.conf
