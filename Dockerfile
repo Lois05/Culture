@@ -1,33 +1,43 @@
-# Dockerfile Laravel fonctionnel
-FROM alpine:latest
+# Dockerfile Laravel - Production Ready
+FROM php:8.2-fpm-alpine
 
+# Installer les extensions PHP nécessaires pour Laravel
 RUN apk add --no-cache \
-    php82 \
-    php82-common \
-    php82-mbstring \
-    php82-xml \
-    php82-curl \
-    php82-tokenizer \
-    php82-pdo \
-    php82-pdo_mysql \
-    php82-opcache \
-    php82-phar \
+    nginx \
+    supervisor \
     curl \
-    composer
+    sqlite \
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Configuration Nginx
+RUN mkdir -p /run/nginx
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+
+# Configuration PHP-FPM
+RUN echo 'listen = 9000' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Configuration Supervisor
+COPY docker/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+
+# Répertoire de travail
 WORKDIR /var/www/html
 
 # Copier l'application
 COPY . .
 
-# Installer Laravel
-RUN composer install --no-dev --optimize-autoloader
+# Installer les dépendances Laravel
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Configurer
-RUN echo "APP_ENV=production" > .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_KEY=base64:Gti3PRAou+Mmqb+65OrPIxKlrD+Wc49jVY5po76oBp0=" >> .env
+# Configurer Laravel pour production
+RUN cp .env.example .env \
+    && php artisan key:generate --force \
+    && mkdir -p storage/framework/{sessions,views,cache} \
+    && chmod -R 775 storage bootstrap/cache \
+    && php artisan config:cache \
+    && php artisan route:cache
 
 EXPOSE 8080
 
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
+# Démarrer avec Supervisor
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisor.conf"]
