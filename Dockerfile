@@ -1,4 +1,4 @@
-# Dockerfile Laravel - CORRIGÉ
+# Dockerfile Laravel - Affiche les erreurs
 FROM php:8.2-alpine
 
 WORKDIR /var/www/html
@@ -10,46 +10,67 @@ RUN apk add --no-cache curl \
 
 COPY . .
 
-# Installer Laravel SANS exécuter les scripts
+# Installer Laravel
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Configurer Laravel pour production
+# Configurer Laravel POUR LE DEBUG
 RUN cp .env.example .env \
+    && sed -i "s/APP_ENV=production/APP_ENV=local/" .env \
+    && sed -i "s/APP_DEBUG=false/APP_DEBUG=true/" .env \
     && php artisan key:generate --force \
     && mkdir -p storage/framework/{sessions,views,cache} \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && php artisan config:clear \
+    && php artisan cache:clear
 
-# CRÉER UN INDEX.PHP PROPRE SANS ERREUR
+# CRÉER UN FICHIER QUI AFFICHE LES ERREURS
 RUN cat > public/index.php << 'EOF'
 <?php
-// public/index.php - Version Laravel originale corrigée
-define('LARAVEL_START', microtime(true));
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-if (file_exists(__DIR__.'/../vendor/autoload.php')) {
+echo "<h1>🚀 Laravel Debug Mode</h1>";
+echo "<p>PHP Version: " . phpversion() . "</p>";
+echo "<p>Time: " . date('Y-m-d H:i:s') . "</p>";
+
+try {
+    define('LARAVEL_START', microtime(true));
+    
+    if (!file_exists(__DIR__.'/../vendor/autoload.php')) {
+        throw new Exception('vendor/autoload.php not found!');
+    }
+    
     require __DIR__.'/../vendor/autoload.php';
+    echo "<p style='color:green;'>✓ Vendor autoload loaded</p>";
     
     $app = require_once __DIR__.'/../bootstrap/app.php';
+    echo "<p style='color:green;'>✓ Laravel app loaded</p>";
     
     $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    echo "<p style='color:green;'>✓ Kernel loaded</p>";
     
-    $response = $kernel->handle(
-        $request = Illuminate\Http\Request::capture()
-    );
+    $response = $kernel->handle($request = Illuminate\Http\Request::capture());
+    echo "<p style='color:green;'>✓ Request handled</p>";
     
     $response->send();
-    
     $kernel->terminate($request, $response);
-} else {
-    // Fallback si vendor n'existe pas
-    http_response_code(200);
-    echo "<h1>Laravel Application</h1>";
-    echo "<p>Vendor directory not found. Running migrations...</p>";
-    echo "<p>PHP Version: " . phpversion() . "</p>";
+    
+} catch (Exception $e) {
+    echo "<h2 style='color:red;'>❌ ERROR:</h2>";
+    echo "<pre>";
+    echo htmlspecialchars($e->getMessage()) . "\n\n";
+    echo htmlspecialchars($e->getTraceAsString());
+    echo "</pre>";
+    
+    echo "<h3>Environment:</h3>";
+    echo "<pre>";
+    echo "DB_CONNECTION: " . (getenv('DB_CONNECTION') ?: 'NOT SET') . "\n";
+    echo "DB_HOST: " . (getenv('DB_HOST') ?: 'NOT SET') . "\n";
+    echo "APP_ENV: " . (getenv('APP_ENV') ?: 'NOT SET') . "\n";
+    echo "</pre>";
 }
 EOF
-
-# Exécuter les migrations (OPTIONNEL mais recommandé)
-# RUN php artisan migrate --force
 
 EXPOSE 8080
 
