@@ -1,5 +1,5 @@
 # Image Laravel + Nginx qui fonctionne parfaitement sur Render
-FROM webdevops/php-nginx:8.2
+FROM php:8.2-apache
 
 # Installer les dépendances système
 RUN apk add --no-cache \
