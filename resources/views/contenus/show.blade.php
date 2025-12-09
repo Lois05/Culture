@@ -33,65 +33,39 @@
                     <!-- En-tête avec image et métadonnées -->
                     <div class="row mb-4">
                         <div class="col-md-4">
+                            <!-- Affichage des médias -->
                             @if($contenu->medias && $contenu->medias->count() > 0)
-                                @php
-                                    $media = $contenu->medias->first();
-                                    $isVideo = $media->id_type_media == 2;
-                                    $isAudio = $media->id_type_media == 3;
-                                @endphp
-
-                                @if($isVideo)
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 200px; height: 150px;">
-                                                <i class="bi bi-play-circle text-primary display-4"></i>
-                                            </div>
-                                            <div class="mt-2">
-                                                <span class="badge bg-primary">Vidéo</span>
-                                                <small class="text-muted d-block">{{ $media->chemin }}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @elseif($isAudio)
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 200px; height: 150px;">
-                                                <i class="bi bi-music-note text-success display-4"></i>
-                                            </div>
-                                            <div class="mt-2">
-                                                <span class="badge bg-success">Audio</span>
-                                                <small class="text-muted d-block">{{ $media->chemin }}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <img src="{{ asset('storage/' . $media->chemin) }}"
-                                                 class="img-fluid rounded border"
-                                                 style="max-height: 200px; object-fit: cover;"
-                                                 alt="{{ $contenu->titre }}"
+                                @foreach($contenu->medias as $media)
+                                    <div class="mb-4">
+                                        @if($media->id_type_media == 1) {{-- Image --}}
+                                            <img src="{{ asset('adminlte/img/' . $media->chemin) }}"
+                                                 class="img-fluid rounded"
+                                                 alt="{{ $media->description }}"
                                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto mt-2"
-                                                 style="width: 200px; height: 150px; display: none;">
+                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center"
+                                                 style="width: 100%; height: 200px; display: none;">
                                                 <i class="bi bi-image text-muted display-4"></i>
                                             </div>
-                                            <div class="mt-2">
-                                                <span class="badge bg-info">Image</span>
-                                                <small class="text-muted d-block">{{ $media->chemin }}</small>
-                                            </div>
-                                        </div>
+                                        @elseif($media->id_type_media == 2) {{-- Vidéo --}}
+                                            <video controls class="w-100">
+                                                <source src="{{ asset('adminlte/img/' . $media->chemin) }}">
+                                                Votre navigateur ne supporte pas la vidéo.
+                                            </video>
+                                        @else {{-- Audio --}}
+                                            <audio controls class="w-100">
+                                                <source src="{{ asset('adminlte/img/' . $media->chemin) }}">
+                                                Votre navigateur ne supporte pas l'audio.
+                                            </audio>
+                                        @endif
+                                        <p class="text-muted mt-2">{{ $media->description }}</p>
                                     </div>
-                                @endif
+                                @endforeach
                             @else
-                                <div class="card">
-                                    <div class="card-body text-center text-muted">
-                                        <i class="bi bi-image display-4"></i>
-                                        <p class="mt-2 mb-0">Aucun média</p>
-                                    </div>
+                                <div class="bg-light rounded border d-flex align-items-center justify-content-center"
+                                     style="width: 100%; height: 200px;">
+                                    <i class="bi bi-image text-muted display-4"></i>
                                 </div>
+                                <p class="text-muted text-center mt-2">Aucun média associé</p>
                             @endif
                         </div>
                         <div class="col-md-8">

@@ -9,7 +9,7 @@
             <h3 class="fw-bold text-primary">
                 <i class="bi bi-collection-play"></i> Gestion des Médias
             </h3>
-            <a href="{{ route('medias.create') }}" class="btn btn-primary btn-lg">
+            <a href="{{ route('admin.medias.create') }}" class="btn btn-primary btn-lg">
                 <i class="bi bi-plus-circle"></i> Ajouter un média
             </a>
         </div>
@@ -107,7 +107,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('medias.show', $media->id_media) }}"
+                                            <a href="{{ route('admin.medias.show', $media->id_media) }}"
                                                class="btn btn-outline-info"
                                                title="Voir">
                                                 <i class="bi bi-eye"></i>
@@ -117,7 +117,7 @@
                                                title="Modifier">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('medias.destroy', $media->id_media) }}"
+                                            <form action="{{ route('admin.medias.destroy', $media->id_media) }}"
                                                   method="POST"
                                                   class="d-inline"
                                                   onsubmit="return confirm('Supprimer ce média ?');">
@@ -138,7 +138,7 @@
                     <div class="text-center py-5">
                         <i class="bi bi-collection display-1 text-muted"></i>
                         <h4 class="text-muted mt-3">Aucun média trouvé</h4>
-                        <a href="{{ route('medias.create') }}" class="btn btn-primary mt-3">
+                        <a href="{{ route('admin.medias.create') }}" class="btn btn-primary mt-3">
                             <i class="bi bi-plus-circle"></i> Ajouter un média
                         </a>
                     </div>

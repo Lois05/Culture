@@ -17,7 +17,7 @@
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ route('contenus.store') }}" method="POST" enctype="multipart/form-data" id="createForm">
+                    <form action="{{ route('admin.contenus.store') }}" method="POST" enctype="multipart/form-data" id="createForm">
                         @csrf
 
                         <div class="row">
@@ -173,7 +173,7 @@
                         </div>
 
                         <div class="d-flex gap-3 justify-content-end pt-4 border-top">
-                            <a href="{{ route('contenus.index') }}" class="btn btn-secondary btn-lg px-4">
+                            <a href="{{ route('admin.contenus.index') }}" class="btn btn-secondary btn-lg px-4">
                                 <i class="bi bi-x-circle me-2"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-4 shadow" id="submitBtn">

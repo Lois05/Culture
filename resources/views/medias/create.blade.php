@@ -9,7 +9,7 @@
             </div>
 
             <div class="card-body">
-                <form action="{{ route('medias.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.medias.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <!-- SECTION UPLOAD -->
@@ -78,7 +78,7 @@
 
                     <!-- BOUTONS -->
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('medias.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('admin.medias.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Retour à la liste
                         </a>
                         <button type="submit" class="btn btn-success btn-lg">

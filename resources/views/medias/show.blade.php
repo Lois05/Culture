@@ -11,7 +11,7 @@
                     <h4 class="mb-0 fw-bold">
                         <i class="bi bi-eye-fill me-2"></i> Détails du Média
                     </h4>
-                    <a href="{{ route('medias.index') }}" class="btn btn-light btn-sm">
+                    <a href="{{ route('admin.medias.index') }}" class="btn btn-light btn-sm">
                         <i class="bi bi-arrow-left me-1"></i> Retour
                     </a>
                 </div>
@@ -100,7 +100,7 @@
                                         <label class="form-label fw-bold">Contenu associé</label>
                                         <div class="bg-light rounded p-2">
                                             <strong>{{ $media->contenu->titre }}</strong><br>
-                                            <a href="{{ route('contenus.show', $media->contenu->id_contenu) }}"
+                                            <a href="{{ route('admin.contenus.show', $media->contenu->id_contenu) }}"
                                                class="btn btn-sm btn-link p-0">
                                                 <small>Voir le contenu</small>
                                             </a>
@@ -125,16 +125,16 @@
                     <!-- Actions -->
                     <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
                         <div>
-                            <a href="{{ route('medias.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.medias.index') }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left me-2"></i> Retour
                             </a>
                         </div>
                         <div class="btn-group">
-                            <a href="{{ route('medias.edit', $media->id_media) }}"
+                            <a href="{{ route('admin.medias.edit', $media->id_media) }}"
                                class="btn btn-warning">
                                 <i class="bi bi-pencil me-2"></i> Modifier
                             </a>
-                            <form action="{{ route('medias.destroy', $media->id_media) }}"
+                            <form action="{{ route('admin.medias.destroy', $media->id_media) }}"
                                   method="POST"
                                   class="d-inline"
                                   onsubmit="return confirm('Supprimer ce média ?');">

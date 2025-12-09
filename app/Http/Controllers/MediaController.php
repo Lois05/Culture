@@ -1,4 +1,5 @@
 <?php
+// app/Http\Controllers\MediaController.php
 
 namespace App\Http\Controllers;
 
@@ -10,73 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class MediaController extends Controller
 {
-    /**
-     * Afficher le formulaire d'upload
-     */
-    public function create()
-    {
-        $contenus = Contenu::where('statut', 'validé')->get();
-        $types = TypeMedia::all();
-
-        return view('medias.create', compact('contenus', 'types'));
-    }
-
-    /**
-     * Stocker le média - CORRIGÉ POUR public/adminlte/img
-     */
-    public function store(Request $request)
-    {
-        // Validation
-        $request->validate([
-            'media_file' => 'required|file|mimes:jpg,jpeg,png,gif,webp,mp4,avi,mov,mp3,wav,ogg|max:102400',
-            'description' => 'nullable|string|max:500',
-            'id_type_media' => 'required|exists:type_medias,id_type_media',
-            'id_contenu' => 'required|exists:contenus,id_contenu'
-        ]);
-
-        try {
-            $file = $request->file('media_file');
-            $contenu = Contenu::findOrFail($request->id_contenu);
-
-            // Nom de fichier unique
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
-            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9]/', '_', $originalName) . '.' . $extension;
-
-            // Sauvegarder dans public/adminlte/img
-            $destinationPath = public_path('adminlte/img');
-
-            // Créer le dossier s'il n'existe pas
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            // Déplacer le fichier
-            $file->move($destinationPath, $fileName);
-
-            // Chemin à sauvegarder (juste le nom du fichier)
-            $chemin = $fileName;
-
-            // Créer le média
-            Media::create([
-                'chemin' => $chemin,
-                'description' => $request->description,
-                'id_contenu' => $request->id_contenu,
-                'id_type_media' => $request->id_type_media,
-            ]);
-
-            return redirect()->route('medias.index')
-                ->with('success', '✅ Média uploadé avec succès !')
-                ->with('new_file', $fileName);
-
-        } catch (\Exception $e) {
-            Log::error('Erreur upload: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', '❌ Erreur lors de l\'upload: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
     /**
      * Liste des médias
      */
@@ -90,6 +24,64 @@ class MediaController extends Controller
     }
 
     /**
+     * Formulaire de création
+     */
+    public function create()
+    {
+        $contenus = Contenu::where('statut', 'validé')->get();
+        $types = TypeMedia::all();
+
+        return view('medias.create', compact('contenus', 'types'));
+    }
+
+    /**
+     * STORE - Version corrigée
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'media_file' => 'required|file|mimes:jpg,jpeg,png,gif,webp,mp4,avi,mov,mp3,wav,ogg|max:102400',
+            'description' => 'nullable|string|max:500',
+            'id_type_media' => 'required|exists:type_medias,id_type_media',
+            'id_contenu' => 'required|exists:contenus,id_contenu'
+        ]);
+
+        try {
+            $file = $request->file('media_file');
+
+            // Nom unique
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9]/', '_', $originalName) . '.' . $extension;
+
+            // Sauvegarder dans public/adminlte/img
+            $destinationPath = public_path('adminlte/img');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $file->move($destinationPath, $fileName);
+
+            // Créer média
+            Media::create([
+                'chemin' => $fileName, // Juste le nom du fichier
+                'description' => $request->description,
+                'id_contenu' => $request->id_contenu,
+                'id_type_media' => $request->id_type_media,
+            ]);
+
+            return redirect()->route('admin.medias.index')
+                ->with('success', '✅ Média uploadé avec succès !');
+
+        } catch (\Exception $e) {
+            Log::error('Erreur store média: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', '❌ Erreur lors de l\'upload: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
      * Afficher un média
      */
     public function show($id)
@@ -99,26 +91,19 @@ class MediaController extends Controller
     }
 
     /**
-     * Modifier un média
+     * Formulaire d'édition
      */
     public function edit($id)
     {
-        try {
-            $media = Media::findOrFail($id);
-            $typesMedia = TypeMedia::all();
-            $contenus = Contenu::all();
+        $media = Media::findOrFail($id);
+        $typesMedia = TypeMedia::all();
+        $contenus = Contenu::all();
 
-            return view('medias.edit', compact('media', 'typesMedia', 'contenus'));
-
-        } catch (\Exception $e) {
-            Log::error('Erreur édition: ' . $e->getMessage());
-            return redirect()->route('medias.index')
-                             ->with('error', 'Média non trouvé');
-        }
+        return view('medias.edit', compact('media', 'typesMedia', 'contenus'));
     }
 
     /**
-     * Mettre à jour un média
+     * UPDATE - Version corrigée
      */
     public function update(Request $request, $id)
     {
@@ -137,15 +122,15 @@ class MediaController extends Controller
         $request->validate($rules);
 
         try {
-            // Si nouveau fichier fourni
+            // Si nouveau fichier
             if ($request->hasFile('media_file')) {
-                // Supprimer l'ancien fichier
-                $oldFile = public_path('adminlte/img/' . $media->chemin);
-                if (file_exists($oldFile) && is_file($oldFile)) {
-                    @unlink($oldFile);
+                // Supprimer ancien
+                $oldPath = public_path('adminlte/img/' . $media->chemin);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
                 }
 
-                // Uploader le nouveau
+                // Uploader nouveau
                 $file = $request->file('media_file');
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $extension = $file->getClientOriginalExtension();
@@ -155,17 +140,17 @@ class MediaController extends Controller
                 $media->chemin = $fileName;
             }
 
-            // Mettre à jour les autres infos
+            // Mettre à jour
             $media->description = $request->description;
             $media->id_contenu = $request->id_contenu;
             $media->id_type_media = $request->id_type_media;
             $media->save();
 
-            return redirect()->route('medias.index')
+            return redirect()->route('admin.medias.index')
                 ->with('success', '✅ Média modifié avec succès !');
 
         } catch (\Exception $e) {
-            Log::error('Erreur update: ' . $e->getMessage());
+            Log::error('Erreur update média: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', '❌ Erreur lors de la modification: ' . $e->getMessage())
                 ->withInput();
@@ -180,19 +165,19 @@ class MediaController extends Controller
         try {
             $media = Media::findOrFail($id);
 
-            // Supprimer le fichier physique
+            // Supprimer fichier
             $filePath = public_path('adminlte/img/' . $media->chemin);
-            if (file_exists($filePath) && is_file($filePath)) {
+            if (file_exists($filePath)) {
                 @unlink($filePath);
             }
 
             $media->delete();
 
-            return redirect()->route('medias.index')
+            return redirect()->route('admin.medias.index')
                 ->with('success', '🗑️ Média supprimé avec succès !');
 
         } catch (\Exception $e) {
-            Log::error('Erreur suppression: ' . $e->getMessage());
+            Log::error('Erreur destroy média: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
         }
     }

@@ -12,12 +12,12 @@
                     <h4 class="mb-0 fw-bold">
                         <i class="bi bi-pencil-square me-2"></i> Modifier le Contenu
                     </h4>
-                    <a href="{{ route('contenus.index') }}" class="btn btn-light btn-sm shadow-sm">
+                    <a href="{{ route('admin.contenus.index') }}" class="btn btn-light btn-sm shadow-sm">
                         <i class="bi bi-arrow-left me-1"></i> Retour
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ route('contenus.update', $contenu->id_contenu) }}" method="POST" enctype="multipart/form-data" id="updateForm">
+                    <form action="{{ route('admin.contenus.update', $contenu->id_contenu) }}" method="POST" enctype="multipart/form-data" id="updateForm">
                         @csrf
                         @method('PUT')
 
@@ -206,7 +206,7 @@
                         </div>
 
                         <div class="d-flex gap-3 justify-content-end pt-4 border-top">
-                            <a href="{{ route('contenus.index') }}" class="btn btn-secondary btn-lg px-4">
+                            <a href="{{ route('admin.contenus.index') }}" class="btn btn-secondary btn-lg px-4">
                                 <i class="bi bi-x-circle me-2"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-4 shadow" id="submitBtn">

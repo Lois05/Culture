@@ -11,12 +11,12 @@
                     <h4 class="mb-0 fw-bold">
                         <i class="bi bi-pencil-square me-2"></i> Modifier le Média
                     </h4>
-                    <a href="{{ route('medias.index') }}" class="btn btn-light btn-sm">
+                    <a href="{{ route('admin.medias.index') }}" class="btn btn-light btn-sm">
                         <i class="bi bi-arrow-left me-1"></i> Retour
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ route('medias.update', $media->id_media) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.medias.update', $media->id_media) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -143,7 +143,7 @@
                         </div>
 
                         <div class="d-flex gap-3 justify-content-end pt-4">
-                            <a href="{{ route('medias.index') }}" class="btn btn-secondary btn-lg px-4">
+                            <a href="{{ route('admin.medias.index') }}" class="btn btn-secondary btn-lg px-4">
                                 <i class="bi bi-x-circle me-2"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-4 shadow">

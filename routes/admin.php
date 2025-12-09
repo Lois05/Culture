@@ -13,128 +13,53 @@ use App\Http\Controllers\ParlerController;
 use App\Http\Controllers\TypeContenuController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ModerationController;
-use App\Http\Middleware\RoleMiddleware;
 
 // ============================================
-// ⚠️ IMPORTANT : Toutes ces routes ont déjà :
+// Grâce à RouteServiceProvider :
 // - Préfixe: /admin
-// - Nom: admin.
+// - Nom: admin.* (automatiquement)
 // - Middleware: ['web', 'auth']
 // ============================================
 
-// ✅ 1. TABLEAU DE BORD - Accessible SEULEMENT à Admin et Modérateur
+// ✅ 1. TABLEAU DE BORD
 Route::middleware(['role:Administrateur,Modérateur'])->group(function () {
     Route::get('/tableaudebord', [HomeController::class, 'index'])->name('tableaudebord');
 });
 
-// ✅ 2. GESTION DES CONTENUS - Admin, Modérateurs & Contributeurs
+// ✅ 2. GESTION DES CONTENUS
 Route::middleware(['role:Administrateur,Modérateur,Contributeur'])->group(function () {
-    Route::resource('contenus', ContenuController::class)->names([
-        'index' => 'contenus.index',
-        'create' => 'contenus.create',
-        'store' => 'contenus.store',
-        'show' => 'contenus.show',
-        'edit' => 'contenus.edit',
-        'update' => 'contenus.update',
-        'destroy' => 'contenus.destroy'
-    ]);
+    Route::resource('contenus', ContenuController::class);
+
+    // Routes supplémentaires
+    Route::post('/contenus/{id}/valider', [ContenuController::class, 'valider'])->name('contenus.valider');
+    Route::post('/contenus/{id}/rejeter', [ContenuController::class, 'rejeter'])->name('contenus.rejeter');
 });
 
-// ✅ 3. GESTION COMPLÈTE - Administrateurs uniquement
+// ✅ 3. GESTION COMPLÈTE (Admin seulement)
 Route::middleware(['role:Administrateur'])->group(function () {
-    Route::resource('users', UserController::class)->names([
-        'index' => 'users.index',
-        'create' => 'users.create',
-        'store' => 'users.store',
-        'show' => 'users.show',
-        'edit' => 'users.edit',
-        'update' => 'users.update',
-        'destroy' => 'users.destroy'
-    ]);
+    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class);
 
-    Route::resource('roles', RoleController::class)->names([
-        'index' => 'roles.index',
-        'create' => 'roles.create',
-        'store' => 'roles.store',
-        'show' => 'roles.show',
-        'edit' => 'roles.edit',
-        'update' => 'roles.update',
-        'destroy' => 'roles.destroy'
-    ]);
-
-    // Routes personnalisées pour les photos utilisateurs
+    // Routes photos
     Route::put('/users/{id}/photo', [UserController::class, 'updatePhoto'])->name('users.updatePhoto');
     Route::delete('/users/{user}/remove-photo', [UserController::class, 'removePhoto'])->name('users.removePhoto');
 });
 
-// ✅ 4. GESTION DES COMMENTAIRES - Admin & Modérateurs
+// ✅ 4. GESTION DES COMMENTAIRES
 Route::middleware(['role:Administrateur,Modérateur'])->group(function () {
-    Route::resource('commentaires', CommentaireController::class)->names([
-        'index' => 'commentaires.index',
-        'create' => 'commentaires.create',
-        'store' => 'commentaires.store',
-        'show' => 'commentaires.show',
-        'edit' => 'commentaires.edit',
-        'update' => 'commentaires.update',
-        'destroy' => 'commentaires.destroy'
-    ]);
+    Route::resource('commentaires', CommentaireController::class);
 });
 
-// ✅ 5. GESTION DES DONNÉES - Admin & Contributeurs
+// ✅ 5. GESTION DES DONNÉES
 Route::middleware(['role:Administrateur,Contributeur'])->group(function () {
-    Route::resource('langues', LanguesController::class)->names([
-        'index' => 'langues.index',
-        'create' => 'langues.create',
-        'store' => 'langues.store',
-        'show' => 'langues.show',
-        'edit' => 'langues.edit',
-        'update' => 'langues.update',
-        'destroy' => 'langues.destroy'
-    ]);
-
-    Route::resource('medias', MediaController::class)->names([
-        'index' => 'medias.index',
-        'create' => 'medias.create',
-        'store' => 'medias.store',
-        'show' => 'medias.show',
-        'edit' => 'medias.edit',
-        'update' => 'medias.update',
-        'destroy' => 'medias.destroy'
-    ]);
-
-    // CORRECTION ICI : Spécifiez explicitement les noms des routes pour les régions
-    Route::resource('regions', RegionController::class)->names([
-        'index' => 'regions.index',
-        'create' => 'regions.create',
-        'store' => 'regions.store',
-        'show' => 'regions.show',
-        'edit' => 'regions.edit',
-        'update' => 'regions.update',
-        'destroy' => 'regions.destroy'
-    ]);
-
-    Route::resource('parler', ParlerController::class)->names([
-        'index' => 'parler.index',
-        'create' => 'parler.create',
-        'store' => 'parler.store',
-        'show' => 'parler.show',
-        'edit' => 'parler.edit',
-        'update' => 'parler.update',
-        'destroy' => 'parler.destroy'
-    ]);
-
-    Route::resource('typecontenus', TypeContenuController::class)->names([
-        'index' => 'typecontenus.index',
-        'create' => 'typecontenus.create',
-        'store' => 'typecontenus.store',
-        'show' => 'typecontenus.show',
-        'edit' => 'typecontenus.edit',
-        'update' => 'typecontenus.update',
-        'destroy' => 'typecontenus.destroy'
-    ]);
+    Route::resource('langues', LanguesController::class);
+    Route::resource('medias', MediaController::class);
+    Route::resource('regions', RegionController::class);
+    Route::resource('parler', ParlerController::class);
+    Route::resource('typecontenus', TypeContenuController::class);
 });
 
-// ✅ 6. MODÉRATION - Admin & Modérateurs
+// ✅ 6. MODÉRATION
 Route::middleware(['role:Administrateur,Modérateur'])
     ->prefix('moderateur')
     ->name('moderateur.')
@@ -144,47 +69,3 @@ Route::middleware(['role:Administrateur,Modérateur'])
         Route::post('/{id}/valider', [ModerationController::class, 'valider'])->name('valider');
         Route::post('/{id}/rejeter', [ModerationController::class, 'rejeter'])->name('rejeter');
     });
-
-// ✅ 7. ROUTE TEST UPLOAD - Admin uniquement
-// routes/web.php
-Route::get('/test-upload-simple', function() {
-    return '
-    <!DOCTYPE html>
-    <html>
-    <head><title>Test Upload</title></head>
-    <body>
-        <h1>Test Upload DIRECT vers adminlte/img</h1>
-
-        <form action="/do-upload-simple" method="POST" enctype="multipart/form-data">
-            ' . csrf_field() . '
-            <input type="file" name="mon_fichier" required><br><br>
-            <button type="submit">Uploader</button>
-        </form>
-
-        <hr>
-
-        <h3>Derniers fichiers uploadés :</h3>
-        ' .
-        collect(scandir(public_path('adminlte/img')))
-            ->filter(fn($f) => $f != '.' && $f != '..')
-            ->map(fn($f) => "<div><a href='/adminlte/img/$f' target='_blank'>$f</a></div>")
-            ->implode('') . '
-    </body>
-    </html>';
-});
-
-Route::post('/do-upload-simple', function(Illuminate\Http\Request $request) {
-    if ($request->hasFile('mon_fichier')) {
-        $file = $request->file('mon_fichier');
-        $filename = 'test_' . time() . '_' . $file->getClientOriginalName();
-
-        // Sauvegarder DIRECTEMENT
-        $file->move(public_path('adminlte/img'), $filename);
-
-        return redirect('/test-upload-simple')
-            ->with('success', "✅ Fichier uploadé : $filename")
-            ->with('url', asset("adminlte/img/$filename"));
-    }
-
-    return redirect('/test-upload-simple')->with('error', '❌ Aucun fichier');
-});
