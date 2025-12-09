@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
-    // Spécifier le nom de la table
+    use HasFactory;
+
     protected $table = 'medias';
 
     protected $primaryKey = 'id_media';
@@ -20,26 +22,23 @@ class Media extends Model
     ];
 
     /**
-     * URL complète de l'image
-     */
-    public function getUrlAttribute()
-    {
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
-        return $disk->url($this->chemin);
-    }
+ * URL complète de l'image
+ *
+ * @return string
+ */
+public function getUrlAttribute()
+{
+    /** @var \Illuminate\Contracts\Filesystem\Filesystem $disk */
+    $disk = Storage::disk('public');
+    return $disk->url($this->chemin);
+}
 
-    /**
-     * Relation avec le contenu
-     */
+
     public function contenu()
     {
         return $this->belongsTo(Contenu::class, 'id_contenu');
     }
 
-    /**
-     * Relation avec le type de média
-     */
     public function typeMedia()
     {
         return $this->belongsTo(TypeMedia::class, 'id_type_media');
