@@ -1,45 +1,51 @@
-# Dockerfile Laravel pour Railway - Configuration corrigée
-FROM webdevops/php-nginx:8.2
+# Dockerfile Laravel - Écoute sur le port 8080
+FROM php:8.2-fpm
 
-WORKDIR /app
+WORKDIR /var/www/html
 
-# Configuration correcte pour Nginx + PHP-FPM
-ENV WEB_DOCUMENT_ROOT /app/public
-ENV PHP_FPM_LISTEN 127.0.0.1:9000
+# Installer Nginx et extensions PHP
+RUN apt-get update && apt-get install -y \
+    nginx \
+    curl \
+    && docker-php-ext-install pdo pdo_mysql
 
-# Copier les fichiers
-COPY . /app
+# Configuration Nginx pour le port 8080
+RUN echo 'server {\n\
+    listen 8080;\n\
+    server_name _;\n\
+    root /var/www/html/public;\n\
+    index index.php index.html;\n\
+\n\
+    location / {\n\
+        try_files $uri $uri/ /index.php?$query_string;\n\
+    }\n\
+\n\
+    location ~ \.php$ {\n\
+        fastcgi_pass 127.0.0.1:9000;\n\
+        fastcgi_index index.php;\n\
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+    }\n\
+}' > /etc/nginx/sites-available/default
 
-# Corriger la configuration Nginx pour pointer vers PHP-FPM
-RUN echo 'server {' > /opt/docker/etc/nginx/vhost.conf && \
-    echo '    listen 80;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    server_name _;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    root /app/public;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    index index.php index.html;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    location / {' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '        try_files $uri $uri/ /index.php?$query_string;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    }' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    location ~ \.php$ {' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '        fastcgi_pass 127.0.0.1:9000;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '        fastcgi_index index.php;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '        include fastcgi_params;' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '    }' >> /opt/docker/etc/nginx/vhost.conf && \
-    echo '}' >> /opt/docker/etc/nginx/vhost.conf
+# Activer le site et configurer Nginx
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/ \
+    && echo "daemon off;" >> /etc/nginx/nginx.conf
 
-# Corriger la configuration PHP-FPM
-RUN echo 'listen = 127.0.0.1:9000' >> /opt/docker/etc/php/php-fpm.d/application.conf && \
-    echo 'listen.allowed_clients = 127.0.0.1' >> /opt/docker/etc/php/php-fpm.d/application.conf
-
-# Installer Composer et dépendances
+# Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copier l'application
+COPY . .
+
+# Installer les dépendances Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Cache Laravel
+# Mettre en cache la configuration Laravel
 RUN php artisan config:cache && php artisan route:cache
 
-EXPOSE 80
+# Exposer le port 8080
+EXPOSE 8080
 
-CMD php artisan migrate --force && supervisord -c /opt/docker/etc/supervisor.conf
+# Démarrer PHP-FPM et Nginx
+CMD php-fpm -D && nginx
