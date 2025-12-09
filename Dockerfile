@@ -1,4 +1,4 @@
-# Dockerfile Laravel - Force les variables manquantes
+# Dockerfile Laravel - Configuration FINALE
 FROM php:8.2-alpine
 
 WORKDIR /var/www/html
@@ -9,18 +9,21 @@ RUN apk add --no-cache curl \
 
 COPY . .
 
-# FORCER les variables MySQL dans .env
+# Configuration CORRECTE pour votre MySQL Railway
 RUN composer install --no-dev --optimize-autoloader --no-scripts \
     && cp .env.example .env \
+    # CONFIGURATION MYSQL CORRECTE
     && echo "DB_CONNECTION=mysql" >> .env \
-    && echo "DB_HOST=respect-wonder.railway.internal" >> .env \
+    && echo "DB_HOST=mysql.railway.internal" >> .env \
     && echo "DB_PORT=3306" >> .env \
     && echo "DB_DATABASE=railway" >> .env \
     && echo "DB_USERNAME=root" >> .env \
     && echo "DB_PASSWORD=XsCCYyzyImuyXlZdNOhCFYDiBRqvZlXv" >> .env \
+    # CONFIGURATION APPLICATION
     && echo "APP_ENV=production" >> .env \
     && echo "APP_DEBUG=true" >> .env \
     && echo "APP_URL=https://culture-production-38e2.up.railway.app" >> .env \
+    # LARAVEL SETUP
     && php artisan key:generate --force \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && chmod -R 775 storage bootstrap/cache
