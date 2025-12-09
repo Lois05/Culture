@@ -238,28 +238,13 @@
                                         <div
                                             class="culture-card-meta d-flex justify-content-between align-items-center mb-3">
                                             <div class="d-flex align-items-center">
-                                                @if ($contenu->auteur)
-                                                    <div class="me-2">
-                                                        @if ($contenu->auteur->photo && $contenu->author_photo_url)
-                                                            <img src="{{ $contenu->author_photo_url }}"
-                                                                class="rounded-circle me-2" width="30"
-                                                                height="30"
-                                                                alt="{{ $contenu->auteur->name }}">
-                                                        @else
-                                                            <div class="rounded-circle me-2 d-flex align-items-center justify-content-center"
-                                                                style="width: 30px; height: 30px; background: {{ $contenu->color ?? '#E8112D' }}; color: white; font-weight: bold;">
-                                                                {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    <div>
-                                                        <small class="fw-bold d-block">
-                                                            {{ $contenu->auteur->prenom }}
-                                                            {{ $contenu->auteur->name }}
-                                                        </small>
-                                                        <small class="text-muted">
-                                                            {{ \Carbon\Carbon::parse($contenu->date_creation)->format('d/m/Y') }}
-                                                        </small>
+                                                @if ($contenu->author_photo_url)
+                                                    <img src="{{ $contenu->author_photo_url }}"
+                                                        alt="{{ $contenu->auteur->name }}">
+                                                @else
+                                                    {{-- Fallback avec initiales --}}
+                                                    <div class="avatar-initials">
+                                                        {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
                                                     </div>
                                                 @endif
                                             </div>
@@ -268,7 +253,9 @@
                                                     <i class="bi bi-calendar me-1"></i>
                                                     @php
                                                         try {
-                                                            echo \Carbon\Carbon::parse($contenu->date_creation)->format('d/m/Y');
+                                                            echo \Carbon\Carbon::parse($contenu->date_creation)->format(
+                                                                'd/m/Y',
+                                                            );
                                                         } catch (\Exception $e) {
                                                             echo date('d/m/Y', strtotime($contenu->date_creation));
                                                         }
@@ -281,8 +268,7 @@
                                         </div>
 
                                         <!-- Stats -->
-                                        <div
-                                            class="culture-card-stats d-flex justify-content-between border-top pt-3">
+                                        <div class="culture-card-stats d-flex justify-content-between border-top pt-3">
                                             <div class="text-center">
                                                 <small class="d-block text-muted" style="font-size: 0.75rem;">
                                                     <i class="bi bi-eye"></i> Vues

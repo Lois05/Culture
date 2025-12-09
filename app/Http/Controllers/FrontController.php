@@ -45,55 +45,109 @@ class FrontController extends Controller
     /**
      * Récupérer l'URL correcte pour une image
      */
-    private function getImageUrl($path)
-    {
-        if (!$path) {
-            return asset('adminlte/img/collage.png');
-        }
-
-        // Si le chemin commence par "storage/", on utilise asset()
-        if (strpos($path, 'storage/') === 0) {
-            return asset($path);
-        }
-
-        // Si c'est un chemin absolu (commence par http)
-        if (strpos($path, 'http') === 0) {
-            return $path;
-        }
-
-        // Sinon, on suppose que c'est dans le storage
-        if (strpos($path, 'public/') === 0) {
-            return asset(str_replace('public/', 'storage/', $path));
-        }
-
-        // Par défaut, dans storage
-        return asset('storage/' . ltrim($path, '/'));
+    /**
+ * Récupérer l'URL correcte pour une image
+ */
+private function getImageUrl($path)
+{
+    if (!$path || trim($path) === '') {
+        return asset('adminlte/img/collage.png'); // Image par défaut
     }
+
+    // Si le chemin commence déjà par "http", c'est une URL complète
+    if (strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) {
+        return $path;
+    }
+
+    // SI LE FICHIER EST DANS public/adminlte/img/ (NOUVEAU SYSTÈME)
+    // Vérifier si le fichier existe dans public/adminlte/img/
+    $publicPath = public_path('adminlte/img/' . basename($path));
+    if (file_exists($publicPath)) {
+        // Le fichier est dans public/adminlte/img/
+        return asset('adminlte/img/' . basename($path));
+    }
+
+    // SI LE FICHIER EST DANS storage/app/public (ANCIEN SYSTÈME)
+    // Si le chemin commence par "storage/", on utilise asset()
+    if (strpos($path, 'storage/') === 0) {
+        return asset($path);
+    }
+
+    // Si c'est un chemin relatif sans "storage/"
+    if (strpos($path, 'public/') === 0) {
+        return asset(str_replace('public/', 'storage/', $path));
+    }
+
+    // Par défaut, essayer plusieurs options
+    $possiblePaths = [
+        'adminlte/img/' . $path,  // Nouveau système
+        'storage/' . $path,        // Ancien système
+        $path                      // Tel quel
+    ];
+
+    foreach ($possiblePaths as $possiblePath) {
+        $fullPath = public_path($possiblePath);
+        if (file_exists($fullPath)) {
+            return asset($possiblePath);
+        }
+    }
+
+    // Fallback : image par défaut
+    return asset('adminlte/img/collage.png');
+}
 
     /**
      * Récupérer l'URL de la photo de profil
      */
-    private function getUserPhotoUrl($user)
-    {
-        if (!$user || !$user->photo) {
-            return null;
-        }
-
-        return $this->getImageUrl($user->photo);
+    /**
+ * Récupérer l'URL de la photo de profil
+ */
+private function getUserPhotoUrl($user)
+{
+    if (!$user || !$user->photo || trim($user->photo) === '') {
+        return null; // Pas de photo
     }
+
+    // Vérifier si la photo est dans public/adminlte/img/
+    $filename = basename($user->photo);
+    $publicPath = public_path('adminlte/img/' . $filename);
+
+    if (file_exists($publicPath)) {
+        return asset('adminlte/img/' . $filename);
+    }
+
+    // Sinon, utiliser la méthode générale
+    return $this->getImageUrl($user->photo);
+}
 
     /**
      * Récupérer l'image principale d'un contenu
      */
-    private function getContenuCoverImage($contenu)
-    {
-        if ($contenu->medias && $contenu->medias->isNotEmpty()) {
-            $firstMedia = $contenu->medias->first();
-            return $this->getImageUrl($firstMedia->chemin);
-        }
+    /**
+ * Récupérer l'image principale d'un contenu
+ */
+private function getContenuCoverImage($contenu)
+{
+    if (!$contenu || !$contenu->medias || $contenu->medias->isEmpty()) {
+        return asset('adminlte/img/collage.png'); // Image par défaut
+    }
 
+    $firstMedia = $contenu->medias->first();
+    if (!$firstMedia || !$firstMedia->chemin) {
         return asset('adminlte/img/collage.png');
     }
+
+    // Vérifier d'abord si le fichier existe dans public/adminlte/img/
+    $filename = basename($firstMedia->chemin);
+    $publicPath = public_path('adminlte/img/' . $filename);
+
+    if (file_exists($publicPath)) {
+        return asset('adminlte/img/' . $filename);
+    }
+
+    // Sinon, utiliser la méthode générale
+    return $this->getImageUrl($firstMedia->chemin);
+}
 
     public function index()
     {

@@ -314,29 +314,13 @@
                                     <div class="card-body-custom">
                                         <!-- Author info -->
                                         <!-- Auteur -->
-                                        @if ($contenu->auteur)
-                                            <div class="d-flex align-items-center mt-3">
-                                                @if ($contenu->auteur->photo && $contenu->author_photo_url)
-                                                    <img src="{{ $contenu->author_photo_url }}"
-                                                        class="rounded-circle me-2" width="30" height="30"
-                                                        alt="{{ $contenu->auteur->name }}">
-                                                @else
-                                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2"
-                                                        style="width: 30px; height: 30px; background: {{ $contenu->color ?? '#E8112D' }};">
-                                                        <span class="text-white small fw-bold">
-                                                            {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
-                                                        </span>
-                                                    </div>
-                                                @endif
-
-                                                <div>
-                                                    <small class="fw-bold d-block">
-                                                        {{ $contenu->auteur->prenom }} {{ $contenu->auteur->name }}
-                                                    </small>
-                                                    <small class="text-muted">
-                                                        {{ \Carbon\Carbon::parse($contenu->date_creation)->format('d/m/Y') }}
-                                                    </small>
-                                                </div>
+                                        @if ($contenu->author_photo_url)
+                                            <img src="{{ $contenu->author_photo_url }}"
+                                                alt="{{ $contenu->auteur->name }}">
+                                        @else
+                                            {{-- Fallback avec initiales --}}
+                                            <div class="avatar-initials">
+                                                {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
                                             </div>
                                         @endif
 
