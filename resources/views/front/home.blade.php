@@ -206,7 +206,7 @@
 
             <div class="row">
                 <div class="col-lg-8 mb-4 mb-lg-0">
-                    <div id="benin-map"></div>
+                    <div id="benin-map" style="height: 500px; border-radius: 12px; overflow: hidden; background: #f8f9fa;"></div>
                 </div>
 
                 <div class="col-lg-4">
@@ -269,96 +269,120 @@
                 <div class="row g-4">
                     @foreach ($contenusPopulaires as $contenu)
                         <div class="col-lg-4 col-md-6">
-                            <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
-                                class="text-decoration-none">
-                                <div class="culture-card">
-                                    <!-- Image avec badge et actions -->
-                                    <div class="card-image-container">
-                                        @if ($contenu->medias->first())
-                                            <img src="{{ $contenu->cover_image ?? asset('adminlte/img/collage.png') }}"
-                                                class="card-image" alt="{{ $contenu->titre }}">
+                            <div class="contenu-card h-100">
+                                <!-- En-tête de la carte avec image -->
+                                <div class="contenu-card-header position-relative overflow-hidden">
+                                    <!-- Image -->
+                                    <div class="contenu-card-img-container" style="height: 200px;">
+                                        @if ($contenu->medias && $contenu->medias->first())
+                                            <img src="{{ asset('storage/' . $contenu->medias->first()->chemin) }}"
+                                                 class="contenu-card-img"
+                                                 alt="{{ $contenu->titre }}"
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                        @elseif ($contenu->cover_image)
+                                            <img src="{{ asset('adminlte/img/' . $contenu->cover_image) }}"
+                                                 class="contenu-card-img"
+                                                 alt="{{ $contenu->titre }}"
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
                                         @else
-                                            <img src="{{ asset('adminlte/img/collage.png') }}" class="card-image"
-                                                alt="{{ $contenu->titre }}">
+                                            <img src="{{ asset('adminlte/img/collage.png') }}"
+                                                 class="contenu-card-img"
+                                                 alt="{{ $contenu->titre }}"
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
                                         @endif
 
-                                        <!-- Badge type -->
-                                        <div class="card-badge"
-                                            style="background: {{ $contenu->typeContenu->couleur ?? '#FCD116' }}; color: white;">
+                                        <!-- Overlay gradient -->
+                                        <div class="contenu-card-overlay"></div>
+                                    </div>
+
+                                    <!-- Badge type -->
+                                    <div class="contenu-card-badge">
+                                        <span class="badge" style="background: {{ $contenu->typeContenu->couleur ?? '#FCD116' }}; color: white;">
                                             <i class="bi {{ $contenu->typeContenu->icone ?? 'bi-star' }} me-1"></i>
                                             {{ $contenu->typeContenu->nom_contenu ?? 'Général' }}
-                                        </div>
+                                        </span>
+                                    </div>
+                                </div>
 
-                                        <!-- Actions Pinterest style -->
-                                        <div class="card-actions">
-                                            <button class="action-btn like-btn" data-id="{{ $contenu->id_contenu }}"
-                                                title="Like">
-                                                <i class="bi bi-heart"></i>
-                                            </button>
-                                            <button class="action-btn favorite-btn" data-id="{{ $contenu->id_contenu }}"
-                                                title="Favoris">
-                                                <i class="bi bi-star"></i>
-                                            </button>
-                                            <button class="action-btn comment-btn" data-id="{{ $contenu->id_contenu }}"
-                                                title="Commenter">
-                                                <i class="bi bi-chat"></i>
-                                            </button>
-                                            <button class="action-btn share-btn" data-id="{{ $contenu->id_contenu }}"
-                                                title="Partager">
-                                                <i class="bi bi-share"></i>
-                                            </button>
+                                <!-- Corps de la carte -->
+                                <div class="contenu-card-body p-4">
+                                    <!-- Auteur -->
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="contenu-author-avatar me-3">
+                                            @if ($contenu->author_photo_url)
+                                                <img src="{{ asset('adminlte/img/' . $contenu->author_photo_url) }}"
+                                                     alt="{{ $contenu->auteur->name ?? 'Auteur' }}"
+                                                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                            @else
+                                                <div class="contenu-avatar-initials"
+                                                     style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                                    {{ substr($contenu->auteur->prenom ?? 'A', 0, 1) }}{{ substr($contenu->auteur->name ?? 'B', 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="contenu-author-info">
+                                            <h6 class="contenu-author-name mb-0" style="font-size: 0.95rem; font-weight: 600;">
+                                                {{ $contenu->auteur->prenom ?? '' }} {{ $contenu->auteur->name ?? 'Anonyme' }}
+                                            </h6>
+                                            <small class="contenu-post-date text-muted" style="font-size: 0.8rem;">
+                                                {{ $contenu->created_at ? $contenu->created_at->diffForHumans() : '' }}
+                                            </small>
                                         </div>
                                     </div>
 
-                                    <!-- Card body -->
-                                    <div class="card-body-custom">
-                                        <!-- Author info -->
-                                        <!-- Auteur -->
-                                        @if ($contenu->author_photo_url)
-                                            <img src="{{ $contenu->author_photo_url }}"
-                                                alt="{{ $contenu->auteur->name }}">
-                                        @else
-                                            {{-- Fallback avec initiales --}}
-                                            <div class="avatar-initials">
-                                                {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
-                                            </div>
-                                        @endif
+                                    <!-- Titre -->
+                                    <h5 class="contenu-card-title mb-3" style="font-size: 1.25rem; font-weight: 700;">
+                                        <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
+                                           class="text-decoration-none text-dark">
+                                            {{ Str::limit($contenu->titre, 60) }}
+                                        </a>
+                                    </h5>
 
-                                        <!-- Title -->
-                                        <h5 class="card-title-custom">{{ $contenu->titre }}</h5>
+                                    <!-- Description -->
+                                    <p class="contenu-card-text text-muted mb-4" style="font-size: 0.95rem; line-height: 1.6;">
+                                        {{ Str::limit(strip_tags($contenu->texte), 120) }}
+                                    </p>
 
-                                        <!-- Description -->
-                                        <p class="card-text-custom">{{ Str::limit($contenu->texte, 100) }}</p>
+                                    <!-- Métadonnées -->
+                                    <div class="contenu-card-meta d-flex justify-content-between align-items-center">
+                                        <!-- Statistiques -->
+                                        <div class="contenu-stats d-flex align-items-center gap-3">
+                                            <span class="contenu-stat-item" style="font-size: 0.9rem;">
+                                                <i class="bi bi-eye me-1"></i>
+                                                <span>{{ $contenu->vues_count ?? 0 }}</span>
+                                            </span>
+                                            <span class="contenu-stat-item" style="font-size: 0.9rem;">
+                                                <i class="bi bi-chat me-1"></i>
+                                                <span>{{ $contenu->commentaires_count ?? 0 }}</span>
+                                            </span>
+                                            <span class="contenu-stat-item" style="font-size: 0.9rem;">
+                                                <i class="bi bi-heart me-1"></i>
+                                                <span id="like-count-{{ $contenu->id_contenu }}">
+                                                    {{ $contenu->likes_count ?? 0 }}
+                                                </span>
+                                            </span>
+                                        </div>
 
-                                        <!-- Meta info -->
-                                        <div class="card-meta">
-                                            <div class="meta-stats">
-                                                <span class="stat-item">
-                                                    <i class="bi bi-eye"></i>
-                                                    <span>{{ $contenu->vues_count ?? 0 }}</span>
-                                                </span>
-                                                <span class="stat-item">
-                                                    <i class="bi bi-chat"></i>
-                                                    <span>{{ $contenu->commentaires_count ?? 0 }}</span>
-                                                </span>
-                                                <span class="stat-item">
-                                                    <i class="bi bi-heart"></i>
-                                                    <span
-                                                        id="like-count-{{ $contenu->id_contenu }}">{{ $contenu->likes_count ?? 0 }}</span>
-                                                </span>
-                                                <span class="stat-item">
-                                                    <i class="bi bi-translate"></i>
-                                                    <span>{{ $contenu->langue->nom_langue ?? 'Français' }}</span>
-                                                </span>
-                                            </div>
-                                            <div class="location-badge" style="border-left: 3px solid #FCD116;">
-                                                <i
-                                                    class="bi bi-geo-alt me-1"></i>{{ $contenu->region->nom_region ?? 'Bénin' }}
-                                            </div>
+                                        <!-- Langue -->
+                                        <div class="contenu-language-badge">
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-translate me-1"></i>
+                                                {{ $contenu->langue->nom_langue ?? 'Français' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Région -->
+                                    <div class="contenu-region mt-3 pt-3 border-top">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                                            <span class="contenu-region-name" style="font-size: 0.9rem;">
+                                                {{ $contenu->region->nom_region ?? 'Bénin' }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -466,154 +490,461 @@
     </section>
 @endsection
 
-@push('scripts')
-    <script>
-        // Quiz culturel (gardé statique pour l'instant)
-        function initCulturalQuiz() {
-            const questions = [{
-                    question: "Quel est le nom du dernier roi indépendant du Dahomey ?",
-                    options: ["Kpêto Gbêdê", "Béhanzin", "Gakpé", "Glèlè"],
-                    answer: 1
-                },
-                {
-                    question: "Quelle langue est principalement parlée dans la région du Zou ?",
-                    options: ["Yoruba", "Fon", "Dendi", "Bariba"],
-                    answer: 1
-                },
-                {
-                    question: "Où se trouve la célèbre Porte du Non-Retour ?",
-                    options: ["Abomey", "Ouidah", "Porto-Novo", "Cotonou"],
-                    answer: 1
-                }
-            ];
+@push('styles')
+<style>
+    /* Styles spécifiques pour les cartes de contenu */
+    .contenu-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e9ecef;
+    }
 
-            let currentQuestion = 0;
-            let score = 0;
+    .contenu-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
 
-            function showQuestion() {
-                const question = questions[currentQuestion];
-                document.getElementById('quiz-question').textContent = question.question;
+    /* Header de la carte */
+    .contenu-card-header {
+        position: relative;
+    }
 
-                const optionsContainer = document.getElementById('quiz-options');
-                optionsContainer.innerHTML = '';
+    .contenu-card-img-container {
+        position: relative;
+        overflow: hidden;
+    }
 
-                question.options.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.className = 'btn btn-outline-light w-100 mb-2 text-start py-3';
-                    button.innerHTML = `<span class="me-3">${String.fromCharCode(65 + index)}.</span> ${option}`;
-                    button.onclick = () => selectAnswer(index);
-                    optionsContainer.appendChild(button);
-                });
+    .contenu-card-img {
+        transition: transform 0.5s ease;
+    }
 
-                // Mettre à jour la barre de progression
-                const progress = ((currentQuestion + 1) / questions.length) * 100;
-                document.querySelector('.progress-bar').style.width = `${progress}%`;
-                document.getElementById('quiz-progress').textContent =
-                    `Question ${currentQuestion + 1} sur ${questions.length}`;
-            }
+    .contenu-card:hover .contenu-card-img {
+        transform: scale(1.05);
+    }
 
-            function selectAnswer(selectedIndex) {
-                const question = questions[currentQuestion];
-                const options = document.querySelectorAll('#quiz-options button');
+    .contenu-card-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+    }
 
-                // Désactiver tous les boutons
-                options.forEach(btn => btn.disabled = true);
+    /* Badge type */
+    .contenu-card-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 2;
+    }
 
-                // Marquer la bonne réponse en vert
-                options[question.answer].classList.remove('btn-outline-light');
-                options[question.answer].classList.add('btn-success');
+    .contenu-card-badge .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
 
-                // Si la réponse est incorrecte, marquer en rouge
-                if (selectedIndex !== question.answer) {
-                    options[selectedIndex].classList.remove('btn-outline-light');
-                    options[selectedIndex].classList.add('btn-danger');
-                } else {
-                    score++;
-                }
+    /* Corps de la carte */
+    .contenu-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
 
-                // Passer à la question suivante après 1.5 secondes
-                setTimeout(() => {
-                    currentQuestion++;
-                    if (currentQuestion < questions.length) {
-                        showQuestion();
-                    } else {
-                        showResults();
-                    }
-                }, 1500);
-            }
+    .contenu-author-avatar {
+        flex-shrink: 0;
+    }
 
-            function showResults() {
-                const scorePercentage = Math.round((score / questions.length) * 100);
-                let message = '';
+    .contenu-author-name {
+        color: #333;
+    }
 
-                if (scorePercentage >= 80) {
-                    message = 'Excellent ! Vous êtes un expert de la culture béninoise 🏆';
-                } else if (scorePercentage >= 60) {
-                    message = 'Très bien ! Vous avez de bonnes connaissances 👍';
-                } else {
-                    message = 'Continuez à explorer pour en savoir plus ! 📚';
-                }
+    .contenu-card-title a:hover {
+        color: var(--primary) !important;
+    }
 
-                document.getElementById('quiz-question').innerHTML = `
-            <div class="text-center">
-                <h4 class="mb-3">Quiz terminé !</h4>
-                <div class="display-1 fw-bold mb-3" style="color: var(--primary);">${scorePercentage}%</div>
-                <p class="mb-3">${message}</p>
-                <small class="text-muted">Score : ${score} sur ${questions.length}</small>
-            </div>
-        `;
+    .contenu-card-text {
+        flex: 1;
+    }
 
-                document.getElementById('quiz-options').innerHTML = `
-            <div class="text-center mt-4">
-                <button onclick="initCulturalQuiz()" class="btn btn-primary me-2">
-                    <i class="bi bi-arrow-repeat me-2"></i>Recommencer
-                </button>
-                <a href="{{ route('front.explorer') }}" class="btn btn-outline-light">
-                    <i class="bi bi-compass me-2"></i>Explorer les contenus
-                </a>
-            </div>
-        `;
+    .contenu-card-meta {
+        margin-top: auto;
+    }
 
-                document.querySelector('.progress-bar').style.width = '100%';
-                document.getElementById('quiz-progress').textContent = 'Quiz terminé';
-            }
+    .contenu-stats {
+        font-size: 0.9rem;
+    }
 
-            // Cacher le bouton "Commencer"
-            document.querySelector('.quiz-content button').style.display = 'none';
+    .contenu-stat-item {
+        display: inline-flex;
+        align-items: center;
+        color: #666;
+    }
 
-            // Afficher la première question
-            showQuestion();
+    .contenu-stat-item i {
+        font-size: 0.9rem;
+    }
+
+    .contenu-region-name {
+        color: #555;
+    }
+
+    /* Styles pour la timeline */
+    .timeline {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 0;
+    }
+
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 6px;
+        background: linear-gradient(180deg, var(--primary), var(--accent));
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -3px;
+        border-radius: 3px;
+    }
+
+    .timeline-item {
+        padding: 10px 40px;
+        position: relative;
+        width: 50%;
+        box-sizing: border-box;
+        margin-bottom: 30px;
+    }
+
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background: var(--primary);
+        border: 4px solid white;
+        top: 15px;
+        border-radius: 50%;
+        z-index: 1;
+        box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .timeline-item.left {
+        left: 0;
+    }
+
+    .timeline-item.left::after {
+        right: -12px;
+    }
+
+    .timeline-item.right {
+        left: 50%;
+    }
+
+    .timeline-item.right::after {
+        left: -12px;
+    }
+
+    /* Styles pour le quiz */
+    .quiz-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quiz-question {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        color: white;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{{ asset('adminlte/img/pattern.png') }}");
+        opacity: 0.1;
+        pointer-events: none;
+    }
+
+    .cta-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .btn-cta-primary {
+        background: white;
+        color: var(--primary);
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cta-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-cta-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cta-outline:hover {
+        border-color: white;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .timeline::after {
+            left: 31px;
         }
 
-        // Initialiser la carte du Bénin (gardé statique pour l'instant)
-        document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('benin-map')) {
-                const map = L.map('benin-map').setView([9.3077, 2.3158], 7);
+        .timeline-item {
+            width: 100%;
+            padding-left: 70px;
+            padding-right: 25px;
+        }
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
+        .timeline-item::after {
+            left: 20px;
+        }
 
-                // Ajouter des marqueurs pour les régions populaires
-                @foreach ($regionsPopulaires as $index => $region)
-                    L.marker([{{ 9.5 - $index * 0.5 }}, {{ 2.0 + $index * 0.2 }}])
-                        .addTo(map)
-                        .bindPopup(`
-                <div style="min-width: 200px;">
-                    <h5 class="fw-bold mb-2">{{ $region->nom_region }}</h5>
-                    <p class="mb-2">{{ $region->description ?? 'Découvrez cette région' }}</p>
-                    <div class="mb-2">
-                        <small class="fw-bold">Contenus :</small>
-                        <div class="badge bg-primary">{{ $region->contenus_count }}</div>
-                    </div>
-                    <a href="{{ route('front.regions', ['slug' => Str::slug($region->nom_region)]) }}"
-                       class="btn btn-sm btn-primary w-100 mt-2">
-                        <i class="bi bi-compass me-1"></i>Explorer
+        .timeline-item.right {
+            left: 0;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+        }
+
+        .contenu-card-header {
+            height: 180px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .contenu-card-header {
+            height: 160px;
+        }
+
+        .contenu-card-title {
+            font-size: 1.1rem;
+        }
+
+        .contenu-card-text {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+    // Initialiser la carte du Bénin
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('benin-map')) {
+            const map = L.map('benin-map').setView([9.3077, 2.3158], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 12,
+                minZoom: 6
+            }).addTo(map);
+
+            // Ajouter des marqueurs pour les régions populaires
+            const regionCoordinates = {
+                'Atacora': [10.3, 1.67],
+                'Donga': [9.19, 1.67],
+                'Borgou': [9.97, 2.72],
+                'Alibori': [11.13, 2.94],
+                'Collines': [8.0, 2.2],
+                'Zou': [7.37, 2.07],
+                'Plateau': [6.87, 2.72],
+                'Ouémé': [6.5, 2.6],
+                'Littoral': [6.37, 2.42],
+                'Atlantique': [6.58, 2.15],
+                'Mono': [6.65, 1.72],
+                'Couffo': [7.03, 1.75]
+            };
+
+            @foreach ($regionsPopulaires as $region)
+                const coords = regionCoordinates['{{ $region->nom_region }}'] || [9.3, 2.3];
+                L.marker(coords)
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 200px;">
+                            <h5 class="fw-bold mb-2">{{ $region->nom_region }}</h5>
+                            <p class="mb-2">{{ Str::limit($region->description ?? 'Découvrez cette région culturelle', 100) }}</p>
+                            <div class="mb-2">
+                                <small class="fw-bold">Contenus :</small>
+                                <div class="badge bg-primary">{{ $region->contenus_count }}</div>
+                            </div>
+                            <a href="{{ route('front.regions', ['slug' => Str::slug($region->nom_region)]) }}"
+                               class="btn btn-sm btn-primary w-100 mt-2">
+                                <i class="bi bi-compass me-1"></i>Explorer
+                            </a>
+                        </div>
+                    `);
+            @endforeach
+        }
+    });
+
+    // Quiz culturel
+    function initCulturalQuiz() {
+        const questions = [
+            {
+                question: "Quel est le nom du dernier roi indépendant du Dahomey ?",
+                options: ["Kpêto Gbêdê", "Béhanzin", "Gakpé", "Glèlè"],
+                answer: 1
+            },
+            {
+                question: "Quelle langue est principalement parlée dans la région du Zou ?",
+                options: ["Yoruba", "Fon", "Dendi", "Bariba"],
+                answer: 1
+            },
+            {
+                question: "Où se trouve la célèbre Porte du Non-Retour ?",
+                options: ["Abomey", "Ouidah", "Porto-Novo", "Cotonou"],
+                answer: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('quiz-question').textContent = question.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-outline-light w-100 mb-2 text-start py-3';
+                button.innerHTML = `<span class="me-3">${String.fromCharCode(65 + index)}.</span> ${option}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            // Mettre à jour la barre de progression
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.querySelector('.progress-bar').style.width = `${progress}%`;
+            document.getElementById('quiz-progress').textContent =
+                `Question ${currentQuestion + 1} sur ${questions.length}`;
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('#quiz-options button');
+
+            // Désactiver tous les boutons
+            options.forEach(btn => btn.disabled = true);
+
+            // Marquer la bonne réponse en vert
+            options[question.answer].classList.remove('btn-outline-light');
+            options[question.answer].classList.add('btn-success');
+
+            // Si la réponse est incorrecte, marquer en rouge
+            if (selectedIndex !== question.answer) {
+                options[selectedIndex].classList.remove('btn-outline-light');
+                options[selectedIndex].classList.add('btn-danger');
+            } else {
+                score++;
+            }
+
+            // Passer à la question suivante après 1.5 secondes
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+
+        function showResults() {
+            const scorePercentage = Math.round((score / questions.length) * 100);
+            let message = '';
+
+            if (scorePercentage >= 80) {
+                message = 'Excellent ! Vous êtes un expert de la culture béninoise 🏆';
+            } else if (scorePercentage >= 60) {
+                message = 'Très bien ! Vous avez de bonnes connaissances 👍';
+            } else {
+                message = 'Continuez à explorer pour en savoir plus ! 📚';
+            }
+
+            document.getElementById('quiz-question').innerHTML = `
+                <div class="text-center">
+                    <h4 class="mb-3">Quiz terminé !</h4>
+                    <div class="display-1 fw-bold mb-3" style="color: var(--primary);">${scorePercentage}%</div>
+                    <p class="mb-3">${message}</p>
+                    <small class="text-muted">Score : ${score} sur ${questions.length}</small>
+                </div>
+            `;
+
+            document.getElementById('quiz-options').innerHTML = `
+                <div class="text-center mt-4">
+                    <button onclick="initCulturalQuiz()" class="btn btn-primary me-2">
+                        <i class="bi bi-arrow-repeat me-2"></i>Recommencer
+                    </button>
+                    <a href="{{ route('front.explorer') }}" class="btn btn-outline-light">
+                        <i class="bi bi-compass me-2"></i>Explorer les contenus
                     </a>
                 </div>
-            `);
-                @endforeach
-            }
-        });
-    </script>
+            `;
+
+            document.querySelector('.progress-bar').style.width = '100%';
+            document.getElementById('quiz-progress').textContent = 'Quiz terminé';
+        }
+
+        // Cacher le bouton "Commencer"
+        document.querySelector('.quiz-content button').style.display = 'none';
+
+        // Afficher la première question
+        showQuestion();
+    }
+</script>
 @endpush

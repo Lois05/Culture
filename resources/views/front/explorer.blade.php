@@ -3,13 +3,13 @@
 @section('title', 'Explorer - Bénin Culture')
 
 @section('content')
-    <section class="hero-section" style="height: 60vh; min-height: 400px;">
+    <section class="hero-section" style="height: 60vh; min-height: 400px; background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4)), url('{{ asset('adminlte/img/collage.png') }}') center/cover no-repeat;">
         <div class="container">
             <div class="row align-items-center h-100">
                 <div class="col-lg-8 mx-auto text-center">
                     <div class="hero-content">
-                        <h1 class="hero-title mb-4">Explorez la richesse culturelle</h1>
-                        <p class="lead mb-5" style="font-size: 1.3rem; opacity: 0.9;">
+                        <h1 class="hero-title mb-4 text-white">Explorez la richesse culturelle</h1>
+                        <p class="lead mb-5 text-white-50" style="font-size: 1.3rem;">
                             Découvrez des milliers de contenus culturels, historiques et traditionnels
                         </p>
 
@@ -199,108 +199,136 @@
                 </div>
             </div>
 
-            <!-- Masonry Grid -->
+            <!-- Grid des contenus -->
             @if ($contenus->count() > 0)
                 <div class="row">
                     @foreach ($contenus as $contenu)
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
-                                class="text-decoration-none">
-                                <div class="culture-card h-100">
+                            <div class="contenu-card-explorer h-100">
+                                <!-- Image avec badge -->
+                                <div class="contenu-card-image-container">
+                                    @if ($contenu->medias && $contenu->medias->isNotEmpty())
+                                        @php
+                                            $media = $contenu->medias->first();
+                                            $imageUrl = Str::startsWith($media->chemin, ['http://', 'https://'])
+                                                ? $media->chemin
+                                                : (Storage::exists($media->chemin)
+                                                    ? Storage::url($media->chemin)
+                                                    : asset('adminlte/img/mikwabo.jpg'));
+                                        @endphp
+                                        <img src="{{ $imageUrl }}"
+                                             alt="{{ $contenu->titre }}"
+                                             class="contenu-card-image">
+                                    @elseif($contenu->cover_image)
+                                        @php
+                                            $coverImage = Str::startsWith($contenu->cover_image, ['http://', 'https://'])
+                                                ? $contenu->cover_image
+                                                : asset('adminlte/img/' . $contenu->cover_image);
+                                        @endphp
+                                        <img src="{{ $coverImage }}"
+                                             alt="{{ $contenu->titre }}"
+                                             class="contenu-card-image">
+                                    @else
+                                        <img src="{{ asset('adminlte/img/mikwabo.jpg') }}"
+                                             alt="{{ $contenu->titre }}"
+                                             class="contenu-card-image">
+                                    @endif
+
                                     <!-- Badge Type -->
-                                    <div class="position-absolute top-0 start-0 m-3">
+                                    <div class="contenu-card-badge">
                                         <span class="badge py-2 px-3 text-white"
-                                            style="background-color: {{ $contenu->color ?? '#E8112D' }}; font-size: 0.8rem;">
-                                            <i class="bi {{ $contenu->icon ?? 'bi-book' }} me-1"></i>
+                                            style="background-color: {{ $contenu->typeContenu->couleur ?? '#E8112D' }};">
+                                            <i class="bi {{ $contenu->typeContenu->icone ?? 'bi-book' }} me-1"></i>
                                             {{ $contenu->typeContenu->nom_contenu ?? 'Histoire' }}
                                         </span>
                                     </div>
 
-                                    <!-- Image -->
-                                    <div class="culture-card-img">
-                                        @if ($contenu->medias && $contenu->medias->isNotEmpty())
-                                            <img src="{{ $contenu->cover_image ?? '/adminlte/img/collage.png' }}"
-                                                class="img-fluid" alt="{{ $contenu->titre }}">
-                                        @else
-                                            <img src="{{ asset('/adminlte/img/mikwabo.jpg') }}" class="img-fluid"
-                                                alt="{{ $contenu->titre }}">
-                                        @endif
-                                    </div>
+                                    <!-- Overlay pour le lien -->
+                                    <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
+                                       class="contenu-card-link-overlay"></a>
+                                </div>
 
-                                    <!-- Content -->
-                                    <div class="culture-card-body p-4">
-                                        <h4 class="culture-card-title mb-3">{{ $contenu->titre }}</h4>
-                                        <p class="culture-card-text mb-3">
-                                            {{ Str::limit(strip_tags($contenu->texte), 120) }}
-                                        </p>
+                                <!-- Content -->
+                                <div class="contenu-card-content p-4">
+                                    <h4 class="contenu-card-title mb-3">
+                                        <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
+                                           class="text-decoration-none text-dark">
+                                            {{ Str::limit($contenu->titre, 70) }}
+                                        </a>
+                                    </h4>
+                                    <p class="contenu-card-text mb-3 text-muted">
+                                        {{ Str::limit(strip_tags($contenu->texte), 120) }}
+                                    </p>
 
-                                        <!-- Metadata -->
-                                        <div
-                                            class="culture-card-meta d-flex justify-content-between align-items-center mb-3">
-                                            <div class="d-flex align-items-center">
-                                                @if ($contenu->author_photo_url)
-                                                    <img src="{{ $contenu->author_photo_url }}"
-                                                        alt="{{ $contenu->auteur->name }}">
-                                                @else
-                                                    {{-- Fallback avec initiales --}}
-                                                    <div class="avatar-initials">
-                                                        {{ substr($contenu->auteur->prenom, 0, 1) }}{{ substr($contenu->auteur->name, 0, 1) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            <div class="text-end">
-                                                <small class="text-muted d-block" style="font-size: 0.85rem;">
-                                                    <i class="bi bi-calendar me-1"></i>
+                                    <!-- Auteur et date -->
+                                    <div class="contenu-card-meta d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center">
+                                            @if ($contenu->author_photo_url)
+                                                @php
+                                                    $authorPhoto = Str::startsWith($contenu->author_photo_url, ['http://', 'https://'])
+                                                        ? $contenu->author_photo_url
+                                                        : asset('adminlte/img/' . $contenu->author_photo_url);
+                                                @endphp
+                                                <img src="{{ $authorPhoto }}"
+                                                     alt="{{ $contenu->auteur->name ?? 'Auteur' }}"
+                                                     class="contenu-author-avatar me-2">
+                                            @else
+                                                <div class="contenu-avatar-initials me-2">
+                                                    {{ substr($contenu->auteur->prenom ?? 'A', 0, 1) }}{{ substr($contenu->auteur->name ?? 'U', 0, 1) }}
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <small class="d-block fw-bold">
+                                                    {{ $contenu->auteur->prenom ?? '' }} {{ $contenu->auteur->name ?? 'Anonyme' }}
+                                                </small>
+                                                <small class="text-muted">
                                                     @php
                                                         try {
-                                                            echo \Carbon\Carbon::parse($contenu->date_creation)->format(
-                                                                'd/m/Y',
-                                                            );
+                                                            $date = \Carbon\Carbon::parse($contenu->date_creation);
+                                                            echo $date->translatedFormat('d F Y');
                                                         } catch (\Exception $e) {
-                                                            echo date('d/m/Y', strtotime($contenu->date_creation));
+                                                            echo 'Date inconnue';
                                                         }
                                                     @endphp
                                                 </small>
-                                                <span class="badge bg-light text-dark">
-                                                    <i class="bi bi-clock me-1"></i>{{ $contenu->reading_time ?? 5 }} min
-                                                </span>
                                             </div>
                                         </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-clock me-1"></i>{{ $contenu->reading_time ?? 5 }} min
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                        <!-- Stats -->
-                                        <div class="culture-card-stats d-flex justify-content-between border-top pt-3">
-                                            <div class="text-center">
-                                                <small class="d-block text-muted" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-eye"></i> Vues
-                                                </small>
-                                                <span
-                                                    class="fw-bold">{{ number_format($contenu->vues_count ?? 0, 0, ',', ' ') }}</span>
-                                            </div>
-                                            <div class="text-center">
-                                                <small class="d-block text-muted" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-heart"></i> Likes
-                                                </small>
-                                                <span
-                                                    class="fw-bold">{{ number_format($contenu->likes_count ?? 0, 0, ',', ' ') }}</span>
-                                            </div>
-                                            <div class="text-center">
-                                                <small class="d-block text-muted" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-chat"></i> Commentaires
-                                                </small>
-                                                <span
-                                                    class="fw-bold">{{ number_format($contenu->commentaires_count ?? 0, 0, ',', ' ') }}</span>
-                                            </div>
-                                            <div class="text-center">
-                                                <small class="d-block text-muted" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-star"></i> Favoris
-                                                </small>
-                                                <span
-                                                    class="fw-bold">{{ number_format($contenu->favorites_count ?? 0, 0, ',', ' ') }}</span>
-                                            </div>
+                                    <!-- Stats -->
+                                    <div class="contenu-card-stats d-flex justify-content-between border-top pt-3">
+                                        <div class="text-center">
+                                            <small class="d-block text-muted" style="font-size: 0.75rem;">
+                                                <i class="bi bi-eye"></i> Vues
+                                            </small>
+                                            <span class="fw-bold">{{ $contenu->vues_count ?? 0 }}</span>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="d-block text-muted" style="font-size: 0.75rem;">
+                                                <i class="bi bi-heart"></i> Likes
+                                            </small>
+                                            <span class="fw-bold">{{ $contenu->likes_count ?? 0 }}</span>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="d-block text-muted" style="font-size: 0.75rem;">
+                                                <i class="bi bi-chat"></i> Commentaires
+                                            </small>
+                                            <span class="fw-bold">{{ $contenu->commentaires_count ?? 0 }}</span>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="d-block text-muted" style="font-size: 0.75rem;">
+                                                <i class="bi bi-star"></i> Favoris
+                                            </small>
+                                            <span class="fw-bold">{{ $contenu->favorites_count ?? 0 }}</span>
                                         </div>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -395,3 +423,180 @@
         </div>
     </section>
 @endsection
+
+@push('styles')
+<style>
+    /* Styles pour les cartes de la page explorer */
+    .contenu-card-explorer {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contenu-card-explorer:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Conteneur image */
+    .contenu-card-image-container {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .contenu-card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .contenu-card-explorer:hover .contenu-card-image {
+        transform: scale(1.05);
+    }
+
+    /* Badge sur l'image */
+    .contenu-card-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 2;
+    }
+
+    .contenu-card-badge .badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Overlay pour le lien */
+    .contenu-card-link-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        background: transparent;
+        transition: background 0.3s ease;
+    }
+
+    .contenu-card-link-overlay:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Contenu de la carte */
+    .contenu-card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contenu-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: #1a1a1a;
+    }
+
+    .contenu-card-title a:hover {
+        color: var(--primary) !important;
+    }
+
+    .contenu-card-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        flex: 1;
+    }
+
+    /* Avatar auteur */
+    .contenu-author-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--primary-light);
+    }
+
+    .contenu-avatar-initials {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border: 2px solid var(--primary-light);
+    }
+
+    /* Stats */
+    .contenu-card-stats {
+        margin-top: auto;
+    }
+
+    /* Hero section améliorée */
+    .hero-section {
+        background-attachment: fixed;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .contenu-card-image-container {
+            height: 180px;
+        }
+
+        .contenu-card-title {
+            font-size: 1.1rem;
+        }
+
+        .contenu-card-text {
+            font-size: 0.9rem;
+        }
+
+        .contenu-card-stats div {
+            padding: 0 5px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .contenu-card-image-container {
+            height: 160px;
+        }
+    }
+
+    /* Styles pour les badges de filtres */
+    .badge.bg-light:hover {
+        background-color: var(--primary-light) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* Pagination améliorée */
+    .page-link {
+        padding: 0.5rem 1rem;
+        border: none;
+        color: var(--primary);
+        margin: 0 2px;
+        border-radius: 8px !important;
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .page-link:hover {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+</style>
+@endpush
