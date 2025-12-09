@@ -146,14 +146,45 @@ Route::middleware(['role:Administrateur,Modérateur'])
     });
 
 // ✅ 7. ROUTE TEST UPLOAD - Admin uniquement
-Route::middleware(['role:Administrateur'])->group(function () {
-    Route::get('/test-upload-config', function() {
-        return response()->json([
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-            'max_execution_time' => ini_get('max_execution_time'),
-            'memory_limit' => ini_get('memory_limit'),
-            'max_file_uploads' => ini_get('max_file_uploads'),
-        ]);
-    })->name('test.upload.config');
+// routes/web.php
+Route::get('/test-upload-simple', function() {
+    return '
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Upload</title></head>
+    <body>
+        <h1>Test Upload DIRECT vers adminlte/img</h1>
+
+        <form action="/do-upload-simple" method="POST" enctype="multipart/form-data">
+            ' . csrf_field() . '
+            <input type="file" name="mon_fichier" required><br><br>
+            <button type="submit">Uploader</button>
+        </form>
+
+        <hr>
+
+        <h3>Derniers fichiers uploadés :</h3>
+        ' .
+        collect(scandir(public_path('adminlte/img')))
+            ->filter(fn($f) => $f != '.' && $f != '..')
+            ->map(fn($f) => "<div><a href='/adminlte/img/$f' target='_blank'>$f</a></div>")
+            ->implode('') . '
+    </body>
+    </html>';
+});
+
+Route::post('/do-upload-simple', function(Illuminate\Http\Request $request) {
+    if ($request->hasFile('mon_fichier')) {
+        $file = $request->file('mon_fichier');
+        $filename = 'test_' . time() . '_' . $file->getClientOriginalName();
+
+        // Sauvegarder DIRECTEMENT
+        $file->move(public_path('adminlte/img'), $filename);
+
+        return redirect('/test-upload-simple')
+            ->with('success', "✅ Fichier uploadé : $filename")
+            ->with('url', asset("adminlte/img/$filename"));
+    }
+
+    return redirect('/test-upload-simple')->with('error', '❌ Aucun fichier');
 });
