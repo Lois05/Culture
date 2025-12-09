@@ -16,4 +16,3 @@ class TypeMediaSeeder extends Seeder
         ]);
     }
 }
-

@@ -4,211 +4,188 @@
 @section('page-title', 'Créer un Contenu')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
-                <div class="card shadow-lg border-0 rounded-3">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-                        <h4 class="mb-0 fw-bold">
-                            <i class="bi bi-plus-circle me-2"></i> Créer un Nouveau Contenu
-                        </h4>
-                        <a href="{{ route('contenus.index') }}" class="btn btn-light btn-sm shadow-sm">
-                            <i class="bi bi-arrow-left me-1"></i> Retour
-                        </a>
-                    </div>
-                    <div class="card-body p-4">
-                        <form action="{{ route('contenus.store') }}" method="POST" enctype="multipart/form-data"
-                              id="createForm" onsubmit="return validateForm()">
-                            @csrf
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="bi bi-plus-circle me-2"></i> Créer un Nouveau Contenu
+                    </h4>
+                    <a href="{{ route('contenus.index') }}" class="btn btn-light btn-sm shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Retour
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ route('contenus.store') }}" method="POST" enctype="multipart/form-data" id="createForm">
+                        @csrf
 
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <!-- Informations de base -->
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informations du contenu</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Informations de base -->
+                                <div class="card mb-4">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informations du contenu</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Titre <span class="text-danger">*</span></label>
+                                            <input type="text" name="titre" class="form-control @error('titre') is-invalid @enderror" value="{{ old('titre') }}" required placeholder="Entrez le titre du contenu">
+                                            @error('titre')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Titre <span class="text-danger">*</span></label>
-                                                <input type="text" name="titre"
-                                                    class="form-control @error('titre') is-invalid @enderror"
-                                                    value="{{ old('titre') }}" required
-                                                    placeholder="Entrez le titre du contenu">
-                                                @error('titre')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
 
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Description</label>
-                                                <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="3"
-                                                    placeholder="Brève description du contenu">{{ old('description') }}</textarea>
-                                                @error('description')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Description</label>
+                                            <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="3" placeholder="Brève description du contenu">{{ old('description') }}</textarea>
+                                            @error('description')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Contenu détaillé <span class="text-danger">*</span></label>
-                                                <textarea name="texte" class="form-control @error('texte') is-invalid @enderror" rows="8" required
-                                                    placeholder="Contenu détaillé...">{{ old('texte') }}</textarea>
-                                                @error('texte')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Contenu détaillé <span class="text-danger">*</span></label>
+                                            <textarea name="texte" class="form-control @error('texte') is-invalid @enderror" rows="8" required placeholder="Contenu détaillé...">{{ old('texte') }}</textarea>
+                                            @error('texte')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <!-- Métadonnées -->
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Classification</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Type de contenu <span class="text-danger">*</span></label>
-                                                <select name="id_type_contenu"
-                                                    class="form-select @error('id_type_contenu') is-invalid @enderror" required>
-                                                    <option value="">Sélectionnez un type</option>
-                                                    @foreach ($typesContenu as $type)
-                                                        <option value="{{ $type->id_type_contenu }}"
-                                                            {{ old('id_type_contenu') == $type->id_type_contenu ? 'selected' : '' }}>
-                                                            {{ $type->nom_contenu }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('id_type_contenu')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Région <span class="text-danger">*</span></label>
-                                                <select name="id_region"
-                                                    class="form-select @error('id_region') is-invalid @enderror" required>
-                                                    <option value="">Sélectionnez une région</option>
-                                                    @foreach ($regions as $region)
-                                                        <option value="{{ $region->id_region }}"
-                                                            {{ old('id_region') == $region->id_region ? 'selected' : '' }}>
-                                                            {{ $region->nom_region }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('id_region')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Langue <span class="text-danger">*</span></label>
-                                                <select name="id_langue"
-                                                    class="form-select @error('id_langue') is-invalid @enderror" required>
-                                                    <option value="">Sélectionnez une langue</option>
-                                                    @foreach ($langues as $langue)
-                                                        <option value="{{ $langue->id_langue }}"
-                                                            {{ old('id_langue') == $langue->id_langue ? 'selected' : '' }}>
-                                                            {{ $langue->nom_langue }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('id_langue')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            @if (auth()->user()->isAdmin() || auth()->user()->isModerator())
-                                                <div class="mb-3">
-                                                    <label class="form-label fw-bold">Statut</label>
-                                                    <select name="statut"
-                                                        class="form-select @error('statut') is-invalid @enderror">
-                                                        <option value="en attente" {{ old('statut') == 'en attente' ? 'selected' : '' }}>
-                                                            En attente
-                                                        </option>
-                                                        <option value="validé" {{ old('statut') == 'validé' ? 'selected' : '' }}>
-                                                            Validé
-                                                        </option>
-                                                        <option value="rejeté" {{ old('statut') == 'rejeté' ? 'selected' : '' }}>
-                                                            Rejeté
-                                                        </option>
-                                                    </select>
-                                                    @error('statut')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            @else
-                                                <input type="hidden" name="statut" value="en attente">
-                                            @endif
-                                        </div>
+                            <div class="col-md-4">
+                                <!-- Métadonnées -->
+                                <div class="card mb-4">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Classification</h5>
                                     </div>
-
-                                    <!-- Fichier média -->
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up me-2"></i>Fichier Média</h5>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Type de contenu <span class="text-danger">*</span></label>
+                                            <select name="id_type_contenu" class="form-select @error('id_type_contenu') is-invalid @enderror" required>
+                                                <option value="">Sélectionnez un type</option>
+                                                @foreach ($typesContenu as $type)
+                                                    <option value="{{ $type->id_type_contenu }}" {{ old('id_type_contenu') == $type->id_type_contenu ? 'selected' : '' }}>
+                                                        {{ $type->nom_contenu }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('id_type_contenu')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
-                                        <div class="card-body">
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Région <span class="text-danger">*</span></label>
+                                            <select name="id_region" class="form-select @error('id_region') is-invalid @enderror" required>
+                                                <option value="">Sélectionnez une région</option>
+                                                @foreach ($regions as $region)
+                                                    <option value="{{ $region->id_region }}" {{ old('id_region') == $region->id_region ? 'selected' : '' }}>
+                                                        {{ $region->nom_region }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('id_region')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Langue <span class="text-danger">*</span></label>
+                                            <select name="id_langue" class="form-select @error('id_langue') is-invalid @enderror" required>
+                                                <option value="">Sélectionnez une langue</option>
+                                                @foreach ($langues as $langue)
+                                                    <option value="{{ $langue->id_langue }}" {{ old('id_langue') == $langue->id_langue ? 'selected' : '' }}>
+                                                        {{ $langue->nom_langue }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('id_langue')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        @if (auth()->user()->isAdmin() || auth()->user()->isModerator())
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Fichier média <span class="text-danger">*</span></label>
-                                                <input type="file" name="media_file" id="media_file"
-                                                    class="form-control @error('media_file') is-invalid @enderror"
-                                                    accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.mp4,.avi,.mov,.wmv,.flv,.mkv,.webm,.mpg,.mpeg,.3gp,.mp3,.wav,.ogg,.aac,.flac,.m4a,.wma"
-                                                    required>
-                                                @error('media_file')
+                                                <label class="form-label fw-bold">Statut</label>
+                                                <select name="statut" class="form-select @error('statut') is-invalid @enderror">
+                                                    <option value="en attente" {{ old('statut') == 'en attente' ? 'selected' : '' }}>En attente</option>
+                                                    <option value="validé" {{ old('statut') == 'validé' ? 'selected' : '' }}>Validé</option>
+                                                    <option value="rejeté" {{ old('statut') == 'rejeté' ? 'selected' : '' }}>Rejeté</option>
+                                                </select>
+                                                @error('statut')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
-
-                                                <div class="form-text mt-2">
-                                                    <strong>Formats acceptés :</strong><br>
-                                                    • <strong>Images</strong>: JPG, JPEG, PNG, GIF, WebP, BMP, SVG<br>
-                                                    • <strong>Vidéos</strong>: MP4, AVI, MOV, WMV, FLV, MKV, WebM, MPG, MPEG, 3GP<br>
-                                                    • <strong>Audio</strong>: MP3, WAV, OGG, AAC, FLAC, M4A, WMA<br>
-                                                    <strong>⚠️ Taille maximale : 100MB</strong>
-                                                </div>
                                             </div>
+                                        @else
+                                            <input type="hidden" name="statut" value="en attente">
+                                        @endif
+                                    </div>
+                                </div>
 
-                                            <div class="mb-3">
-                                                <label class="form-label">Description du média (optionnel)</label>
-                                                <textarea name="media_description" class="form-control" rows="2"
-                                                    placeholder="Description du fichier...">{{ old('media_description') }}</textarea>
+                                <!-- Fichier média -->
+                                <div class="card mb-4">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up me-2"></i>Fichier Média</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Fichier média <span class="text-danger">*</span></label>
+                                            <input type="file" name="media_file" id="media_file" class="form-control @error('media_file') is-invalid @enderror" required>
+                                            @error('media_file')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+
+                                            <div class="form-text mt-2">
+                                                <strong>Formats acceptés :</strong><br>
+                                                • Images: JPG, JPEG, PNG, GIF<br>
+                                                • Vidéos: MP4, AVI, MOV<br>
+                                                • Audio: MP3, WAV<br>
+                                                <strong>⚠️ Taille maximale : 100MB</strong>
                                             </div>
+                                        </div>
 
-                                            <!-- Aperçu du fichier -->
-                                            <div id="filePreview" class="mt-3" style="display: none;">
-                                                <div class="alert alert-info p-2">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="bi bi-file-earmark me-2"></i>
-                                                        <div>
-                                                            <strong id="fileName"></strong><br>
-                                                            <small id="fileInfo"></small>
-                                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description du média (optionnel)</label>
+                                            <textarea name="media_description" class="form-control" rows="2" placeholder="Description du fichier...">{{ old('media_description') }}</textarea>
+                                        </div>
+
+                                        <!-- Aperçu -->
+                                        <div id="filePreview" class="mt-3" style="display: none;">
+                                            <div class="alert alert-info p-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark me-2"></i>
+                                                    <div>
+                                                        <strong id="fileName"></strong><br>
+                                                        <small id="fileInfo"></small>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <!-- Aperçu vidéo/audio -->
-                                            <div id="mediaPreview" class="mt-3" style="display: none;"></div>
                                         </div>
+
+                                        <!-- Aperçu média -->
+                                        <div id="mediaPreview" class="mt-3" style="display: none;"></div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="d-flex gap-3 justify-content-end pt-4 border-top">
-                                <a href="{{ route('contenus.index') }}" class="btn btn-secondary btn-lg px-4">
-                                    <i class="bi bi-x-circle me-2"></i> Annuler
-                                </a>
-                                <button type="submit" class="btn btn-primary btn-lg px-4 shadow" id="submitBtn">
-                                    <i class="bi bi-check-circle me-2"></i> Créer le contenu
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="d-flex gap-3 justify-content-end pt-4 border-top">
+                            <a href="{{ route('contenus.index') }}" class="btn btn-secondary btn-lg px-4">
+                                <i class="bi bi-x-circle me-2"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4 shadow" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i> Créer le contenu
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -220,17 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('createForm');
 
-    // Configuration des types acceptés
-    const videoTypes = ['video/mp4', 'video/avi', 'video/x-msvideo', 'video/quicktime',
-                       'video/x-ms-wmv', 'video/x-flv', 'video/x-matroska', 'video/webm',
-                       'video/mpeg', 'video/3gpp'];
-
-    const audioTypes = ['audio/mpeg', 'audio/x-wav', 'audio/wav', 'audio/ogg',
-                       'audio/aac', 'audio/flac', 'audio/x-m4a', 'audio/x-ms-wma'];
-
-    const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp',
-                       'image/bmp', 'image/svg+xml'];
-
     // Gestion du changement de fichier
     mediaFileInput.addEventListener('change', function(e) {
         if (this.files && this.files[0]) {
@@ -239,8 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Mettre à jour l'aperçu texte
             document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileInfo').textContent =
-                `${fileSizeMB} MB • ${file.type || 'Type inconnu'}`;
+            document.getElementById('fileInfo').textContent = fileSizeMB + ' MB • ' + (file.type || 'Type inconnu');
             filePreview.style.display = 'block';
 
             // Effacer l'ancien aperçu média
@@ -250,10 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Créer un aperçu selon le type
             const url = URL.createObjectURL(file);
 
-            if (file.type.startsWith('video/') ||
-                ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'mpg', 'mpeg', '3gp']
-                .includes(file.name.split('.').pop().toLowerCase())) {
-
+            if (file.type.startsWith('video/')) {
                 // Aperçu vidéo
                 const video = document.createElement('video');
                 video.src = url;
@@ -261,15 +223,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 video.style.width = '100%';
                 video.style.maxHeight = '200px';
                 video.style.borderRadius = '5px';
-                video.style.backgroundColor = '#000';
 
                 mediaPreview.appendChild(video);
                 mediaPreview.style.display = 'block';
 
-            } else if (file.type.startsWith('audio/') ||
-                      ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'wma']
-                      .includes(file.name.split('.').pop().toLowerCase())) {
-
+            } else if (file.type.startsWith('audio/')) {
                 // Aperçu audio
                 const audio = document.createElement('audio');
                 audio.src = url;
@@ -291,12 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 mediaPreview.appendChild(img);
                 mediaPreview.style.display = 'block';
             }
-
-            console.log('Fichier sélectionné:', {
-                name: file.name,
-                size: fileSizeMB + 'MB',
-                type: file.type
-            });
         } else {
             filePreview.style.display = 'none';
             mediaPreview.style.display = 'none';
@@ -304,97 +256,47 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Validation du formulaire
-    function validateForm() {
+    form.addEventListener('submit', function(e) {
         const titre = document.querySelector('input[name="titre"]').value.trim();
         const texte = document.querySelector('textarea[name="texte"]').value.trim();
         const idTypeContenu = document.querySelector('select[name="id_type_contenu"]').value;
         const idRegion = document.querySelector('select[name="id_region"]').value;
         const idLangue = document.querySelector('select[name="id_langue"]').value;
-        const mediaFile = document.getElementById('media_file').files[0];
+        const mediaFile = mediaFileInput.files[0];
 
         // Validation des champs requis
-        if (!titre) {
-            alert('❌ Le titre est requis');
-            return false;
-        }
+        let errors = [];
 
-        if (!texte) {
-            alert('❌ Le contenu détaillé est requis');
-            return false;
-        }
+        if (!titre) errors.push('Le titre est requis');
+        if (!texte) errors.push('Le contenu détaillé est requis');
+        if (!idTypeContenu) errors.push('Le type de contenu est requis');
+        if (!idRegion) errors.push('La région est requise');
+        if (!idLangue) errors.push('La langue est requise');
+        if (!mediaFile) errors.push('Un fichier média est requis');
 
-        if (!idTypeContenu) {
-            alert('❌ Le type de contenu est requis');
-            return false;
-        }
-
-        if (!idRegion) {
-            alert('❌ La région est requise');
-            return false;
-        }
-
-        if (!idLangue) {
-            alert('❌ La langue est requise');
-            return false;
-        }
-
-        // Validation du fichier
-        if (!mediaFile) {
-            alert('❌ Un fichier média est requis');
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('❌ Erreurs :\n' + errors.join('\n'));
             return false;
         }
 
         // Vérifier la taille (100MB max)
-        const maxSize = 100 * 1024 * 1024; // 100MB en bytes
+        const maxSize = 100 * 1024 * 1024;
         if (mediaFile.size > maxSize) {
-            alert(`❌ Fichier trop volumineux (${(mediaFile.size/1024/1024).toFixed(2)}MB). Maximum: 100MB`);
+            e.preventDefault();
+            alert('❌ Fichier trop volumineux (' + (mediaFile.size/1024/1024).toFixed(2) + 'MB). Maximum: 100MB');
             return false;
-        }
-
-        // Vérifier le type de fichier
-        const allowedTypes = [...videoTypes, ...audioTypes, ...imageTypes];
-        if (!allowedTypes.includes(mediaFile.type)) {
-            // Vérifier aussi par extension
-            const extension = mediaFile.name.split('.').pop().toLowerCase();
-            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg',
-                                     'mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'mpg', 'mpeg', '3gp',
-                                     'mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'wma'];
-
-            if (!allowedExtensions.includes(extension)) {
-                alert(`❌ Type de fichier non supporté: ${mediaFile.type || extension}`);
-                return false;
-            }
         }
 
         // Afficher l'indicateur de chargement
         submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Création en cours...';
         submitBtn.disabled = true;
-
-        return true;
-    }
-
-    // Attacher la validation au formulaire
-    form.onsubmit = validateForm;
+    });
 });
+
+// Style pour le spinner
+var style = document.createElement('style');
+style.textContent = '.spinner { animation: spin 1s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
 </script>
-
-<style>
-.spinner {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-#mediaPreview video, #mediaPreview audio {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-
-#mediaPreview img {
-    border: 1px solid #dee2e6;
-}
-</style>
 @endsection

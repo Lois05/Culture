@@ -2,23 +2,28 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Langue;
+use Illuminate\Support\Facades\DB;
 
 class LangueSeeder extends Seeder
 {
     public function run(): void
     {
         $langues = [
-            ['nom_langue' => 'Français', 'code_langue' => 'fr', 'description' => 'Langue française'],
-            ['nom_langue' => 'Anglais', 'code_langue' => 'en', 'description' => 'Langue anglaise'],
-            ['nom_langue' => 'Espagnol', 'code_langue' => 'es', 'description' => 'Langue espagnole'],
-            ['nom_langue' => 'Allemand', 'code_langue' => 'de', 'description' => 'Langue allemande'],
+            ['nom_langue' => 'Fon', 'code_langue' => 'fon', 'description' => 'Langue majoritaire du Sud-Bénin'],
+            ['nom_langue' => 'Yoruba', 'code_langue' => 'yor', 'description' => 'Langue parlée au Sud-Est du Bénin'],
+            ['nom_langue' => 'Goun', 'code_langue' => 'guw', 'description' => 'Langue parlée dans le département de l\'Ouémé'],
+            ['nom_langue' => 'Dendi', 'code_langue' => 'ddn', 'description' => 'Langue parlée au Nord-Bénin'],
+            ['nom_langue' => 'Bariba', 'code_langue' => 'bba', 'description' => 'Langue principale du Borgou'],
+            ['nom_langue' => 'Français', 'code_langue' => 'fr', 'description' => 'Langue officielle du Bénin'],
+            ['nom_langue' => 'Adja', 'code_langue' => 'ajg', 'description' => 'Langue parlée dans le Mono et le Couffo'],
+            ['nom_langue' => 'Yom', 'code_langue' => 'pil', 'description' => 'Langue parlée dans l\'Atacora'],
+            ['nom_langue' => 'Ditammari', 'code_langue' => 'tbz', 'description' => 'Langue parlée dans l\'Atacora'],
+            ['nom_langue' => 'Mina', 'code_langue' => 'gej', 'description' => 'Langue parlée dans le littoral'],
         ];
 
         foreach ($langues as $langue) {
-            Langue::create($langue);
+            DB::table('langues')->insert($langue);
         }
     }
 }
