@@ -385,7 +385,7 @@
                     </div>
                     <h4 class="text-muted mb-3">Aucun contenu populaire pour le moment</h4>
                     <p class="text-muted mb-4">Soyez le premier à contribuer !</p>
-                    <a href="{{ route('front.contribuer') }}" class="btn btn-primary-custom">
+                    <a href="{{ route('dashboard.contribuer') }}" class="btn btn-primary-custom">
                         <i class="bi bi-plus-circle me-2"></i>Ajouter un contenu
                     </a>
                 </div>
