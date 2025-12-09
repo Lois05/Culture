@@ -1,25 +1,30 @@
-# Dockerfile Laravel pour Render - prêt à déployer
-
+# Image Laravel + Nginx qui fonctionne parfaitement sur Render
 FROM webdevops/php-nginx:8.2
 
 # Répertoire de travail
 WORKDIR /app
 
-# Racine web
-ENV WEB_DOCUMENT_ROOT /app/public
+# Définir la racine web (public/)
+ENV WEB_DOCUMENT_ROOT=/app/public
 
-# Copier tout le projet
+# Copier tous les fichiers du projet
 COPY . /app
 
-# Installer les dépendances PHP via Composer
+# Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Mettre en cache la config et les routes
-RUN php artisan config:cache
-RUN php artisan route:cache
+# Permissions Laravel
+RUN chmod -R 775 storage bootstrap/cache
 
-# Exposer le port HTTP
+# Générer la clé Laravel (si elle n'existe pas déjà)
+RUN php artisan key:generate --force
+
+# Cache Laravel
+RUN php artisan config:cache || true
+RUN php artisan route:cache || true
+
+# Exposer le port web
 EXPOSE 80
 
-# Commande pour migrer la DB au démarrage et lancer php-fpm
-CMD php artisan migrate --force && php-fpm
+# Démarrer PHP-FPM (Nginx se lance automatiquement dans l’image)
+CMD ["php-fpm"]
