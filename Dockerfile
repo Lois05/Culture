@@ -1,29 +1,36 @@
-# Dockerfile avec SQLite - Ça va MARCHER
+# Dockerfile Laravel - SANS sqlite, SANS erreur
 FROM php:8.2-alpine
 
 WORKDIR /var/www/html
 
-RUN apk add --no-cache curl sqlite \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite \
+# Installer seulement pdo_mysql, PAS sqlite
+RUN apk add --no-cache curl \
+    && docker-php-ext-install pdo pdo_mysql \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . .
 
-# FORCER SQLite - Pas besoin de variables d'environnement
-RUN composer install --no-dev --optimize-autoloader --no-scripts \
-    && cp .env.example .env \
-    # REMPLACER MySQL par SQLite
-    && sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env \
-    && sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env \
-    && sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env \
-    && sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/database.sqlite/' .env \
-    && sed -i 's/DB_USERNAME=.*/DB_USERNAME=/' .env \
-    && sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=/' .env \
-    && touch database/database.sqlite \
+# Installer Laravel
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Configurer Laravel avec MySQL FORCÉ dans .env
+RUN cp .env.example .env \
+    # FORCER MySQL configuration
+    && echo "" >> .env \
+    && echo "# ========== FORCED CONFIGURATION ==========" >> .env \
+    && echo "DB_CONNECTION=mysql" >> .env \
+    && echo "DB_HOST=turntable.proxy.rlwy.net" >> .env \
+    && echo "DB_PORT=23482" >> .env \
+    && echo "DB_DATABASE=railway" >> .env \
+    && echo "DB_USERNAME=root" >> .env \
+    && echo "DB_PASSWORD=XsCCYyzyImuyXlZdNOhCFYDiBRqvZlXv" >> .env \
+    && echo "APP_ENV=production" >> .env \
+    && echo "APP_DEBUG=true" >> .env \
+    && echo "APP_URL=https://culture-production-38e2.up.railway.app" >> .env \
+    # Laravel setup
     && php artisan key:generate --force \
     && mkdir -p storage/framework/{sessions,views,cache} \
-    && chmod -R 775 storage bootstrap/cache \
-    && php artisan migrate --force
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
 
