@@ -1,8 +1,19 @@
 # Image Laravel + Nginx qui fonctionne parfaitement sur Render
 FROM webdevops/php-nginx:8.2
 
-# Répertoire de travail
-WORKDIR /app
+# Installer les dépendances système
+RUN apk add --no-cache \
+    curl \
+    git \
+    zip \
+    unzip \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    postgresql-dev
 
 # Définir la racine web (public/)
 ENV WEB_DOCUMENT_ROOT=/app/public
