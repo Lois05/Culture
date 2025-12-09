@@ -1,5 +1,5 @@
 # Image Laravel + Nginx qui fonctionne parfaitement sur Render
-FROM php:8.2-apache
+FROM webdevops/php-nginx:8.2
 
 # Installer les dépendances système
 RUN apk add --no-cache \
@@ -38,4 +38,5 @@ RUN php artisan route:cache || true
 EXPOSE 80
 
 # Démarrer PHP-FPM (Nginx se lance automatiquement dans l’image)
-CMD ["php-fpm"]
+CMD php artisan migrate --force && supervisord -c /opt/docker/etc/supervisor.conf
+
