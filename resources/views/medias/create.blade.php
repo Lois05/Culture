@@ -5,37 +5,37 @@
     <div class="container mt-4">
         <div class="card shadow-lg border-0">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-image"></i> Ajouter une Image au Contenu</h4>
+                <h4 class="mb-0"><i class="bi bi-image"></i> Ajouter un Média</h4>
             </div>
 
             <div class="card-body">
                 <form action="{{ route('medias.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <!-- SECTION UPLOAD - CHOISIR UNE IMAGE DEPUIS L'ORDINATEUR -->
+                    <!-- SECTION UPLOAD -->
                     <div class="upload-section mb-4">
-                        <label class="form-label fw-bold h5">📷 Choisir une image :</label>
+                        <label class="form-label fw-bold h5">📷 Choisir un fichier :</label>
 
                         <div class="file-upload-area p-4 text-center">
                             <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                            <p class="text-muted">Glissez-déposez votre image ici ou cliquez pour parcourir</p>
+                            <p class="text-muted">Glissez-déposez votre fichier ici ou cliquez pour parcourir</p>
                             <input type="file" class="form-control d-none" name="media_file" id="mediaFile"
-                                   accept="image/*" required>
+                                   accept="image/*,video/*,audio/*" required>
                             <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('mediaFile').click()">
                                 <i class="bi bi-folder2-open"></i> Parcourir mes fichiers
                             </button>
                             <div class="form-text mt-2">
-                                Formats supportés : JPG, JPEG, PNG, GIF • Max 5MB
+                                Formats: Images (JPG, PNG, GIF), Vidéos (MP4, AVI, MOV), Audio (MP3, WAV) • Max 100MB
                             </div>
                         </div>
 
-                        <!-- APERÇU DE L'IMAGE SÉLECTIONNÉE -->
+                        <!-- APERÇU -->
                         <div id="imagePreview" class="mt-4 text-center" style="display: none;">
-                            <h6>Aperçu de l'image :</h6>
+                            <h6>Aperçu :</h6>
                             <div class="preview-container position-relative d-inline-block">
                                 <img id="preview" class="img-thumbnail shadow" style="max-height: 300px; max-width: 100%;">
                                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
-                                        onclick="clearImage()" title="Changer d'image">
+                                        onclick="clearFile()" title="Changer de fichier">
                                     <i class="bi bi-x"></i>
                                 </button>
                             </div>
@@ -63,7 +63,7 @@
                                 <select name="id_type_media" class="form-select" required>
                                     <option value="">Sélectionner un type...</option>
                                     @foreach($types as $type)
-                                        <option value="{{ $type->id_type_media }}">{{ $type->nom_media }}</option>
+                                        <option value="{{ $type->id_type_media }}">{{ $type->nom_type_media }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -73,7 +73,7 @@
                     <div class="mb-3">
                         <label class="form-label">Description (optionnelle) :</label>
                         <textarea class="form-control" name="description" rows="3"
-                                  placeholder="Décrivez brièvement cette image..."></textarea>
+                                  placeholder="Décrivez brièvement ce média..."></textarea>
                     </div>
 
                     <!-- BOUTONS -->
@@ -82,7 +82,7 @@
                             <i class="bi bi-arrow-left"></i> Retour à la liste
                         </a>
                         <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-circle"></i> Ajouter l'image au contenu
+                            <i class="bi bi-check-circle"></i> Ajouter le média
                         </button>
                     </div>
                 </form>
@@ -135,31 +135,35 @@ fileInput.addEventListener('change', function(e) {
 
 // Gérer la sélection de fichier
 function handleFileSelection(file) {
-    if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
+    if (file) {
+        imagePreview.style.display = 'block';
 
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            imagePreview.style.display = 'block';
+        // Afficher les infos du fichier
+        fileInfo.innerHTML = `
+            <strong>${file.name}</strong><br>
+            Taille: ${formatFileSize(file.size)} • Type: ${file.type}
+        `;
 
-            // Afficher les infos du fichier
-            fileInfo.innerHTML = `
-                <strong>${file.name}</strong><br>
-                Taille: ${formatFileSize(file.size)} • Type: ${file.type}
-            `;
+        // Aperçu pour les images
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            fileInfo.innerHTML += '<br><small>(Aperçu non disponible pour ce type de fichier)</small>';
         }
-
-        reader.readAsDataURL(file);
-    } else {
-        alert('Veuillez sélectionner une image valide (JPG, PNG, GIF)');
-        fileInput.value = '';
     }
 }
 
-// Effacer l'image sélectionnée
-function clearImage() {
+// Effacer le fichier sélectionné
+function clearFile() {
     fileInput.value = '';
     imagePreview.style.display = 'none';
+    preview.style.display = 'none';
     fileInfo.innerHTML = '';
 }
 
@@ -171,19 +175,6 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
-
-// Feedback visuel pour la zone d'upload
-document.querySelectorAll('.file-upload-area').forEach(area => {
-    area.addEventListener('mouseenter', function() {
-        this.style.borderColor = '#0d6efd';
-        this.style.backgroundColor = '#f8f9fa';
-    });
-
-    area.addEventListener('mouseleave', function() {
-        this.style.borderColor = '#dee2e6';
-        this.style.backgroundColor = '';
-    });
-});
 </script>
 
 <style>
@@ -208,14 +199,6 @@ document.querySelectorAll('.file-upload-area').forEach(area => {
 .preview-container {
     border-radius: 10px;
     overflow: hidden;
-}
-
-.preview-container img {
-    transition: transform 0.3s ease;
-}
-
-.preview-container:hover img {
-    transform: scale(1.02);
 }
 
 .btn-success {

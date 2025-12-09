@@ -11,12 +11,12 @@
                     <h4 class="mb-0 fw-bold">
                         <i class="bi bi-pencil-square me-2"></i> Modifier le Média
                     </h4>
-                    <a href="{{ route('admin.medias.index') }}" class="btn btn-light btn-sm">
+                    <a href="{{ route('medias.index') }}" class="btn btn-light btn-sm">
                         <i class="bi bi-arrow-left me-1"></i> Retour
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ route('admin.medias.update', $media->id_media) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('medias.update', $media->id_media) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -29,9 +29,9 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
-                                            <label class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                                            <label class="form-label fw-bold">Description</label>
                                             <textarea name="description" class="form-control @error('description') is-invalid @enderror"
-                                                      rows="4" required placeholder="Description du média...">{{ old('description', $media->description) }}</textarea>
+                                                      rows="4" placeholder="Description du média...">{{ old('description', $media->description) }}</textarea>
                                             @error('description')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -44,7 +44,7 @@
                                                 @foreach($typesMedia as $type)
                                                     <option value="{{ $type->id_type_media }}"
                                                         {{ old('id_type_media', $media->id_type_media) == $type->id_type_media ? 'selected' : '' }}>
-                                                        {{ $type->nom_media }}
+                                                        {{ $type->nom_type_media }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -60,7 +60,7 @@
                                                 @foreach($contenus as $contenu)
                                                     <option value="{{ $contenu->id_contenu }}"
                                                         {{ old('id_contenu', $media->id_contenu) == $contenu->id_contenu ? 'selected' : '' }}>
-                                                        {{ $contenu->titre }} (ID: {{ $contenu->id_contenu }})
+                                                        {{ $contenu->titre }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -80,7 +80,7 @@
                                     </div>
                                     <div class="card-body text-center">
                                         @if($media->id_type_media == 1) {{-- Image --}}
-                                            <img src="{{ asset('storage/' . $media->chemin) }}"
+                                            <img src="{{ asset('adminlte/img/' . $media->chemin) }}"
                                                  class="img-fluid rounded border mb-3"
                                                  style="max-height: 150px; object-fit: cover;"
                                                  alt="Image actuelle"
@@ -89,29 +89,27 @@
                                                  style="width: 150px; height: 100px; display: none;">
                                                 <i class="bi bi-image text-muted fs-1"></i>
                                             </div>
-                                            <p class="text-muted mt-2">Image actuelle</p>
                                         @elseif($media->id_type_media == 2) {{-- Vidéo --}}
                                             <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
                                                  style="width: 150px; height: 100px;">
                                                 <i class="bi bi-play-circle text-primary fs-1"></i>
                                             </div>
-                                            <p class="text-muted mt-2">Vidéo actuelle</p>
+                                            <p class="text-muted mt-2">Vidéo</p>
                                         @elseif($media->id_type_media == 3) {{-- Audio --}}
                                             <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
                                                  style="width: 150px; height: 100px;">
                                                 <i class="bi bi-music-note text-success fs-1"></i>
                                             </div>
-                                            <p class="text-muted mt-2">Audio actuel</p>
+                                            <p class="text-muted mt-2">Audio</p>
                                         @else
                                             <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
                                                  style="width: 150px; height: 100px;">
                                                 <i class="bi bi-file-earmark text-secondary fs-1"></i>
                                             </div>
-                                            <p class="text-muted mt-2">Fichier actuel</p>
                                         @endif
 
                                         <div class="mt-3">
-                                            <small class="text-muted">Chemin: {{ $media->chemin }}</small>
+                                            <small class="text-muted">{{ $media->chemin }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -131,7 +129,7 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                             <div class="form-text">
-                                                Formats acceptés: Images (JPG, PNG, GIF, WebP), Vidéos (MP4, AVI, MOV, MKV, WebM), Audio (MP3, WAV, OGG, AAC)
+                                                Formats: Images, Vidéos, Audio (100MB max)
                                             </div>
                                         </div>
 
@@ -145,7 +143,7 @@
                         </div>
 
                         <div class="d-flex gap-3 justify-content-end pt-4">
-                            <a href="{{ route('admin.medias.index') }}" class="btn btn-secondary btn-lg px-4">
+                            <a href="{{ route('medias.index') }}" class="btn btn-secondary btn-lg px-4">
                                 <i class="bi bi-x-circle me-2"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-4 shadow">
@@ -158,31 +156,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Aperçu du fichier sélectionné
-    const fileInput = document.querySelector('input[name="media_file"]');
-    fileInput.addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
-
-            // Afficher un message d'information
-            if (!document.getElementById('fileInfo')) {
-                const fileInfo = document.createElement('div');
-                fileInfo.id = 'fileInfo';
-                fileInfo.className = 'alert alert-info mt-2';
-                fileInfo.innerHTML = `
-                    <strong>Nouveau fichier sélectionné:</strong><br>
-                    <small>Nom: ${file.name}<br>Taille: ${fileSizeMB} MB<br>Type: ${file.type || 'Inconnu'}</small>
-                `;
-                this.parentNode.appendChild(fileInfo);
-            }
-        }
-    });
-});
-</script>
 @endsection
