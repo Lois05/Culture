@@ -1,13 +1,12 @@
-# Dockerfile Laravel Simple - PHP seul
+# Dockerfile Laravel - Sans sqlite
 FROM php:8.2-alpine
 
 WORKDIR /var/www/html
 
-# Installer extensions et Composer
+# Installer extensions et Composer (SANS sqlite)
 RUN apk add --no-cache \
     curl \
-    sqlite \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite \
+    && docker-php-ext-install pdo pdo_mysql \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . .
