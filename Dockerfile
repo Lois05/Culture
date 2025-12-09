@@ -28,9 +28,10 @@ RUN echo 'server {\n\
     }\n\
 }' > /etc/nginx/sites-available/default
 
-# Activer le site et configurer Nginx
-RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/ \
-    && echo "daemon off;" >> /etc/nginx/nginx.conf
+# Activer le site et configurer Nginx (CORRIGÉ)
+RUN rm -f /etc/nginx/sites-enabled/default && \
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/ && \
+    echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
