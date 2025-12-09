@@ -30,7 +30,7 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'chemin' => 'adminlte/img/pate-rouge.jpg',
+                'chemin' => 'adminlte/img/amiwo.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1500000,
                 'description' => 'Plat de pâte rouge traditionnel',
@@ -41,7 +41,7 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'chemin' => 'adminlte/img/danse-zinli.jpg',
+                'chemin' => 'adminlte/img/danse.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1800000,
                 'description' => 'Danse traditionnelle Zinli',
@@ -52,7 +52,7 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'chemin' => 'adminlte/img/festival-gaani.jpg',
+                'chemin' => 'adminlte/img/festi.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1900000,
                 'description' => 'Célébration du festival Gaani',
@@ -65,7 +65,7 @@ class MediaSeeder extends Seeder
 
             // Vidéos
             [
-                'chemin' => 'adminlte/img/festival-gaani.mp4',
+                'chemin' => 'adminlte/img/danseagbadja.mp4',
                 'type_fichier' => 'video/mp4',
                 'taille' => 25600000,
                 'description' => 'Reportage sur le festival Gaani',

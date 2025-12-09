@@ -2,31 +2,7 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Default Filesystem Disk
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the default filesystem disk that should be used
-    | by the framework. The "local" disk, as well as a variety of cloud
-    | based disks are available to your application for file storage.
-    |
-    */
-
-    'default' => env('FILESYSTEM_DISK', 'local'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Filesystem Disks
-    |--------------------------------------------------------------------------
-    |
-    | Below you may configure as many filesystem disks as necessary, and you
-    | may even configure multiple disks for the same driver. Examples for
-    | most supported storage drivers are configured here for reference.
-    |
-    | Supported drivers: "local", "ftp", "sftp", "s3"
-    |
-    */
+    'default' => env('FILESYSTEM_DISK', 'public'), // ← 'public' par défaut
 
     'disks' => [
 
@@ -40,18 +16,36 @@ return [
 
         'public' => [
             'driver' => 'local',
+            'root' => public_path('adminlte/img'), // ← CHANGER ICI
+            'url' => env('APP_URL') . '/adminlte/img', // ← CHANGER ICI
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+            'permissions' => [ // ← AJOUTER CES PERMISSIONS
+                'file' => [
+                    'public' => 0664,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
+        ],
+
+        // Gardez l'ancien 'public' sous un autre nom si besoin
+        'storage_public' => [
+            'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
-            'report' => false,
         ],
 
-        // Ajoutez si nécessaire pour les gros fichiers
         'videos' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/videos'),
-            'url' => env('APP_URL') . '/storage/videos',
+            'root' => public_path('adminlte/img'), // Même dossier
+            'url' => env('APP_URL') . '/adminlte/img',
             'visibility' => 'public',
         ],
 
@@ -70,19 +64,10 @@ return [
 
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Symbolic Links
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure the symbolic links that will be created when the
-    | `storage:link` Artisan command is executed. The array keys should be
-    | the locations of the links and the values should be their targets.
-    |
-    */
-
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        // Vous pouvez aussi créer un lien pour adminlte/img si vous voulez
+        public_path('adminlte') => base_path('vendor/almasaeed2010/adminlte'),
     ],
 
 ];
