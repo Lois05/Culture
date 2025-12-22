@@ -245,6 +245,47 @@ Route::get('/env-test', function() {
     }
 });
 
+// === ROUTE TEMPORAIRE POUR CORRIGER LES IMAGES ===
+Route::get('/admin/fix-images', function() {
+    // Protection simple
+    if (request()->get('token') !== 'benin2024') {
+        abort(403, 'Accès non autorisé');
+    }
+
+    $images = [
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765979252/discoverbenin_vq9mik.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765979182/fresque_s4pcmz.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765979195/mosqueeporto_hdaiki.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980140/royaumeabo_hiduap.webp',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980111/independancegraph_erzbdw.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765978489/ancientemps_dqc9bc.jpg',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980053/renaissance_js7sja.webp',
+        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980083/contemporain_qces9z.webp',
+    ];
+
+    $medias = \App\Models\Media::all();
+    $updated = 0;
+
+    foreach ($medias as $index => $media) {
+        $newUrl = $images[$index % count($images)];
+
+        $media->update([
+            'chemin' => $newUrl,
+            'cloudinary_url' => $newUrl,
+        ]);
+
+        $updated++;
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => "$updated médias mis à jour avec URLs Cloudinary",
+        'action' => 'Actualisez la page /explorer pour voir les nouvelles images'
+    ]);
+});
+
 // ========== CHARGEMENT DES AUTRES FICHIERS ==========
 require __DIR__.'/auth.php';     // Routes d'authentification Laravel (pour BACK)
 require __DIR__.'/admin.php';    // Routes administration (BACK)
