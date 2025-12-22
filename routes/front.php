@@ -8,7 +8,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\FedapayController; // <-- AJOUTER CE CONTROLLER
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\Api\InteractionController;
+use App\Http\Controllers\InteractionController;
 
 // ========== ROUTES PUBLIQUES =========
 Route::get('/', [FrontController::class, 'index'])->name('front.home');
