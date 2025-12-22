@@ -3,17 +3,26 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Role; // Assurez-vous que le modèle Role existe
 
 class RoleSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        DB::table('roles')->insert([
-            ['id' => 1, 'nom_role' => 'Administrateur'],  // IMPORTANT: ID 1 pour Admin
-            ['id' => 2, 'nom_role' => 'Modérateur'],      // ID 2 pour Modérateur
-            ['id' => 3, 'nom_role' => 'Contributeur'],    // ID 3 pour Contributeur
-            ['id' => 4, 'nom_role' => 'Lecteur'],         // ID 4 pour Lecteur
-        ]);
+        // Liste des rôles à créer
+        $roles = [
+            ['id' => 1, 'nom_role' => 'Administrateur'],
+            ['id' => 2, 'nom_role' => 'Modérateur'],
+            ['id' => 3, 'nom_role' => 'Contributeur'],
+            ['id' => 4, 'nom_role' => 'Lecteur'],
+        ];
+
+        foreach ($roles as $roleData) {
+            // updateOrCreate : Met à jour le nom si l'ID existe, sinon crée le rôle
+            Role::updateOrCreate(
+                ['id' => $roleData['id']], // Condition de recherche (par ID)
+                ['nom_role' => $roleData['nom_role']] // Données à insérer/mettre à jour
+            );
+        }
     }
 }
