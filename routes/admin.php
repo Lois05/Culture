@@ -86,10 +86,9 @@ Route::middleware(['auth'])->group(function () {
     // Profil de l'utilisateur connecté
     Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.show');
     Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
-    Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
-
+    Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('admin.profile.update');
     // Profils d'autres utilisateurs (admin seulement)
-    Route::get('/users/{user}/profile', [UserController::class, 'show'])->name('users.show');
+Route::get('/users/{user}/profile', [UserController::class, 'showProfileDetails'])->name('users.profile');
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 
     // Mot de passe
