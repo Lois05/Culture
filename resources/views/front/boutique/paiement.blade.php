@@ -1,489 +1,396 @@
 @extends('layouts.layout_front')
 
-@section('title', 'Paiement - Bénin Culture')
+@section('title', 'Paiement sécurisé - Bénin Culture')
 
 @push('styles')
 <style>
     :root {
-        --primary: #667eea;
-        --primary-dark: #5a67d8;
-        --secondary: #f093fb;
-        --success: #43e97b;
-        --warning: #ffd166;
-        --danger: #f5576c;
-        --dark: #2d3748;
-        --light: #f8f9fa;
+        --benin-red: #E8112D;
+        --benin-yellow: #FCD116;
+        --benin-green: #008751;
+        --benin-dark: #1A1A2E;
+        --mtn-yellow: #FFD100;
+        --moov-orange: #FF6B00;
     }
 
-    .paiement-container {
+    .paiement-page {
         min-height: 100vh;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 80px 0 40px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        padding: 100px 0 50px;
     }
 
-    /* Header de paiement */
-    .payment-header {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    /* Header */
+    .paiement-header {
+        background: linear-gradient(135deg, var(--benin-dark), var(--benin-red));
         color: white;
-        padding: 2rem;
-        border-radius: 20px 20px 0 0;
+        padding: 3rem 0;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 3rem;
         position: relative;
         overflow: hidden;
     }
 
-    .payment-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-    }
-
-    /* Cartes */
+    /* Carte principale */
     .payment-card {
         background: white;
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+        border: 1px solid #e9ecef;
     }
 
-    /* Récapitulatif */
-    .recap-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 1rem 0;
-        border-bottom: 1px solid #e9ecef;
+    .payment-summary {
+        background: linear-gradient(135deg, var(--benin-green), #00a86b);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
     }
 
-    .recap-item.total {
-        border-top: 2px solid var(--primary);
-        border-bottom: none;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: var(--primary);
+    /* Opérateurs */
+    .operator-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
     }
 
-    /* Formulaires */
-    .form-payment .form-control {
-        border-radius: 10px;
-        padding: 0.8rem 1rem;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-
-    .form-payment .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    /* Méthodes de paiement */
-    .payment-method {
-        background: #f8f9fa;
+    .operator-card {
+        background: white;
         border: 2px solid #e9ecef;
         border-radius: 15px;
         padding: 1.5rem;
-        margin-bottom: 1rem;
         cursor: pointer;
         transition: all 0.3s ease;
+        text-align: center;
         position: relative;
     }
 
-    .payment-method:hover {
-        border-color: var(--primary);
-        background: rgba(102, 126, 234, 0.05);
+    .operator-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
     }
 
-    .payment-method.selected {
-        border-color: var(--primary);
-        background: rgba(102, 126, 234, 0.1);
-    }
-
-    .payment-method.selected::before {
-        content: '✓';
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        width: 25px;
-        height: 25px;
-        background: var(--primary);
+    .operator-card.selected {
+        border-color: transparent;
         color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    }
+
+    .operator-card.mtn.selected {
+        background: linear-gradient(135deg, var(--mtn-yellow), #FFA500);
+        box-shadow: 0 10px 20px rgba(255, 209, 0, 0.2);
+    }
+
+    .operator-card.moov.selected {
+        background: linear-gradient(135deg, var(--moov-orange), #FF8C00);
+        box-shadow: 0 10px 20px rgba(255, 107, 0, 0.2);
+    }
+
+    /* Formulaire téléphone */
+    .phone-form-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .phone-input-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .country-code {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--benin-green);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
         font-weight: bold;
+        font-size: 0.9rem;
+        z-index: 10;
+    }
+
+    .phone-input {
+        padding-left: 90px;
+        height: 55px;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        font-size: 1rem;
+        font-family: monospace;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .phone-input:focus {
+        border-color: var(--benin-red);
+        box-shadow: 0 0 0 3px rgba(232, 17, 45, 0.1);
     }
 
     /* Bouton de paiement */
     .btn-payer {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        background: linear-gradient(135deg, var(--benin-red), var(--benin-yellow));
         color: white;
         border: none;
-        padding: 1.2rem 2.5rem;
-        border-radius: 15px;
+        padding: 1rem 2rem;
+        border-radius: 12px;
         font-weight: bold;
         font-size: 1.1rem;
         width: 100%;
+        max-width: 400px;
+        margin: 2rem auto;
+        display: block;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
 
-    .btn-payer:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-        color: white;
+    .btn-payer:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(232, 17, 45, 0.2);
     }
 
     .btn-payer:disabled {
-        background: #ccc;
+        opacity: 0.5;
         cursor: not-allowed;
-        transform: none !important;
-        box-shadow: none !important;
+        background: linear-gradient(135deg, #6c757d, #adb5bd);
     }
 
-    .btn-payer::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 5px;
-        height: 5px;
-        background: rgba(255, 255, 255, 0.5);
-        opacity: 0;
-        border-radius: 100%;
-        transform: scale(1, 1) translate(-50%);
-        transform-origin: 50% 50%;
+    .btn-payer.ready {
+        background: linear-gradient(135deg, var(--benin-green), #28a745);
     }
 
-    .btn-payer:focus:not(:active)::after {
-        animation: ripple 1s ease-out;
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+        vertical-align: middle;
     }
 
-    @keyframes ripple {
-        0% {
-            transform: scale(0, 0);
-            opacity: 0.5;
-        }
-        100% {
-            transform: scale(20, 20);
-            opacity: 0;
-        }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
-    /* Sécurité */
-    .security-badges {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin: 2rem 0;
+    /* Messages */
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: none;
+        animation: fadeIn 0.3s ease;
     }
 
-    .security-badge {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        opacity: 0.7;
-        transition: opacity 0.3s ease;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .security-badge:hover {
-        opacity: 1;
+    /* Animation pour validation */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .paiement-container {
-            padding: 60px 0 20px;
-        }
-
-        .payment-header {
-            padding: 1.5rem;
-        }
-
-        .security-badges {
-            flex-wrap: wrap;
-        }
-
-        .btn-payer {
-            padding: 1rem 2rem;
-        }
-    }
-
-    /* Éléments de garantie */
-    .guarantee-item {
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .valid-pulse {
+        animation: pulse 0.5s ease;
     }
 </style>
 @endpush
 
 @section('content')
-@php
-    // Récupérer l'achat de la session
-    $achat = session('achat_choisi');
-
-    // Déterminer le titre selon le type
-    if ($achat['type'] == 'abonnement') {
-        $titre = $achat['nom'];
-        $description = $achat['description'] ?? 'Abonnement premium Bénin Culture';
-    } elseif ($achat['type'] == 'contenu_single') {
-        $titre = $achat['titre'] ?? 'Contenu Premium';
-        $description = 'Accès à vie à ce contenu';
-    } elseif ($achat['type'] == 'pack') {
-        $titre = $achat['nom'] ?? 'Pack Découverte';
-        $description = $achat['description'] ?? 'Pack de contenus premium';
-    } else {
-        $titre = 'Achat';
-        $description = 'Produit Bénin Culture';
-    }
-@endphp
-
-<div class="paiement-container">
-    <div class="container">
-        <!-- En-tête -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url('/') }}">Accueil</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('boutique.index') }}">Boutique</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Paiement</li>
-                    </ol>
-                </nav>
+<div class="paiement-page">
+    <!-- Header -->
+    <div class="paiement-header">
+        <div class="container">
+            <div class="text-center">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="bi bi-lock-fill me-2"></i>Paiement sécurisé
+                </h1>
+                <p class="lead mb-0 opacity-90">
+                    Finalisez votre abonnement en toute sécurité
+                </p>
             </div>
         </div>
+    </div>
 
+    <div class="container">
         <div class="row">
-            <!-- Colonne principale -->
-            <div class="col-lg-8">
+            <!-- Colonne gauche : Formulaire de paiement -->
+            <div class="col-lg-8 mb-4">
                 <div class="payment-card">
-                    <div class="payment-header">
-                        <h1 class="h2 fw-bold mb-3">
-                            <i class="bi bi-lock-fill me-2"></i>
-                            Paiement sécurisé
-                        </h1>
-                        <p class="mb-0 opacity-90">
-                            Vos informations sont protégées par un chiffrement SSL 256 bits
-                        </p>
+                    <!-- Récapitulatif -->
+                    <div class="payment-summary">
+                        <div class="row align-items-center">
+                            <div class="col-md-8 text-md-start text-center">
+                                <h3 class="fw-bold mb-2">
+                                    <i class="bi bi-{{ $achat['icon'] ?? 'star' }} me-2"></i>
+                                    {{ $achat['nom'] }}
+                                </h3>
+                                <p class="mb-0 opacity-90">
+                                    @if($achat['period'] == 'monthly')
+                                        <i class="bi bi-calendar-week me-1"></i>Abonnement mensuel
+                                    @elseif($achat['period'] == 'yearly')
+                                        <i class="bi bi-calendar-month me-1"></i>Abonnement annuel
+                                    @else
+                                        <i class="bi bi-infinity me-1"></i>Abonnement à vie
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                                <div class="display-4 fw-bold">
+                                    {{ number_format($achat['prix'], 0, ',', ' ') }}
+                                </div>
+                                <div class="h5">{{ $achat['devise'] }}</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="card-body p-4 p-md-5">
-                        <!-- Récapitulatif -->
-                        <div class="alert alert-primary mb-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h5 class="fw-bold mb-1">{{ $titre }}</h5>
-                                    <p class="mb-0">{{ $description }}</p>
+                    <!-- Formulaire -->
+                    <div class="p-4">
+                        <!-- Sélecteur d'opérateur -->
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-phone-vibrate me-2"></i>
+                            Choisissez votre opérateur
+                        </h5>
+
+                        <div class="operator-grid">
+                            <div class="operator-card mtn" onclick="selectOperator('mtn')" id="operator-mtn">
+                                <div class="operator-icon">
+                                    <i class="bi bi-phone fs-1"></i>
                                 </div>
-                                <div class="text-end">
-                                    <div class="h3 fw-bold">{{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] ?? 'XOF' }}</div>
-                                    <small>
-                                        @if($achat['type'] == 'abonnement')
-                                        pour {{ $achat['duree_jours'] ?? '30' }} jours
-                                        @elseif($achat['type'] == 'contenu_single')
-                                        accès à vie
-                                        @elseif($achat['type'] == 'pack')
-                                        pack de 10 contenus
-                                        @endif
+                                <h6 class="fw-bold mb-2">MTN Mobile Money</h6>
+                                <p class="small mb-0 opacity-75">Paiement instantané</p>
+                            </div>
+
+                            <div class="operator-card moov" onclick="selectOperator('moov')" id="operator-moov">
+                                <div class="operator-icon">
+                                    <i class="bi bi-phone fs-1"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Moov Money</h6>
+                                <p class="small mb-0 opacity-75">Paiement sécurisé</p>
+                            </div>
+                        </div>
+
+                        <!-- Formulaire téléphone -->
+                        <div id="phone-form" style="display: none;">
+                            <h5 class="fw-bold mb-4 mt-5">
+                                <i class="bi bi-telephone-forward me-2"></i>
+                                Votre numéro de téléphone
+                            </h5>
+
+                            <div class="phone-form-container">
+                                <div class="phone-input-group">
+                                    <span class="country-code">+229</span>
+                                    <input type="tel"
+                                           id="phone-number"
+                                           class="form-control phone-input"
+                                           placeholder="01 23 45 67 89"
+                                           maxlength="14"
+                                           oninput="validatePhoneNumber(this)"
+                                           required>
+                                </div>
+
+                                <div class="phone-format-hint text-center mb-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Format : <strong>01 23 45 67 89</strong> (10 chiffres)
                                     </small>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Sélection de la méthode de paiement -->
-                        <h4 class="fw-bold mb-4">Méthode de paiement</h4>
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3">
-                                <div class="payment-method selected" onclick="selectPaymentMethod('carte')" id="method-carte">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-credit-card-2-front fs-3 me-3 text-primary"></i>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">Carte bancaire</h6>
-                                            <p class="small text-muted mb-0">Visa, Mastercard, CB</p>
-                                        </div>
-                                    </div>
+                                <div id="phone-error" class="error-message text-center">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    <span id="error-text"></span>
                                 </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="payment-method" onclick="selectPaymentMethod('paypal')" id="method-paypal">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-paypal fs-3 me-3" style="color: #003087;"></i>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">PayPal</h6>
-                                            <p class="small text-muted mb-0">Paiement sécurisé PayPal</p>
-                                        </div>
-                                    </div>
+
+                                <!-- Indicateur de validation -->
+                                <div id="phone-success" class="text-center mb-3" style="display: none;">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <small class="text-success fw-bold">Numéro valide ✓</small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Formulaire de carte bancaire -->
-                        <div id="carte-form" class="payment-form">
-                            <form id="payment-form" class="form-payment" action="{{ route('paiement.process') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="achat_type" value="{{ $achat['type'] }}">
-                                <input type="hidden" name="achat_id" value="{{ $achat['id'] ?? '' }}">
+                        <!-- Bouton de paiement -->
+                        <form id="payment-form" action="{{ route('paiement.fedapay.process') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="operator" id="operator-input">
+                            <input type="hidden" name="phone_number" id="phone-number-input">
 
-                                <div class="mb-3">
-                                    <label for="nom_titulaire" class="form-label fw-bold">Nom sur la carte</label>
-                                    <input type="text"
-                                           id="nom_titulaire"
-                                           name="nom_titulaire"
-                                           class="form-control"
-                                           placeholder="Jean Dupont"
-                                           value="{{ Auth::user()->name ?? '' }}"
-                                           required>
-                                </div>
+                            <button type="submit"
+                                    id="pay-button"
+                                    class="btn-payer"
+                                    disabled>
+                                <i class="bi bi-lock-fill me-2"></i>
+                                Payer {{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] }}
+                            </button>
+                        </form>
 
-                                <div class="mb-3">
-                                    <label for="carte_numero" class="form-label fw-bold">Numéro de carte</label>
-                                    <input type="text"
-                                           id="carte_numero"
-                                           name="carte_numero"
-                                           class="form-control"
-                                           placeholder="1234 5678 9012 3456"
-                                           maxlength="19"
-                                           oninput="formatCardNumber(this)"
-                                           required>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label for="carte_expiration_mois" class="form-label fw-bold">Mois d'expiration</label>
-                                        <select id="carte_expiration_mois" name="carte_expiration_mois" class="form-control" required>
-                                            <option value="">Mois</option>
-                                            @for($i = 1; $i <= 12; $i++)
-                                            <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="carte_expiration_annee" class="form-label fw-bold">Année d'expiration</label>
-                                        <select id="carte_expiration_annee" name="carte_expiration_annee" class="form-control" required>
-                                            <option value="">Année</option>
-                                            @for($i = date('Y'); $i <= date('Y') + 10; $i++)
-                                            <option value="{{ $i }}">{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="carte_cvc" class="form-label fw-bold">Code de sécurité (CVC)</label>
-                                    <input type="text"
-                                           id="carte_cvc"
-                                           name="carte_cvc"
-                                           class="form-control"
-                                           placeholder="123"
-                                           maxlength="4"
-                                           required>
-                                    <div class="form-text">
-                                        3 ou 4 chiffres au dos de votre carte
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn-payer" id="submit-payment">
-                                    <i class="bi bi-lock-fill me-2"></i>
-                                    Payer maintenant {{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] ?? 'XOF' }}
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Badges de sécurité -->
-                        <div class="security-badges mt-5">
-                            <div class="security-badge">
-                                <i class="bi bi-shield-check display-4 text-success"></i>
-                                <small>SSL 256-bit</small>
-                            </div>
-                            <div class="security-badge">
-                                <i class="bi bi-credit-card display-4 text-primary"></i>
-                                <small>Paiement sécurisé</small>
-                            </div>
-                            <div class="security-badge">
-                                <i class="bi bi-lock display-4 text-warning"></i>
-                                <small>Données cryptées</small>
-                            </div>
+                        <!-- Conditions -->
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check me-1"></i>
+                                Paiement 100% sécurisé
+                            </small>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Colonne latérale -->
+            <!-- Colonne droite : Récapitulatif -->
             <div class="col-lg-4">
-                <div class="sticky-top" style="top: 100px;">
-                    <!-- Récapitulatif de la commande -->
-                    <div class="payment-card mb-4">
-                        <div class="card-header bg-light py-3">
-                            <h5 class="fw-bold mb-0">
-                                <i class="bi bi-receipt me-2"></i>
-                                Récapitulatif
-                            </h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="recap-item">
-                                <span>{{ $titre }}</span>
-                                <span class="fw-bold">{{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] ?? 'XOF' }}</span>
-                            </div>
-
-                            <div class="recap-item">
-                                <span>Taxes</span>
-                                <span>0,00 {{ $achat['devise'] ?? 'XOF' }}</span>
-                            </div>
-
-                            <div class="recap-item total">
-                                <span>TOTAL</span>
-                                <span class="h5 mb-0">{{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] ?? 'XOF' }}</span>
-                            </div>
-
-                            <div class="mt-4">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Facture disponible après paiement
-                                </small>
-                            </div>
-                        </div>
+                <div class="payment-card">
+                    <div class="card-header bg-light">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-receipt me-2"></i>
+                            Votre commande
+                        </h5>
                     </div>
-
-                    <!-- Garanties -->
-                    <div class="payment-card">
-                        <div class="card-header bg-light py-3">
-                            <h5 class="fw-bold mb-0">
-                                <i class="bi bi-award me-2"></i>
-                                Nos garanties
-                            </h5>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>{{ $achat['nom'] }}</span>
+                            <span class="fw-bold">{{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] }}</span>
                         </div>
-                        <div class="card-body p-4">
-                            <div class="guarantee-item">
-                                <i class="bi bi-shield-check text-success"></i>
-                                <div>
-                                    <small class="fw-bold">Paiement 100% sécurisé</small>
-                                    <div class="text-muted" style="font-size: 0.8rem;">Données cryptées</div>
-                                </div>
-                            </div>
-                            <div class="guarantee-item">
-                                <i class="bi bi-arrow-counterclockwise text-primary"></i>
-                                <div>
-                                    <small class="fw-bold">30 jours satisfait ou remboursé</small>
-                                    <div class="text-muted" style="font-size: 0.8rem;">Sans condition</div>
-                                </div>
-                            </div>
-                            <div class="guarantee-item">
-                                <i class="bi bi-headset text-warning"></i>
-                                <div>
-                                    <small class="fw-bold">Support 7j/7</small>
-                                    <div class="text-muted" style="font-size: 0.8rem;">Réponse sous 24h</div>
-                                </div>
-                            </div>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Durée</span>
+                            <span>
+                                @if($achat['period'] == 'monthly')
+                                    1 mois
+                                @elseif($achat['period'] == 'yearly')
+                                    12 mois
+                                @else
+                                    À vie
+                                @endif
+                            </span>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="h5 fw-bold">Total</span>
+                            <span class="h4 fw-bold text-primary">
+                                {{ number_format($achat['prix'], 0, ',', ' ') }} {{ $achat['devise'] }}
+                            </span>
+                        </div>
+
+                        <!-- Support -->
+                        <div class="text-center mt-4">
+                            <p class="small text-muted mb-2">
+                                <i class="bi bi-headset me-1"></i>
+                                Besoin d'aide ?
+                            </p>
+                            <a href="https://wa.me/229XXXXXXXXX" target="_blank" class="btn btn-success btn-sm w-100">
+                                <i class="bi bi-whatsapp me-2"></i>Support WhatsApp
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -496,57 +403,178 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Sélection par défaut carte
-    selectPaymentMethod('carte');
-});
+    let selectedOperator = null;
+    let isPhoneValid = false;
+    const payButton = document.getElementById('pay-button');
+    const phoneError = document.getElementById('phone-error');
+    const phoneSuccess = document.getElementById('phone-success');
+    const errorText = document.getElementById('error-text');
+    const paymentForm = document.getElementById('payment-form');
 
-function selectPaymentMethod(method) {
-    // Désélectionner toutes les méthodes
-    document.querySelectorAll('.payment-method').forEach(el => {
-        el.classList.remove('selected');
+    // Sélectionner un opérateur
+    window.selectOperator = function(operator) {
+        selectedOperator = operator;
+
+        // Retirer la sélection de tous
+        document.querySelectorAll('.operator-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Ajouter la sélection
+        document.getElementById(`operator-${operator}`).classList.add('selected');
+
+        // Afficher le formulaire téléphone
+        const phoneForm = document.getElementById('phone-form');
+        phoneForm.style.display = 'block';
+
+        // Mettre à jour le champ caché
+        document.getElementById('operator-input').value = operator;
+
+        // Focus sur le champ téléphone
+        setTimeout(() => {
+            document.getElementById('phone-number').focus();
+        }, 300);
+
+        // Animation
+        phoneForm.style.opacity = '0';
+        phoneForm.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            phoneForm.style.transition = 'all 0.4s ease';
+            phoneForm.style.opacity = '1';
+            phoneForm.style.transform = 'translateY(0)';
+        }, 100);
+
+        // Si un numéro est déjà saisi, revalider
+        const phoneInput = document.getElementById('phone-number');
+        if (phoneInput.value) {
+            validatePhoneNumber(phoneInput);
+        }
+    };
+
+    // Valider le numéro de téléphone
+    window.validatePhoneNumber = function(input) {
+        let value = input.value.replace(/\D/g, '');
+
+        // Cacher tous les messages
+        phoneError.style.display = 'none';
+        phoneSuccess.style.display = 'none';
+
+        // Vérifier si le champ est vide
+        if (value.length === 0) {
+            isPhoneValid = false;
+            updatePayButton();
+            return;
+        }
+
+        // Validation basique
+        if (value.length !== 10) {
+            showError('Le numéro doit contenir 10 chiffres');
+            isPhoneValid = false;
+            updatePayButton();
+            return;
+        }
+
+        // Vérifier le préfixe selon l'opérateur
+        if (selectedOperator === 'mtn' && !value.startsWith('01')) {
+            showError('MTN Mobile Money commence par 01');
+            isPhoneValid = false;
+            updatePayButton();
+            return;
+        }
+
+        if (selectedOperator === 'moov' && !value.startsWith('02')) {
+            showError('Moov Money commence par 02');
+            isPhoneValid = false;
+            updatePayButton();
+            return;
+        }
+
+        // Vérifier format général (01 ou 02)
+        if (!value.startsWith('01') && !value.startsWith('02')) {
+            showError('Le numéro doit commencer par 01 (MTN) ou 02 (Moov)');
+            isPhoneValid = false;
+            updatePayButton();
+            return;
+        }
+
+        // Numéro valide !
+        isPhoneValid = true;
+
+        // Mettre à jour le champ caché
+        document.getElementById('phone-number-input').value = '+229' + value;
+
+        // Afficher le succès
+        phoneSuccess.style.display = 'block';
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+
+        // Activer le bouton
+        updatePayButton();
+
+        // Animation de succès
+        payButton.classList.add('valid-pulse');
+        setTimeout(() => payButton.classList.remove('valid-pulse'), 500);
+    };
+
+    // Afficher une erreur
+    function showError(message) {
+        errorText.textContent = message;
+        phoneError.style.display = 'block';
+
+        const phoneInput = document.getElementById('phone-number');
+        phoneInput.classList.add('is-invalid');
+        phoneInput.classList.remove('is-valid');
+    }
+
+    // Mettre à jour l'état du bouton de paiement
+    function updatePayButton() {
+        if (isPhoneValid && selectedOperator) {
+            payButton.disabled = false;
+            payButton.classList.add('ready');
+        } else {
+            payButton.disabled = true;
+            payButton.classList.remove('ready');
+        }
+    }
+
+    // Gérer la soumission du formulaire
+    paymentForm.addEventListener('submit', function(e) {
+        if (!isPhoneValid || !selectedOperator) {
+            e.preventDefault();
+            alert('Veuillez entrer un numéro de téléphone valide');
+            return false;
+        }
+
+        // Désactiver le bouton et afficher le chargement
+        payButton.disabled = true;
+        payButton.innerHTML = '<span class="spinner"></span> Traitement en cours...';
+
+        return true;
     });
 
-    // Sélectionner la méthode choisie
-    document.getElementById(`method-${method}`).classList.add('selected');
-}
-
-function formatCardNumber(input) {
-    let value = input.value.replace(/\D/g, '');
-    let formatted = '';
-
-    for (let i = 0; i < value.length; i++) {
-        if (i > 0 && i % 4 === 0) {
-            formatted += ' ';
+    // Auto-sélectionner MTN par défaut
+    setTimeout(() => {
+        if (!selectedOperator) {
+            selectOperator('mtn');
         }
-        formatted += value[i];
-    }
+    }, 500);
 
-    input.value = formatted.substring(0, 19);
-}
+    // Formater le numéro pendant la saisie
+    const phoneInput = document.getElementById('phone-number');
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        value = value.substring(0, 10);
 
-// Validation du formulaire
-document.getElementById('payment-form').addEventListener('submit', function(e) {
-    const carteNumero = document.getElementById('carte_numero').value.replace(/\s/g, '');
-    const carteCvc = document.getElementById('carte_cvc').value;
+        let formatted = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 2 === 0) {
+                formatted += ' ';
+            }
+            formatted += value[i];
+        }
 
-    if (carteNumero.length < 16) {
-        e.preventDefault();
-        alert('Veuillez entrer un numéro de carte valide (16 chiffres)');
-        return false;
-    }
-
-    if (carteCvc.length < 3) {
-        e.preventDefault();
-        alert('Veuillez entrer un code CVC valide (3 ou 4 chiffres)');
-        return false;
-    }
-
-    // Afficher un message de chargement
-    const submitBtn = document.getElementById('submit-payment');
-    submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Traitement en cours...';
-    submitBtn.disabled = true;
-
-    return true;
+        this.value = formatted;
+    });
 });
 </script>
 @endpush

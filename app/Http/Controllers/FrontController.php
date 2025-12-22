@@ -43,111 +43,116 @@ class FrontController extends Controller
     ];
 
     /**
-     * Récupérer l'URL correcte pour une image
+     * Récupérer l'URL correcte pour une image (Version simplifiée pour public/adminlte/img/)
      */
-    /**
- * Récupérer l'URL correcte pour une image
- */
-private function getImageUrl($path)
-{
-    if (!$path || trim($path) === '') {
-        return asset('adminlte/img/collage.png'); // Image par défaut
-    }
-
-    // Si le chemin commence déjà par "http", c'est une URL complète
-    if (strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) {
-        return $path;
-    }
-
-    // SI LE FICHIER EST DANS public/adminlte/img/ (NOUVEAU SYSTÈME)
-    // Vérifier si le fichier existe dans public/adminlte/img/
-    $publicPath = public_path('adminlte/img/' . basename($path));
-    if (file_exists($publicPath)) {
-        // Le fichier est dans public/adminlte/img/
-        return asset('adminlte/img/' . basename($path));
-    }
-
-    // SI LE FICHIER EST DANS storage/app/public (ANCIEN SYSTÈME)
-    // Si le chemin commence par "storage/", on utilise asset()
-    if (strpos($path, 'storage/') === 0) {
-        return asset($path);
-    }
-
-    // Si c'est un chemin relatif sans "storage/"
-    if (strpos($path, 'public/') === 0) {
-        return asset(str_replace('public/', 'storage/', $path));
-    }
-
-    // Par défaut, essayer plusieurs options
-    $possiblePaths = [
-        'adminlte/img/' . $path,  // Nouveau système
-        'storage/' . $path,        // Ancien système
-        $path                      // Tel quel
-    ];
-
-    foreach ($possiblePaths as $possiblePath) {
-        $fullPath = public_path($possiblePath);
-        if (file_exists($fullPath)) {
-            return asset($possiblePath);
+    private function getImageUrl($path)
+    {
+        if (!$path || trim($path) === '') {
+            return asset('adminlte/img/collage.png');
         }
-    }
 
-    // Fallback : image par défaut
-    return asset('adminlte/img/collage.png');
-}
+        // Si c'est déjà une URL complète
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        // Extraire juste le nom du fichier (gère tous les formats)
+        $filename = basename($path);
+
+        // Vérifier si le fichier existe dans public/adminlte/img/
+        $imagePath = 'adminlte/img/' . $filename;
+
+        if (file_exists(public_path($imagePath))) {
+            return asset($imagePath);
+        }
+
+        // Si non trouvé, essayer d'autres chemins
+        $possiblePaths = [
+            'adminlte/img/' . $filename,
+            $filename, // juste le nom
+            'uploads/' . $filename,
+            'storage/' . $filename,
+        ];
+
+        foreach ($possiblePaths as $possiblePath) {
+            if (file_exists(public_path($possiblePath))) {
+                return asset($possiblePath);
+            }
+        }
+
+        // Fallback
+        return asset('adminlte/img/collage.png');
+    }
 
     /**
      * Récupérer l'URL de la photo de profil
      */
-    /**
+  /**
  * Récupérer l'URL de la photo de profil
  */
 private function getUserPhotoUrl($user)
 {
     if (!$user || !$user->photo || trim($user->photo) === '') {
-        return null; // Pas de photo
+        return null;
     }
 
-    // Vérifier si la photo est dans public/adminlte/img/
+    // Extraire juste le nom du fichier
     $filename = basename($user->photo);
-    $publicPath = public_path('adminlte/img/' . $filename);
 
-    if (file_exists($publicPath)) {
-        return asset('adminlte/img/' . $filename);
+    // Chercher dans public/adminlte/img/
+    $imagePath = 'adminlte/img/' . $filename;
+
+    if (file_exists(public_path($imagePath))) {
+        return asset($imagePath);
     }
 
-    // Sinon, utiliser la méthode générale
-    return $this->getImageUrl($user->photo);
+    // Si non trouvé, essayer d'autres chemins
+    $possiblePaths = [
+        'adminlte/img/' . $filename,
+        $filename,
+        'uploads/' . $filename,
+        'storage/' . $filename,
+    ];
+
+    foreach ($possiblePaths as $possiblePath) {
+        if (file_exists(public_path($possiblePath))) {
+            return asset($possiblePath);
+        }
+    }
+
+    return null; // Pas de photo
 }
 
     /**
-     * Récupérer l'image principale d'un contenu
+     * Récupérer la première image d'un contenu
      */
+    private function getContenuMainImage($contenu)
+    {
+        if (!$contenu || !$contenu->medias || $contenu->medias->isEmpty()) {
+            return asset('adminlte/img/collage.png');
+        }
+
+        $firstMedia = $contenu->medias->first();
+        if (!$firstMedia || !$firstMedia->chemin) {
+            return asset('adminlte/img/collage.png');
+        }
+
+        return $this->getImageUrl($firstMedia->chemin);
+    }
+
     /**
- * Récupérer l'image principale d'un contenu
- */
-private function getContenuCoverImage($contenu)
-{
-    if (!$contenu || !$contenu->medias || $contenu->medias->isEmpty()) {
-        return asset('adminlte/img/collage.png'); // Image par défaut
+     * Récupérer toutes les images d'un contenu
+     */
+    private function getContenuAllImages($contenu)
+    {
+        if (!$contenu || !$contenu->medias || $contenu->medias->isEmpty()) {
+            return [asset('adminlte/img/collage.png')];
+        }
+
+        return $contenu->medias->map(function($media) {
+            return $this->getImageUrl($media->chemin);
+        })->toArray();
     }
-
-    $firstMedia = $contenu->medias->first();
-    if (!$firstMedia || !$firstMedia->chemin) {
-        return asset('adminlte/img/collage.png');
-    }
-
-    // Vérifier d'abord si le fichier existe dans public/adminlte/img/
-    $filename = basename($firstMedia->chemin);
-    $publicPath = public_path('adminlte/img/' . $filename);
-
-    if (file_exists($publicPath)) {
-        return asset('adminlte/img/' . $filename);
-    }
-
-    // Sinon, utiliser la méthode générale
-    return $this->getImageUrl($firstMedia->chemin);
-}
 
     public function index()
     {
@@ -158,6 +163,7 @@ private function getContenuCoverImage($contenu)
             'total_types' => TypeContenu::count(),
         ];
 
+        // Contenus populaires
         $contenusPopulaires = Contenu::with([
                 'typeContenu',
                 'region',
@@ -170,12 +176,25 @@ private function getContenuCoverImage($contenu)
             ->get()
             ->map(function($contenu) {
                 $this->addFictiveStats($contenu);
-                // Ajouter les URLs des images
-                $contenu->cover_image = $this->getContenuCoverImage($contenu);
+
+                // Images réelles depuis la base
+                $contenu->main_image = $this->getContenuMainImage($contenu);
+                $contenu->all_images = $this->getContenuAllImages($contenu);
                 $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
+
+                // Calcul du temps de lecture
+                $wordCount = str_word_count(strip_tags($contenu->texte ?? ''));
+                $contenu->reading_time = max(1, ceil($wordCount / 200));
+
+                // Type config
+                $typeConfig = $this->getTypeConfig($contenu->typeContenu->id_type_contenu ?? 1);
+                $contenu->type_icon = $typeConfig['icon'];
+                $contenu->type_color = $typeConfig['color'];
+
                 return $contenu;
             });
 
+        // Derniers contenus
         $derniersContenus = Contenu::with([
                 'typeContenu',
                 'auteur',
@@ -188,24 +207,82 @@ private function getContenuCoverImage($contenu)
             ->get()
             ->map(function($contenu) {
                 $this->addFictiveStats($contenu);
-                $contenu->cover_image = $this->getContenuCoverImage($contenu);
-                $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
+                $contenu->main_image = $this->getContenuMainImage($contenu);
+                 // Photo de l'auteur
+        if ($contenu->auteur) {
+            $contenu->author_photo = $this->getUserPhotoUrl($contenu->auteur);
+            $contenu->author_name = $contenu->auteur->prenom . ' ' . $contenu->auteur->name;
+            $contenu->author_initials = strtoupper(
+                substr($contenu->auteur->prenom ?? '', 0, 1) .
+                substr($contenu->auteur->name ?? '', 0, 1)
+            );
+        } else {
+            $contenu->author_photo = null;
+            $contenu->author_name = 'Anonyme';
+            $contenu->author_initials = 'A';
+        }
                 return $contenu;
             });
 
-        $regionsPopulaires = Region::withCount(['contenus' => function($query) {
-                $query->where('statut', 'validé');
-            }])
-            ->orderBy('contenus_count', 'desc')
-            ->limit(6)
-            ->get();
+        // Régions populaires
+      $regionsPopulaires = Region::withCount(['contenus' => function($query) {
+            $query->where('statut', 'validé');
+        }])
+        ->orderBy('contenus_count', 'desc')
+        ->limit(6)
+        ->get();
 
-        return view('front.home', compact(
-            'stats',
-            'contenusPopulaires',
-            'derniersContenus',
-            'regionsPopulaires'
-        ));
+    // Ajoutez cette variable pour la timeline
+    $periods = [
+        [
+            'icon' => 'bi-castle',
+            'title' => 'Royaumes pré-coloniaux',
+            'period' => 'Avant 1894',
+            'color' => 'primary',
+            'image' => 'royaumeabo.webp',
+            'content' => 'Les grands royaumes de Danxomè, Porto-Novo et divers royaumes Yoruba établissent les fondements de la culture béninoise moderne avec leurs systèmes politiques, artistiques et spirituels complexes.',
+        ],
+        [
+            'icon' => 'bi-flag',
+            'title' => 'Période coloniale',
+            'period' => '1894-1960',
+            'color' => 'secondary',
+            'image' => 'ancientemps.jpg',
+            'content' => 'Le Dahomey français marque une période de transformation culturelle, avec l\'introduction de nouvelles langues, systèmes éducatifs et structures administratives qui influenceront durablement la société.',
+        ],
+        [
+            'icon' => 'bi-star',
+            'title' => 'Indépendance',
+            'period' => '1960-1972',
+            'color' => 'accent',
+            'image' => 'independancegraph.jpg',
+            'content' => 'Le 1er août 1960, le Dahomey accède à l\'indépendance. Une période de construction nationale et de redéfinition identitaire s\'ensuit, avec la recherche d\'un équilibre entre tradition et modernité.',
+        ],
+        [
+            'icon' => 'bi-arrow-repeat',
+            'title' => 'Renaissance culturelle',
+            'period' => '1972-1990',
+            'color' => 'warning',
+            'image' => 'renaissance.webp',
+            'content' => 'La période révolutionnaire met l\'accent sur la valorisation des cultures locales, avec des réformes éducatives et culturelles visant à promouvoir les langues et traditions nationales.',
+        ],
+        [
+            'icon' => 'bi-globe',
+            'title' => 'Bénin contemporain',
+            'period' => '1990 à aujourd\'hui',
+            'color' => 'success',
+            'image' => 'contemporain.webp',
+            'content' => 'Le renouveau démocratique ouvre une ère de revitalisation culturelle, avec une reconnaissance internationale croissante du patrimoine béninois et un dynamisme artistique et intellectuel remarquable.',
+        ],
+    ];
+
+    return view('front.home', compact(
+        'stats',
+        'contenusPopulaires',
+        'derniersContenus',
+        'regionsPopulaires',
+        'periods' // N'oubliez pas d'ajouter cette variable
+    ));
     }
 
     public function explorer(Request $request)
@@ -217,10 +294,12 @@ private function getContenuCoverImage($contenu)
                 'typeContenu',
                 'region',
                 'auteur',
-                'medias'
+                'medias',
+                'langue'
             ])
             ->where('statut', 'validé');
 
+        // Filtres
         if ($request->filled('type') && $request->type != 'all') {
             $query->where('id_type_contenu', $request->type);
         }
@@ -241,34 +320,56 @@ private function getContenuCoverImage($contenu)
             });
         }
 
+        // Tri
         $sort = $request->get('sort', 'recent');
         switch ($sort) {
-            case 'popular': $query->orderBy('date_creation', 'desc'); break;
-            case 'title': $query->orderBy('titre', 'asc'); break;
-            default: $query->orderBy('date_creation', 'desc'); break;
+            case 'popular':
+                $query->orderBy('date_creation', 'desc');
+                break;
+            case 'title':
+                $query->orderBy('titre', 'asc');
+                break;
+            default:
+                $query->orderBy('date_creation', 'desc');
+                break;
         }
 
         $totalContenus = (clone $query)->count();
         $contenus = $query->paginate(12);
 
+        // Transformer les résultats
         $contenus->getCollection()->transform(function($contenu) {
             $this->addFictiveStats($contenu);
+
+            // Configuration du type
             $typeConfig = $this->getTypeConfig($contenu->typeContenu->id_type_contenu ?? 1);
             $contenu->icon = $typeConfig['icon'];
             $contenu->color = $typeConfig['color'];
+
+            // Calculs
             $wordCount = str_word_count(strip_tags($contenu->texte ?? ''));
             $contenu->reading_time = max(1, ceil($wordCount / 200));
 
-            // Ajouter les URLs des images
-            $contenu->cover_image = $this->getContenuCoverImage($contenu);
-            $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
-            $contenu->media_urls = $contenu->medias->map(function($media) {
-                return $this->getImageUrl($media->chemin);
-            })->toArray();
-
+            // Images réelles depuis la base
+            $contenu->main_image = $this->getContenuMainImage($contenu);
+            $contenu->all_images = $this->getContenuAllImages($contenu);
+             // Photo de l'auteur
+        if ($contenu->auteur) {
+            $contenu->author_photo = $this->getUserPhotoUrl($contenu->auteur);
+            $contenu->author_name = $contenu->auteur->prenom . ' ' . $contenu->auteur->name;
+            $contenu->author_initials = strtoupper(
+                substr($contenu->auteur->prenom ?? '', 0, 1) .
+                substr($contenu->auteur->name ?? '', 0, 1)
+            );
+        } else {
+            $contenu->author_photo = null;
+            $contenu->author_name = 'Anonyme';
+            $contenu->author_initials = 'A';
+        }
             return $contenu;
         });
 
+        // Compter les contenus par type
         $typeCounts = [];
         foreach ($typesContenus as $type) {
             $typeCounts[$type->id_type_contenu] = Contenu::where('id_type_contenu', $type->id_type_contenu)
@@ -276,6 +377,7 @@ private function getContenuCoverImage($contenu)
                 ->count();
         }
 
+        // Icônes simplifiées pour la vue
         $typeIconsSimple = collect($this->typeIcons)->mapWithKeys(function ($item, $key) {
             return [$key => $item['icon']];
         })->toArray();
@@ -290,44 +392,67 @@ private function getContenuCoverImage($contenu)
         ));
     }
 
-
-    public function regions()
+   public function regions()
 {
+    // Récupérer toutes les régions avec statistiques
     $regions = Region::withCount(['contenus' => function($query) {
             $query->where('statut', 'validé');
         }])
         ->with(['contenus' => function($query) {
             $query->where('statut', 'validé')
-                  ->with(['typeContenu', 'auteur', 'medias'])
+                  ->with('typeContenu')
                   ->orderBy('date_creation', 'desc')
-                  ->limit(3);
+                  ->limit(5);
         }])
         ->orderBy('nom_region', 'asc')
         ->get()
         ->map(function($region) {
-            // Préparer les contenus de chaque région
-            if ($region->contenus) {
-                $region->contenus->transform(function($contenu) {
-                    $this->addFictiveStats($contenu);
-                    $contenu->cover_image = $this->getContenuCoverImage($contenu);
-                    $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
-                    return $contenu;
-                });
-            }
+            // Calculer le nombre de contributeurs uniques
+            $contributeurs = $region->contenus()
+                ->where('statut', 'validé')
+                ->distinct('id_auteur')
+                ->count('id_auteur');
+
+            $region->contributeurs_count = $contributeurs;
+
+            // Types de contenus par région
+            $types = $region->contenus()
+                ->where('statut', 'validé')
+                ->with('typeContenu')
+                ->get()
+                ->groupBy('id_type_contenu')
+                ->map(function ($group) {
+                    return [
+                        'type_id' => $group->first()->id_type_contenu,
+                        'nom' => $group->first()->typeContenu->nom_contenu ?? 'Inconnu',
+                        'count' => $group->count()
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+            $region->types_contenus = $types;
+
             return $region;
         });
 
-    $typesContenus = TypeContenu::all();
-
+    // Statistiques globales
     $stats = [
         'total_regions' => $regions->count(),
         'total_contenus' => $regions->sum('contenus_count'),
-        'total_types' => TypeContenu::count(),
         'total_utilisateurs' => User::where('statut', 'actif')->count(),
+        'total_types' => TypeContenu::count(),
     ];
 
+    // Types de contenus
+    $typesContenus = TypeContenu::all();
+
+    // Toutes les langues
+    $allLangues = Langue::orderBy('nom_langue')->get();
+
+    // Langues par région (simulées)
     $regionLangues = [];
-    $commonLanguages = ['Fon', 'Yoruba', 'Français', 'Bariba', 'Dendi'];
+    $commonLanguages = ['Fon', 'Yoruba', 'Français', 'Bariba', 'Dendi', 'Gun', 'Adja'];
 
     foreach ($regions as $region) {
         $numLanguages = rand(2, 4);
@@ -335,314 +460,305 @@ private function getContenuCoverImage($contenu)
         $regionLangues[$region->id_region] = array_slice($commonLanguages, 0, $numLanguages);
     }
 
-    return view('front.regions', compact(
-        'regions',
-        'typesContenus',
-        'stats',
-        'regionLangues'
-    ));
-}
+    // Types par région
+    $typesCountByRegion = [];
+    foreach ($regions as $region) {
+        $typesCountByRegion[$region->id_region] = $region->types_contenus;
+    }
 
-public function region($slug)
-{
-    // Trouver la région par son nom (slug)
-    $region = Region::where('nom_region', 'like', '%' . str_replace('-', ' ', $slug) . '%')
-                    ->firstOrFail();
-
-    // Récupérer les contenus de cette région
-    $contenus = Contenu::with([
-            'typeContenu',
-            'auteur',
-            'medias'
-        ])
-        ->where('id_region', $region->id_region)
-        ->where('statut', 'validé')
-        ->orderBy('date_creation', 'desc')
-        ->paginate(12);
-
-    // Ajouter les stats fictives et URLs d'images
-    $contenus->getCollection()->transform(function($contenu) {
-        $this->addFictiveStats($contenu);
-        $contenu->cover_image = $this->getContenuCoverImage($contenu);
-        $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
-        return $contenu;
-    });
-
-    // Statistiques de la région
-    $stats = [
-        'contenus_count' => $contenus->total(),
-        'contributeurs_count' => $region->contenus()
-            ->where('statut', 'validé')
-            ->distinct('id_auteur')
-            ->count('id_auteur'),
-        'types_count' => $region->contenus()
-            ->where('statut', 'validé')
-            ->distinct('id_type_contenu')
-            ->count('id_type_contenu'),
-        'langues_count' => rand(2, 5),
-        'groupes_count' => rand(3, 8),
-    ];
-
-    // Types de contenus dans cette région
-    $types = TypeContenu::withCount(['contenus' => function($query) use ($region) {
-            $query->where('id_region', $region->id_region)
-                  ->where('statut', 'validé');
-        }])
-        ->orderBy('contenus_count', 'desc')
-        ->get();
-
-    // Contributeurs de la région
-    $contributeurs = User::whereIn('id', function($query) use ($region) {
-            $query->select('id_auteur')
-                  ->from('contenus')
-                  ->where('id_region', $region->id_region)
-                  ->where('statut', 'validé');
-        })
-        ->withCount(['contenus' => function($query) use ($region) {
-            $query->where('id_region', $region->id_region)
-                  ->where('statut', 'validé');
-        }])
-        ->orderBy('contenus_count', 'desc')
-        ->limit(6)
-        ->get()
-        ->map(function($user) {
-            $user->followers_count = rand(50, 5000);
-            $user->total_contributions = rand(5, 50);
-            $user->photo_url = $this->getUserPhotoUrl($user);
-            return $user;
-        });
-
-    // Traditions de la région (données simulées)
-    $traditions = [
-        ['title' => 'Le Vodoun', 'description' => 'Religion traditionnelle...', 'tags' => ['Spiritualité', 'Cérémonies']],
-        ['title' => 'Bas-reliefs d\'Abomey', 'description' => 'Art unique au monde...', 'tags' => ['Artisanat', 'Patrimoine']],
-        ['title' => 'Guelédé & Zangbeto', 'description' => 'Masques cérémoniels...', 'tags' => ['Danses', 'Masques']],
-    ];
-
-      // Préparer les contenus avec les images
-    $contenus->getCollection()->transform(function($contenu) {
-        // Ajouter la méthode addFictiveStats si elle n'existe pas
-        $this->addFictiveStats($contenu);
-
-        // Préparer l'URL de l'image
-        $contenu->image_url = $this->getContenuCoverImage($contenu);
-        $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
-
-        return $contenu;
-    });
-
-    // Langues parlées dans la région (données simulées)
-    $langues = $this->getRegionLanguages($region);
-
-    return view('front.region-content', compact(
-        'region',
-        'contenus',
-        'stats',
-        'types',
-        'contributeurs',
-        'traditions',
-        'langues'
-    ));
-}
-
-/**
- * Méthode auxiliaire pour les langues de la région
- */
-private function getRegionLanguages($region)
-{
-    $defaultLangues = [
-        1 => ['Fon', 'Yoruba', 'Français'], 2 => ['Fon', 'Yoruba', 'Français'],
-        3 => ['Fon', 'Yoruba'], 4 => ['Ifè', 'Yoruba', 'Mahi'],
-        5 => ['Yoruba', 'Gun'], 6 => ['Yoruba', 'Ifè'],
-        7 => ['Bariba', 'Dendi', 'Fulfulde'], 8 => ['Bariba', 'Dendi', 'Fulfulde'],
-        9 => ['Xwla', 'Houéda', 'Fon'], 10 => ['Fon', 'Adja'],
-        11 => ['Ditammari', 'Berba', 'Waama'], 12 => ['Ditammari', 'Berba', 'Waama'],
-    ];
-    return $defaultLangues[$region->id_region] ?? ['Fon', 'Français'];
-}
-
-    // Dans votre FrontController.php, ajoutez ces méthodes
-
-public function contenu($id)
-{
-    $contenu = Contenu::with([
-            'typeContenu',
-            'region',
-            'auteur',
-            'auteur.role',
-            'medias',
-            'commentaires' => function($query) {
-                $query->with('utilisateur')
-                      ->orderBy('date', 'desc')
-                      ->limit(10);
-            },
-            'langue'
-        ])
-        ->where('statut', 'validé')
-        ->where('id_contenu', $id)
-        ->firstOrFail();
-
-    // Stats FICTIVES uniquement
-    $baseViews = rand($this->fictiveStats['min_views'], $this->fictiveStats['max_views']);
-    $typeFactor = $this->getContentTypeFactor($contenu->typeContenu->nom_contenu ?? 'Histoire');
-    $views = $baseViews * $typeFactor;
-
-    $stats = [
-        'vues' => $this->roundToRealisticNumber($views),
-        'likes' => (int) ($views * rand($this->fictiveStats['like_rate_min'] * 100, $this->fictiveStats['like_rate_max'] * 100) / 100),
-        'commentaires' => $contenu->commentaires->count() ?: (int) ($views * rand($this->fictiveStats['comment_rate_min'] * 100, $this->fictiveStats['comment_rate_max'] * 100) / 100),
-        'favoris' => (int) ($views * rand($this->fictiveStats['favorite_rate_min'] * 100, $this->fictiveStats['favorite_rate_max'] * 100) / 100),
-        'partages' => (int) ($views * rand($this->fictiveStats['share_rate_min'] * 100, $this->fictiveStats['share_rate_max'] * 100) / 100),
-    ];
-
-    $wordCount = str_word_count(strip_tags($contenu->texte ?? ''));
-    $readingTime = max(3, ceil($wordCount / 200));
-
-    $contenusSimilaires = Contenu::with(['typeContenu', 'auteur', 'medias'])
-        ->where('statut', 'validé')
-        ->where('id_contenu', '!=', $id)
-        ->where(function($query) use ($contenu) {
-            $query->where('id_region', $contenu->id_region)
-                  ->orWhere('id_type_contenu', $contenu->id_type_contenu);
-        })
-        ->orderBy('date_creation', 'desc')
-        ->limit(3)
-        ->get()
-        ->map(function($simContenu) {
-            $this->addFictiveStats($simContenu);
-            $simContenu->cover_image = $this->getContenuCoverImage($simContenu);
-            $simContenu->author_photo_url = $this->getUserPhotoUrl($simContenu->auteur);
-            return $simContenu;
-        });
-
-    $auteurStats = [
-        'contenus' => $contenu->auteur ? Contenu::where('id_auteur', $contenu->auteur->id)->where('statut', 'validé')->count() : 0,
-        'followers' => rand(1000, 15000),
-        'total_likes' => rand(5000, 30000),
-        'inscrit_depuis' => $contenu->auteur && $contenu->auteur->date_inscription ? \Carbon\Carbon::parse($contenu->auteur->date_inscription)->diffForHumans() : 'plus d\'un an',
-    ];
-
-    // SIMPLIFICATION : Pas d'interactions réelles, juste pour l'affichage
-    $userInteractions = [
-        'has_liked' => false,
-        'has_favorited' => false,
-        'is_following' => false
-    ];
-
-    // Ajouter les URLs aux images du contenu
-    $contenu->cover_image = $this->getContenuCoverImage($contenu);
-    $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
-    $contenu->media_urls = $contenu->medias->map(function($media) {
-        return [
-            'url' => $this->getImageUrl($media->chemin),
-            'description' => $media->description,
-            'type' => $media->id_type_media
-        ];
-    })->toArray();
-
-    // Ajoutez un prix fictif pour le contenu
-    $contenu->prix_fictif = rand(5, 20); // Prix entre 5€ et 20€
-
-    // Types de contenus qui sont "premium" (exemples)
-    $premiumTypes = [1, 2, 4, 5]; // Vodoun, Art, Histoire, Musique
-
-    $isPremium = in_array($contenu->id_type_contenu, $premiumTypes);
-    $hasAccess = true; // Pour l'instant, tout le monde a accès
-
-
-     return view('front.contenu', [
-        'contenu' => $contenu,
+    // Utiliser un tableau associatif au lieu de compact()
+    return view('front.regions', [
+        'regions' => $regions,
         'stats' => $stats,
-        'readingTime' => $readingTime,
-        'contenusSimilaires' => $contenusSimilaires,
-        'auteurStats' => $auteurStats,
-        'typeIcons' => $this->typeIcons,
-        'isPremium' => $isPremium,
-        'hasAccess' => $hasAccess,
-        'userInteractions' => $userInteractions
+        'typesContenus' => $typesContenus,
+        'allLangues' => $allLangues,
+        'regionLangues' => $regionLangues,
+        'typesCountByRegion' => $typesCountByRegion,
+        'typeIcons' => $this->typeIcons
     ]);
 }
-// Nouvelle méthode pour vérifier si c'est un contenu premium
-private function isPremiumContent($contenu)
-{
-    // Logique pour déterminer si c'est premium
-    // Vous pouvez ajouter un champ 'is_premium' dans la table contenus
-    return isset($contenu->is_premium) ? $contenu->is_premium : false;
 
-    // Ou basé sur le type de contenu
-    // $premiumTypes = [1, 2, 3]; // IDs des types premium
-    // return in_array($contenu->id_type_contenu, $premiumTypes);
-}
+    public function region($slug)
+    {
+        // Trouver la région par son slug ou nom
+        $region = Region::where('nom_region', 'like', '%' . str_replace('-', ' ', $slug) . '%')
+                        ->firstOrFail();
 
-// Nouvelle méthode pour vérifier l'accès utilisateur
-private function userHasAccess($user, $contenu)
-{
-    if (!$this->isPremiumContent($contenu)) {
-        return true; // Contenu gratuit
+        // Récupérer les contenus de cette région
+        $contenus = Contenu::with([
+                'typeContenu',
+                'auteur',
+                'medias',
+                'langue'
+            ])
+            ->where('id_region', $region->id_region)
+            ->where('statut', 'validé')
+            ->orderBy('date_creation', 'desc')
+            ->paginate(12);
+
+        // Transformer les résultats avec les vraies images
+        $contenus->getCollection()->transform(function($contenu) {
+            $this->addFictiveStats($contenu);
+
+            // Configuration du type
+            $typeConfig = $this->getTypeConfig($contenu->typeContenu->id_type_contenu ?? 1);
+            $contenu->icon = $typeConfig['icon'];
+            $contenu->color = $typeConfig['color'];
+            $contenu->type_name = $typeConfig['nom'];
+
+            // Images réelles depuis la base
+            $contenu->main_image = $this->getContenuMainImage($contenu);
+            $contenu->all_images = $this->getContenuAllImages($contenu);
+            $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
+
+            // Calculs
+            $wordCount = str_word_count(strip_tags($contenu->texte ?? ''));
+            $contenu->reading_time = max(1, ceil($wordCount / 200));
+
+            return $contenu;
+        });
+
+        // Statistiques de la région
+        $stats = [
+            'contenus_count' => $contenus->total(),
+            'contributeurs_count' => $region->contenus()
+                ->where('statut', 'validé')
+                ->distinct('id_auteur')
+                ->count('id_auteur'),
+            'types_count' => $region->contenus()
+                ->where('statut', 'validé')
+                ->distinct('id_type_contenu')
+                ->count('id_type_contenu'),
+            'langues_count' => count($this->getRegionLanguages($region)),
+            'groupes_count' => rand(3, 8),
+            'festivals_count' => rand(2, 10),
+            'sites_count' => rand(1, 5),
+        ];
+
+        // Types de contenus dans cette région
+        $types = TypeContenu::withCount(['contenus' => function($query) use ($region) {
+                $query->where('id_region', $region->id_region)
+                      ->where('statut', 'validé');
+            }])
+            ->orderBy('contenus_count', 'desc')
+            ->get()
+            ->map(function($type) {
+                $typeConfig = $this->getTypeConfig($type->id_type_contenu);
+                $type->icon = $typeConfig['icon'];
+                $type->color = $typeConfig['color'];
+                return $type;
+            });
+
+        // Contributeurs actifs
+        $contributeurs = User::whereIn('id', function($query) use ($region) {
+                $query->select('id_auteur')
+                      ->from('contenus')
+                      ->where('id_region', $region->id_region)
+                      ->where('statut', 'validé');
+            })
+            ->withCount(['contenus' => function($query) use ($region) {
+                $query->where('id_region', $region->id_region)
+                      ->where('statut', 'validé');
+            }])
+            ->orderBy('contenus_count', 'desc')
+            ->limit(8)
+            ->get()
+            ->map(function($user) {
+                $user->followers_count = rand(50, 5000);
+                $user->total_contributions = $user->contenus_count;
+                $user->rating = rand(40, 50) / 10;
+                $user->photo_url = $this->getUserPhotoUrl($user);
+                return $user;
+            });
+
+        // Traditions de la région
+        $traditions = [
+            [
+                'title' => 'Le Vodoun',
+                'description' => 'Religion traditionnelle animiste pratiquée depuis des siècles, classée au patrimoine mondial de l\'UNESCO.',
+                'tags' => ['Spiritualité', 'Cérémonies', 'Patrimoine UNESCO'],
+                'icon' => 'bi-magic',
+                'color' => '#E8112D'
+            ],
+            [
+                'title' => 'Bas-reliefs d\'Abomey',
+                'description' => 'Art unique au monde racontant l\'histoire du royaume du Danhomè à travers des sculptures murales.',
+                'tags' => ['Artisanat', 'Patrimoine', 'Sculpture'],
+                'icon' => 'bi-brush',
+                'color' => '#0D6EFD'
+            ],
+            [
+                'title' => 'Guelédé & Zangbeto',
+                'description' => 'Masques cérémoniels représentant des figures mythologiques et sociales importantes.',
+                'tags' => ['Danses', 'Masques', 'Cérémonies'],
+                'icon' => 'bi-person-arms-up',
+                'color' => '#20C997'
+            ],
+            [
+                'title' => 'Festivals Traditionnels',
+                'description' => 'Célébrations annuelles marquant les récoltes, les événements historiques et les rites de passage.',
+                'tags' => ['Festivals', 'Célébrations', 'Communauté'],
+                'icon' => 'bi-calendar3',
+                'color' => '#6610F2'
+            ]
+        ];
+
+        // Langues parlées
+        $langues = $this->getRegionLanguages($region);
+
+        // Données pour la carte
+        $regionCoordinates = [
+            'lat' => 9.3077 + (($region->id_region - 6) * 0.8),
+            'lng' => 2.3158 + (($region->id_region - 6) * 0.5),
+        ];
+
+        return view('front.region-content', compact(
+            'region',
+            'contenus',
+            'stats',
+            'types',
+            'contributeurs',
+            'traditions',
+            'langues',
+            'regionCoordinates'
+        ));
     }
 
-    // Vérifier si l'utilisateur a acheté ce contenu
-    $purchase = DB::table('achats')
-        ->where('utilisateur_id', $user->id)
-        ->where('contenu_id', $contenu->id_contenu)
-        ->where('statut', 'completed')
-        ->first();
+    public function contenu($id)
+    {
+        $contenu = Contenu::with([
+                'typeContenu',
+                'region',
+                'auteur',
+                'auteur.role',
+                'medias',
+                'commentaires' => function($query) {
+                    $query->with('utilisateur')
+                          ->orderBy('date', 'desc')
+                          ->limit(10);
+                },
+                'langue'
+            ])
+            ->where('statut', 'validé')
+            ->where('id_contenu', $id)
+            ->firstOrFail();
 
-    return $purchase !== null;
-}
+        // Stats fictives
+        $baseViews = rand($this->fictiveStats['min_views'], $this->fictiveStats['max_views']);
+        $typeFactor = $this->getContentTypeFactor($contenu->typeContenu->nom_contenu ?? 'Histoire');
+        $views = $baseViews * $typeFactor;
 
-// Nouvelle méthode pour récupérer les stats de l'auteur
-private function getAuthorStats($auteur)
-{
-    if (!$auteur) {
-        return [
-            'contenus' => 0,
-            'followers' => 0,
-            'total_likes' => 0,
-            'inscrit_depuis' => 'Date inconnue',
-            'rating' => 0,
-            'is_premium_author' => false
+        $stats = [
+            'vues' => $this->roundToRealisticNumber($views),
+            'likes' => (int) ($views * rand($this->fictiveStats['like_rate_min'] * 100, $this->fictiveStats['like_rate_max'] * 100) / 100),
+            'commentaires' => $contenu->commentaires->count() ?: (int) ($views * rand($this->fictiveStats['comment_rate_min'] * 100, $this->fictiveStats['comment_rate_max'] * 100) / 100),
+            'favoris' => (int) ($views * rand($this->fictiveStats['favorite_rate_min'] * 100, $this->fictiveStats['favorite_rate_max'] * 100) / 100),
+            'partages' => (int) ($views * rand($this->fictiveStats['share_rate_min'] * 100, $this->fictiveStats['share_rate_max'] * 100) / 100),
+        ];
+
+        // Temps de lecture
+        $wordCount = str_word_count(strip_tags($contenu->texte ?? ''));
+        $readingTime = max(3, ceil($wordCount / 200));
+
+        // Contenus similaires
+        $contenusSimilaires = Contenu::with(['typeContenu', 'auteur', 'medias'])
+            ->where('statut', 'validé')
+            ->where('id_contenu', '!=', $id)
+            ->where(function($query) use ($contenu) {
+                $query->where('id_region', $contenu->id_region)
+                      ->orWhere('id_type_contenu', $contenu->id_type_contenu);
+            })
+            ->orderBy('date_creation', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function($simContenu) {
+                $this->addFictiveStats($simContenu);
+                $simContenu->main_image = $this->getContenuMainImage($simContenu);
+                $simContenu->author_photo_url = $this->getUserPhotoUrl($simContenu->auteur);
+                return $simContenu;
+            });
+
+        // Stats auteur
+        $auteurStats = [
+            'contenus' => $contenu->auteur ? Contenu::where('id_auteur', $contenu->auteur->id)->where('statut', 'validé')->count() : 0,
+            'followers' => rand(1000, 15000),
+            'total_likes' => rand(5000, 30000),
+            'inscrit_depuis' => $contenu->auteur && $contenu->auteur->date_inscription ? \Carbon\Carbon::parse($contenu->auteur->date_inscription)->diffForHumans() : 'plus d\'un an',
+        ];
+
+        // Images réelles du contenu
+        $contenu->main_image = $this->getContenuMainImage($contenu);
+        $contenu->author_photo_url = $this->getUserPhotoUrl($contenu->auteur);
+        $contenu->all_images = $this->getContenuAllImages($contenu);
+
+        // Format des médias
+        $contenu->media_urls = $contenu->medias->map(function($media) {
+            return [
+                'url' => $this->getImageUrl($media->chemin),
+                'description' => $media->description,
+                'type' => $media->id_type_media
+            ];
+        })->toArray();
+
+        // Interactions utilisateur
+        $userInteractions = [
+            'has_liked' => false,
+            'has_favorited' => false,
+            'is_following' => false
+        ];
+
+        return view('front.contenu', [
+            'contenu' => $contenu,
+            'stats' => $stats,
+            'readingTime' => $readingTime,
+            'contenusSimilaires' => $contenusSimilaires,
+            'auteurStats' => $auteurStats,
+            'typeIcons' => $this->typeIcons,
+            'userInteractions' => $userInteractions
+        ]);
+    }
+
+    /**
+     * ============ MÉTHODES PRIVÉES ============
+     */
+
+    /**
+     * Get type configuration
+     */
+    private function getTypeConfig($typeId)
+    {
+        return $this->typeIcons[$typeId] ?? [
+            'icon' => 'bi-grid',
+            'color' => '#6C757D',
+            'nom' => 'Général'
         ];
     }
 
-    $followersCount = DB::table('followers')
-        ->where('following_id', $auteur->id)
-        ->count();
+    /**
+     * Méthode auxiliaire pour les langues de la région
+     */
+    private function getRegionLanguages($region)
+    {
+        $defaultLangues = [
+            1 => ['Fon', 'Yoruba', 'Français'],
+            2 => ['Fon', 'Yoruba', 'Français'],
+            3 => ['Fon', 'Yoruba'],
+            4 => ['Ifè', 'Yoruba', 'Mahi'],
+            5 => ['Yoruba', 'Gun'],
+            6 => ['Yoruba', 'Ifè'],
+            7 => ['Bariba', 'Dendi', 'Fulfulde'],
+            8 => ['Bariba', 'Dendi', 'Fulfulde'],
+            9 => ['Xwla', 'Houéda', 'Fon'],
+            10 => ['Fon', 'Adja'],
+            11 => ['Ditammari', 'Berba', 'Waama'],
+            12 => ['Ditammari', 'Berba', 'Waama'],
+        ];
+        return $defaultLangues[$region->id_region] ?? ['Fon', 'Français'];
+    }
 
-    // Calculer la note moyenne
-    $rating = DB::table('contenus')
-        ->where('id_auteur', $auteur->id)
-        ->avg('rating') ?? 0;
-
-    return [
-        'contenus' => Contenu::where('id_auteur', $auteur->id)
-            ->where('statut', 'validé')
-            ->count(),
-        'followers' => $followersCount,
-        'total_likes' => DB::table('likes')
-            ->join('contenus', 'likes.contenu_id', '=', 'contenus.id_contenu')
-            ->where('contenus.id_auteur', $auteur->id)
-            ->count(),
-        'inscrit_depuis' => $auteur->date_inscription
-            ? \Carbon\Carbon::parse($auteur->date_inscription)->diffForHumans()
-            : 'plus d\'un an',
-        'rating' => round($rating, 1),
-        'is_premium_author' => $auteur->is_premium_author ?? false
-    ];
-}
-
-// Nouvelle méthode pour obtenir le prix
-private function getContentPrice($contenu)
-{
-    // Logique de prix
-    // Vous pouvez stocker le prix dans la table contenus
-    return $contenu->prix ?? 5; // 5€ par défaut
-}
-
-    // ... (gardez les autres méthodes existantes)
-
-    // ============ MÉTHODES PRIVÉES ============
-
+    /**
+     * Ajouter des statistiques fictives
+     */
     private function addFictiveStats($contenu)
     {
         $typeName = $contenu->typeContenu->nom_contenu ?? 'Histoire';
@@ -668,6 +784,9 @@ private function getContentPrice($contenu)
         return $contenu;
     }
 
+    /**
+     * Facteur selon le type de contenu
+     */
     private function getContentTypeFactor($typeName)
     {
         $factors = [
@@ -678,6 +797,9 @@ private function getContentPrice($contenu)
         return $factors[$typeName] ?? 1.4;
     }
 
+    /**
+     * Arrondir les nombres pour qu'ils paraissent réels
+     */
     private function roundToRealisticNumber($number)
     {
         if ($number < 1000) return round($number / 10) * 10;
@@ -686,221 +808,160 @@ private function getContentPrice($contenu)
         else return round($number / 10000) * 10000;
     }
 
-    private function getTypeConfig($typeId)
-    {
-        return $this->typeIcons[$typeId] ?? ['icon' => 'bi-grid', 'color' => '#6C757D', 'nom' => 'Général'];
-    }
-
     /**
- * Afficher la page de connexion
- */
-public function connexion()
-{
-    if (Auth::check()) {
-        return redirect()->route('dashboard.index');
-    }
+     * ============ MÉTHODES D'AUTHENTIFICATION ============
+     */
 
-    return view('front.connexion');
-}
-
-/**
- * Afficher la page d'inscription
- */
-public function inscription()
-{
-    if (Auth::check()) {
-        return redirect()->route('dashboard.index')->with('info', 'Vous êtes déjà connecté.');
-    }
-
-    $langues = Langue::orderBy('nom_langue')->get();
-    return view('front.inscription', compact('langues'));
-}
-
-/**
- * Traiter la connexion
- */
-public function connexionPost(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    if (Auth::attempt($request->only('email', 'password'), $request->remember)) {
-        $request->session()->regenerate();
-        $user = Auth::user();
-
-        // Redirection selon le rôle
-        if ($user->id_role == 1 || $user->id_role == 2) { // Admin/Modérateur
-            return redirect()->route('admin.tableaudebord');
+    public function connexion()
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard.index');
         }
 
+        return view('front.connexion');
+    }
+
+    public function inscription()
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard.index')->with('info', 'Vous êtes déjà connecté.');
+        }
+
+        $langues = Langue::orderBy('nom_langue')->get();
+        return view('front.inscription', compact('langues'));
+    }
+
+    public function connexionPost(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($request->only('email', 'password'), $request->remember)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+
+            if ($user->id_role == 1 || $user->id_role == 2) {
+                return redirect()->route('admin.tableaudebord');
+            }
+
+            return redirect()->route('dashboard.index')
+                ->with('success', 'Connexion réussie ! Bienvenue sur Bénin Culture.');
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
+        ])->onlyInput('email');
+    }
+
+    public function inscriptionPost(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'nullable|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'date_naissance' => 'nullable|date',
+            'sexe' => 'required|in:M,F',
+            'id_langue' => 'nullable|exists:langues,id_langue',
+            'terms' => 'required',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $userData = [
+            'name' => $request->name,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'sexe' => $request->sexe,
+            'date_naissance' => $request->date_naissance,
+            'id_langue' => $request->id_langue,
+            'id_role' => 3,
+            'statut' => 'actif',
+            'date_inscription' => now(),
+        ];
+
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('public/users');
+            $userData['photo'] = str_replace('public/', '', $photoPath);
+        }
+
+        $user = User::create($userData);
+        Auth::login($user);
+
         return redirect()->route('dashboard.index')
-            ->with('success', 'Connexion réussie ! Bienvenue sur Bénin Culture.');
+            ->with('success', 'Inscription réussie ! Bienvenue sur Bénin Culture.');
     }
 
-    return back()->withErrors([
-        'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
-    ])->onlyInput('email');
-}
+    public function apropos()
+    {
+        $stats = [
+            'total_contenus' => Contenu::where('statut', 'validé')->count(),
+            'total_utilisateurs' => User::where('statut', 'actif')->count(),
+            'total_regions' => Region::count(),
+            'total_types' => TypeContenu::count(),
+        ];
 
-/**
- * Traiter l'inscription
- */
-public function inscriptionPost(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'prenom' => 'nullable|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8|confirmed',
-        'date_naissance' => 'nullable|date',
-        'sexe' => 'required|in:M,F',
-        'id_langue' => 'nullable|exists:langues,id_langue',
-        'terms' => 'required',
-        'photo' => 'nullable|image|max:2048',
-    ]);
-
-    // Créer l'utilisateur
-    $userData = [
-        'name' => $request->name,
-        'prenom' => $request->prenom,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'sexe' => $request->sexe,
-        'date_naissance' => $request->date_naissance,
-        'id_langue' => $request->id_langue,
-        'id_role' => 3, // Contributeur
-        'statut' => 'actif',
-        'date_inscription' => now(),
-    ];
-
-    // Gérer la photo
-    if ($request->hasFile('photo')) {
-        $photoPath = $request->file('photo')->store('public/users');
-        $userData['photo'] = str_replace('public/', '', $photoPath);
-    }
-
-    $user = User::create($userData);
-
-    // Connecter automatiquement l'utilisateur
-    Auth::login($user);
-
-    return redirect()->route('dashboard.index')
-        ->with('success', 'Inscription réussie ! Bienvenue sur Bénin Culture.');
-}
-
-/**
- * Afficher la page À propos
- */
-public function apropos()
-{
-    $stats = [
-        'total_contenus' => Contenu::where('statut', 'validé')->count(),
-        'total_utilisateurs' => User::where('statut', 'actif')->count(),
-        'total_regions' => Region::count(),
-        'total_types' => TypeContenu::count(),
-    ];
-
-    $equipe = [
-        [
-            'name' => 'Admin Principal',
-            'role' => 'Administrateur',
-            'description' => 'Gestion générale de la plateforme',
-            'icon' => 'bi-person-badge'
-        ],
-        [
-            'name' => 'Modérateur Culturel',
-            'role' => 'Modérateur',
-            'description' => 'Validation des contenus culturels',
-            'icon' => 'bi-shield-check'
-        ],
-        [
-            'name' => 'Expert Régional',
-            'role' => 'Contributeur Expert',
-            'description' => 'Spécialiste des traditions locales',
-            'icon' => 'bi-geo-alt'
-        ],
-        [
-            'name' => 'Historien',
-            'role' => 'Contributeur',
-            'description' => 'Documentation historique',
-            'icon' => 'bi-book'
-        ]
-    ];
-
-    $objectifs = [
-        [
-            'title' => 'Préservation',
-            'description' => 'Sauvegarder le patrimoine culturel béninois',
-            'icon' => 'bi-archive'
-        ],
-        [
-            'title' => 'Accessibilité',
-            'description' => 'Rendre la culture accessible à tous',
-            'icon' => 'bi-globe'
-        ],
-        [
-            'title' => 'Éducation',
-            'description' => 'Éduquer les générations futures',
-            'icon' => 'bi-mortarboard'
-        ],
-        [
-            'title' => 'Innovation',
-            'description' => 'Combiner tradition et technologie',
-            'icon' => 'bi-lightbulb'
-        ]
-    ];
-
-    return view('front.apropos', compact('stats', 'equipe', 'objectifs'));
-}
-
-/**
- * Déconnexion
- */
-public function deconnexion(Request $request)
-{
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return redirect('/')->with('success', 'Vous avez été déconnecté avec succès.');
-}
-
-
-// Dans votre PaiementController ou FrontController
-public function boutiqueIndex(Request $request)
-{
-    // Offres flash (si vous en voulez)
-    $flashOffers = [
-        [
-            'id' => 'flash1',
-            'name' => 'Offre Spéciale Noël',
-            'price' => '9.99',
-            'old_price' => '19.99',
-            'savings' => 50,
-            'features' => [
-                'Accès à tous les contenus',
-                'Certificat numérique',
-                'Guide exclusif',
-                'Support prioritaire'
+        $equipe = [
+            [
+                'name' => 'Admin Principal',
+                'role' => 'Administrateur',
+                'description' => 'Gestion générale de la plateforme',
+                'icon' => 'bi-person-badge'
             ],
-            'remaining' => 15,
-            'progress' => 60
-        ]
-    ];
+            [
+                'name' => 'Modérateur Culturel',
+                'role' => 'Modérateur',
+                'description' => 'Validation des contenus culturels',
+                'icon' => 'bi-shield-check'
+            ],
+            [
+                'name' => 'Expert Régional',
+                'role' => 'Contributeur Expert',
+                'description' => 'Spécialiste des traditions locales',
+                'icon' => 'bi-geo-alt'
+            ],
+            [
+                'name' => 'Historien',
+                'role' => 'Contributeur',
+                'description' => 'Documentation historique',
+                'icon' => 'bi-book'
+            ]
+        ];
 
-    // Contenu à l'unité (si passé en paramètre)
-    $singleContent = null;
-    if ($request->has('contenu_id')) {
-        $singleContent = Contenu::where('id_contenu', $request->contenu_id)
-            ->where('statut', 'validé')
-            ->first();
+        $objectifs = [
+            [
+                'title' => 'Préservation',
+                'description' => 'Sauvegarder le patrimoine culturel béninois',
+                'icon' => 'bi-archive'
+            ],
+            [
+                'title' => 'Accessibilité',
+                'description' => 'Rendre la culture accessible à tous',
+                'icon' => 'bi-globe'
+            ],
+            [
+                'title' => 'Éducation',
+                'description' => 'Éduquer les générations futures',
+                'icon' => 'bi-mortarboard'
+            ],
+            [
+                'title' => 'Innovation',
+                'description' => 'Combiner tradition et technologie',
+                'icon' => 'bi-lightbulb'
+            ]
+        ];
+
+        return view('front.apropos', compact('stats', 'equipe', 'objectifs'));
     }
 
-    return view('front.boutique.index', [
-        'flashOffers' => $flashOffers,
-        'singleContent' => $singleContent
-    ]);
-}
+    public function deconnexion(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Vous avez été déconnecté avec succès.');
+    }
 }

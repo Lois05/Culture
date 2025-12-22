@@ -1,1396 +1,1202 @@
-{{-- resources/views/front/contenu.blade.php --}}
 @extends('layouts.layout_front')
 
 @section('title', ($contenu->titre ?? 'Contenu') . ' - Bénin Culture')
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --primary: #E8112D;
+        --primary-light: rgba(232, 17, 45, 0.1);
+        --primary-gradient: linear-gradient(135deg, #E8112D, #FF3366);
+        --secondary: #FCD116;
+        --accent: #008751;
+        --dark: #1a1a1a;
+        --light: #f8f9fa;
+        --gray-100: #f8f9fa;
+        --gray-800: #343a40;
     }
 
-    .hero-content-detail {
+    body {
+        background: var(--light);
+        padding-top: 80px;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .theme-dark {
+        --dark: #ffffff;
+        --light: #121212;
+        background: #121212;
+    }
+
+    /* ============ HERO SECTION ============ */
+    .article-hero {
         position: relative;
-        padding: 8rem 0 4rem;
-        background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.9)),
-                    url('{{ $contenu->cover_image ?? asset('adminlte/img/collage.png') }}') center/cover no-repeat;
-        clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        height: 70vh;
+        min-height: 500px;
+        max-height: 800px;
+        display: flex;
+        align-items: flex-end;
+        overflow: hidden;
         margin-top: -80px;
+    }
+
+    .hero-image-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
     }
 
     .hero-overlay {
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.2) 0%,
+            rgba(0, 0, 0, 0.6) 50%,
+            rgba(0, 0, 0, 0.9) 100%
+        );
+        z-index: 2;
     }
 
-    .content-metadata {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin: 25px 0;
-    }
-
-    .meta-badge {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 25px;
-        padding: 8px 20px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+    .hero-content {
+        position: relative;
+        z-index: 3;
         color: white;
+        text-shadow: 0 2px 30px rgba(0, 0, 0, 0.5);
+        padding-bottom: 4rem;
+        width: 100%;
+    }
+
+    .article-breadcrumb {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 50px;
+        padding: 0.8rem 1.5rem;
+        display: inline-flex;
+        margin-bottom: 2rem;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
     }
 
-    .meta-badge:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-2px);
+    .article-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #fff 0%, #FCD116 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .author-card-sidebar {
+    /* ============ AUTHOR CARD ============ */
+    .author-card {
         background: white;
         border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        border: none;
-    }
-
-    .author-card-sidebar:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .author-header {
-        background: var(--primary-gradient);
-        padding: 2.5rem 1.5rem;
-        text-align: center;
-        color: white;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        margin-top: -60px;
         position: relative;
-        overflow: hidden;
+        z-index: 10;
+        border: 1px solid rgba(232, 17, 45, 0.1);
     }
 
-    .author-avatar-large {
-        width: 100px;
-        height: 100px;
+    .theme-dark .author-card {
+        background: #1a1a1a;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .author-avatar {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid white;
-        margin-bottom: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        border: 3px solid var(--primary);
     }
 
-    .author-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        padding: 20px;
-        background: #f8f9fa;
-    }
-
-    .stat-item {
-        text-align: center;
-        padding: 10px;
-    }
-
-    .stat-number {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #2d3748;
-        display: block;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: #718096;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .btn-subscribe {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-subscribe:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        color: white;
-    }
-
-    .action-buttons {
+    .avatar-initials {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
         display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin: 30px 0;
-    }
-
-    .action-btn {
-        padding: 15px 30px;
-        border-radius: 15px;
-        font-weight: 600;
-        border: none;
-        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .action-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: 0.5s;
-    }
-
-    .action-btn:hover::before {
-        left: 100%;
-    }
-
-    .btn-like {
+        justify-content: center;
         background: var(--primary-gradient);
         color: white;
+        font-size: 1.8rem;
+        font-weight: bold;
+        border: 3px solid white;
     }
 
-    .btn-like:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-comment {
-        background: var(--accent-gradient);
-        color: white;
-    }
-
-    .btn-comment:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
-    }
-
-    .btn-favorite {
-        background: var(--secondary-gradient);
-        color: white;
-    }
-
-    .btn-favorite:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
-    }
-
-    .btn-share {
-        background: var(--success-gradient);
-        color: white;
-    }
-
-    .btn-share:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(67, 233, 123, 0.4);
-    }
-
-    .badge-count {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 4px 12px;
+    /* ============ PAYMENT WALL ============ */
+    .payment-wall {
+        background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
         border-radius: 20px;
-        font-size: 0.85rem;
-        margin-left: 8px;
-    }
-
-    .media-gallery-pinterest {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin: 30px 0;
-    }
-
-    .media-thumbnail {
-        border-radius: 15px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        height: 150px;
+        padding: 3rem;
+        margin: 2rem 0;
+        text-align: center;
+        border: 1px solid rgba(232, 17, 45, 0.3);
         position: relative;
+        overflow: hidden;
     }
 
-    .media-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-
-    .media-thumbnail:hover img {
-        transform: scale(1.1);
-    }
-
-    .media-thumbnail::after {
+    .payment-wall::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.7));
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        height: 5px;
+        background: var(--primary-gradient);
     }
 
-    .media-thumbnail:hover::after {
-        opacity: 1;
+    .premium-badge {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+        font-weight: bold;
+        padding: 8px 20px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
     }
 
-    .content-body {
-        font-size: 1.15rem;
-        line-height: 1.8;
-        color: #2d3748;
-    }
-
-    .content-body img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 15px;
-        margin: 25px 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .content-body h2, .content-body h3 {
-        color: #2d3748;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-    }
-
-    .content-body blockquote {
-        border-left: 4px solid var(--primary);
-        padding-left: 1.5rem;
-        font-style: italic;
-        color: #4a5568;
+    .payment-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
         margin: 2rem 0;
     }
 
-    .similar-card-pinterest {
-        background: white;
+    .payment-option {
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        border: 2px solid transparent;
         transition: all 0.3s ease;
-        height: 100%;
+        cursor: pointer;
+    }
+
+    .payment-option:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+    }
+
+    .payment-option.recommended {
+        border-color: var(--secondary);
         position: relative;
-    }
-
-    .similar-card-pinterest:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .similar-card-img {
-        height: 180px;
         overflow: hidden;
     }
 
-    .similar-card-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
+    .payment-option.recommended::after {
+        content: 'RECOMMANDÉ';
+        position: absolute;
+        top: 10px;
+        right: -30px;
+        background: var(--secondary);
+        color: #000;
+        font-size: 0.7rem;
+        font-weight: bold;
+        padding: 3px 30px;
+        transform: rotate(45deg);
     }
 
-    .similar-card-pinterest:hover .similar-card-img img {
-        transform: scale(1.1);
+    /* ============ BOUTON BOUTIQUE ============ */
+    .shop-btn {
+        background: linear-gradient(45deg, #8B5CF6, #6366F1);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .shop-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        color: white;
+    }
+
+    .shop-icon {
+        animation: pulseShop 2s infinite;
+    }
+
+    @keyframes pulseShop {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    /* ============ CONTENT SECTION ============ */
+    .content-wrapper {
+        background: white;
+        border-radius: 30px 30px 0 0;
+        margin-top: -30px;
+        position: relative;
+        z-index: 5;
+        padding: 3rem 0;
+    }
+
+    .theme-dark .content-wrapper {
+        background: #1a1a1a;
+    }
+
+    .content-excerpt {
+        font-size: 1.3rem;
+        line-height: 1.8;
+        color: #555;
+        padding: 2rem;
+        background: rgba(232, 17, 45, 0.05);
+        border-radius: 15px;
+        margin: 2rem 0;
+        border-left: 5px solid var(--primary);
+    }
+
+    .theme-dark .content-excerpt {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ccc;
+    }
+
+    .content-full {
+        display: none;
+    }
+
+    .content-full.visible {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* ============ STATS GRID ============ */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: rgba(232, 17, 45, 0.05);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .theme-dark .stat-item {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(232, 17, 45, 0.1);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .theme-dark .stat-number {
+        color: var(--secondary);
+    }
+
+    /* ============ ACTION BUTTONS ============ */
+    .action-buttons {
+        position: fixed;
+        right: 2rem;
+        bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 1000;
+    }
+
+    .action-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-5px) scale(1.1);
+        background: var(--primary);
+        color: white;
+    }
+
+    .action-btn.premium {
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+    }
+
+    .action-btn.premium:hover {
+        background: linear-gradient(45deg, #FFA500, #FF8C00);
+    }
+
+    /* ============ COMMENTS SECTION ============ */
+    .comments-section {
+        background: rgba(248, 249, 250, 0.5);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 3rem 0;
+    }
+
+    .theme-dark .comments-section {
+        background: rgba(255, 255, 255, 0.05);
     }
 
     .comment-card {
         background: white;
         border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        border-left: 4px solid var(--primary);
-        transition: all 0.3s ease;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
 
-    .comment-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    .theme-dark .comment-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
     }
 
     .comment-avatar {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid var(--primary);
     }
 
-    .comment-actions {
+    .comment-initials {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
         display: flex;
-        gap: 15px;
-        margin-top: 15px;
-    }
-
-    .comment-action-btn {
-        background: none;
-        border: none;
-        color: #718096;
-        font-size: 0.9rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s ease;
-        padding: 5px 10px;
-        border-radius: 15px;
-    }
-
-    .comment-action-btn:hover {
-        background: #f7fafc;
-        color: var(--primary);
-    }
-
-    .stats-card-sidebar {
-        background: white;
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    }
-
-    .stat-progress {
-        height: 8px;
-        border-radius: 4px;
-        background: #e2e8f0;
-        overflow: hidden;
-        margin-top: 5px;
-    }
-
-    .stat-progress-bar {
-        height: 100%;
-        border-radius: 4px;
-        background: var(--primary-gradient);
-        transition: width 1s ease-in-out;
-    }
-
-    .tag-bubble {
-        display: inline-block;
-        background: #edf2f7;
-        color: #4a5568;
-        padding: 8px 20px;
-        border-radius: 25px;
-        margin: 5px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-    }
-
-    .tag-bubble:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateY(-2px);
-        text-decoration: none;
-    }
-
-    .translation-card {
-        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 15px 0;
-        border-left: 4px solid #764ba2;
-    }
-
-    /* Styles pour la section premium */
-    .premium-offer-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-        margin: 40px 0;
-        transition: all 0.3s ease;
-    }
-
-    .premium-offer-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
-    }
-
-    .premium-badge {
-        background: rgba(255, 255, 255, 0.2);
-        display: inline-block;
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-weight: bold;
-        backdrop-filter: blur(10px);
-        margin-bottom: 20px;
-        animation: pulse 2s infinite;
-    }
-
-    .cta-section {
-        margin: 40px 0;
-    }
-
-    .cta-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        border-radius: 20px;
-        color: white;
-        box-shadow: 0 15px 35px rgba(240, 147, 251, 0.3);
-        padding: 40px;
-        transition: all 0.3s ease;
-    }
-
-    .cta-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(240, 147, 251, 0.4);
-    }
-
-    .pricing-card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 25px;
-    }
-
-    .current-price {
-        font-size: 3rem;
-        font-weight: bold;
-        color: white;
-    }
-
-    .old-price {
-        font-size: 1.2rem;
-        opacity: 0.8;
-    }
-
-    .savings-badge {
-        background: #4CAF50;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 20px;
-        display: inline-block;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    .btn-en-savoir-plus {
-        background: white;
-        color: #667eea;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        text-decoration: none;
-        width: 100%;
-    }
-
-    .btn-en-savoir-plus:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
-        color: #667eea;
-    }
-
-    .premium-features .d-flex {
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .offer-options {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        padding: 20px;
-    }
-
-    .offer-item {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-
-    .offer-item:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-3px);
-    }
-
-    .offer-item .price {
-        font-size: 1.5rem;
+        background: var(--primary);
+        color: white;
         font-weight: bold;
-        margin-top: 10px;
+        font-size: 0.9rem;
     }
 
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 992px) {
+        .article-title {
+            font-size: 2.5rem;
+        }
+        .article-hero {
+            height: 60vh;
+        }
     }
 
     @media (max-width: 768px) {
-        .hero-content-detail {
-            padding: 6rem 0 3rem;
-            clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+        .article-title {
+            font-size: 2rem;
         }
-
+        .article-hero {
+            height: 50vh;
+        }
+        .author-card {
+            margin-top: -40px;
+            padding: 1.5rem;
+        }
+        .payment-options {
+            grid-template-columns: 1fr;
+        }
         .action-buttons {
-            justify-content: center;
+            right: 1rem;
+            bottom: 1rem;
         }
+    }
 
-        .action-btn {
-            padding: 12px 20px;
-            font-size: 0.9rem;
+    @media (max-width: 576px) {
+        .article-title {
+            font-size: 1.8rem;
         }
-
-        .media-gallery-pinterest {
-            grid-template-columns: repeat(2, 1fr);
+        .article-hero {
+            height: 40vh;
         }
-
-        .premium-offer-card {
-            padding: 20px !important;
-        }
-
-        .current-price {
-            font-size: 2.5rem !important;
-        }
-
-        .cta-card {
-            padding: 25px !important;
+        .payment-wall {
+            padding: 2rem 1rem;
         }
     }
 </style>
 @endpush
 
 @section('content')
+@php
+    use App\Helpers\CloudinaryHelper;
+
+    // Données de l'auteur
+    $author = $contenu->auteur ?? null;
+
+    // Infos de l'avatar de l'auteur - CORRECTION ICI
+    $authorAvatar = $author ? CloudinaryHelper::getUserAvatarInfo($author) : [
+        'photo_url' => null, // Utiliser photo_url au lieu de url
+        'initials' => '??',
+        'has_photo' => false,
+        'color' => '#E8112D',
+        'name' => 'Auteur inconnu'
+    ];
+
+    // CORRECTION : S'assurer que photo_url existe
+    if (!isset($authorAvatar['photo_url'])) {
+        $authorAvatar['photo_url'] = null;
+    }
+
+    // Image principale du contenu
+    $mainImage = CloudinaryHelper::getContentImage($contenu);
+
+    // Contenu tronqué pour l'excerpt
+    $fullText = $contenu->texte ?? '';
+    $excerpt = Str::limit(strip_tags($fullText), 300);
+
+    // URL de la boutique
+    $shopUrl = route('boutique.index') . '?ref=contenu-' . ($contenu->id_contenu ?? 'premium');
+
+    // Statistiques fictives
+    $views = $contenu->views ?? rand(1000, 50000);
+    $likes = $contenu->likes ?? rand(500, 10000);
+    $commentsCount = $contenu->commentaires ? $contenu->commentaires->count() : rand(50, 500);
+    $shares = $contenu->shares ?? rand(100, 2000);
+
+    // Déterminer si c'est premium
+    $isPremium = $contenu->is_premium ?? false;
+
+    // Commentaires fictifs (pour l'exemple)
+    $fictiveComments = [];
+    $commentNames = ['Jean Dupont', 'Marie Koné', 'Koffi Johnson', 'Amina Salami', 'David Gbaguidi'];
+    for ($i = 0; $i < min(5, $commentsCount); $i++) {
+        $fictiveComments[] = [
+            'id' => $i + 1,
+            'user' => [
+                'name' => $commentNames[$i % count($commentNames)],
+                'initials' => CloudinaryHelper::getInitials($commentNames[$i % count($commentNames)])
+            ],
+            'text' => 'Commentaire fictif sur ce contenu intéressant. Je trouve cet article très instructif sur la culture béninoise.',
+            'time' => now()->subHours(rand(1, 48))->diffForHumans(),
+            'likes' => rand(0, 50)
+        ];
+    }
+@endphp
+
 <!-- Hero Section -->
-<section class="hero-content-detail">
-    <div class="hero-overlay"></div>
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <nav aria-label="breadcrumb" class="mb-4">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-white text-decoration-none">Accueil</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('front.explorer') }}" class="text-white text-decoration-none">Explorer</a></li>
-                        <li class="breadcrumb-item active text-white">{{ $contenu->typeContenu->nom_contenu ?? 'Contenu' }}</li>
-                    </ol>
-                </nav>
+<section class="article-hero">
+    <div class="hero-image-container">
+        <img src="{{ $mainImage }}"
+             alt="{{ $contenu->titre }}"
+             class="hero-image"
+             onerror="this.src='{{ CloudinaryHelper::static('default-content.jpg') }}'">
+        <div class="hero-overlay"></div>
+    </div>
 
-                <h1 class="display-4 fw-bold text-white mb-4" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.5);">
-                    {{ $contenu->titre ?? 'Titre du contenu' }}
-                </h1>
-
-                <div class="content-metadata">
-                    @if(isset($contenu->typeContenu))
-                    <span class="meta-badge" style="background: {{ $typeIcons[$contenu->typeContenu->id_type_contenu]['color'] ?? '#667eea' }}">
-                        <i class="bi {{ $typeIcons[$contenu->typeContenu->id_type_contenu]['icon'] ?? 'bi-grid' }}"></i>
-                        {{ $contenu->typeContenu->nom_contenu }}
-                    </span>
-                    @endif
-
-                    @if(isset($contenu->region))
-                    <span class="meta-badge">
-                        <i class="bi bi-geo-alt-fill"></i>
+    <div class="container hero-content">
+        <nav class="article-breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ url('/') }}" class="text-white text-decoration-none">
+                        <i class="fas fa-home me-1"></i>Accueil
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ route('front.explorer') }}" class="text-white text-decoration-none">
+                        Explorer
+                    </a>
+                </li>
+                @if($contenu->region)
+                <li class="breadcrumb-item">
+                    <a href="{{ route('front.regions', ['id' => $contenu->region->id_region]) }}"
+                       class="text-white text-decoration-none">
                         {{ $contenu->region->nom_region }}
-                    </span>
-                    @endif
+                    </a>
+                </li>
+                @endif
+                <li class="breadcrumb-item active text-white">
+                    {{ Str::limit($contenu->titre, 30) }}
+                </li>
+            </ol>
+        </nav>
 
-                    <span class="meta-badge">
-                        <i class="bi bi-clock"></i>
-                        {{ $readingTime ?? 5 }} min de lecture
-                    </span>
+        <h1 class="article-title" data-aos="fade-up" data-aos-delay="200">
+            {{ $contenu->titre }}
+        </h1>
 
-                    <span class="meta-badge">
-                        <i class="bi bi-calendar3"></i>
-                        {{ $contenu->date_creation ? \Carbon\Carbon::parse($contenu->date_creation)->format('d F Y') : 'Date inconnue' }}
-                    </span>
-                </div>
-
-                <div class="d-flex align-items-center gap-3 text-white mt-4">
-                    @if(isset($contenu->author_photo_url) && $contenu->author_photo_url)
-                    <img src="{{ $contenu->author_photo_url }}"
-                         alt="Photo de {{ $contenu->auteur->name ?? 'Auteur' }}"
-                         class="rounded-circle border border-3 border-white"
-                         style="width: 70px; height: 70px; object-fit: cover;">
-                    @else
-                    <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center border border-3 border-white"
-                         style="width: 70px; height: 70px; background: var(--primary-gradient);">
-                        <i class="bi bi-person text-white fs-4"></i>
-                    </div>
-                    @endif
-                    <div>
-                        <h5 class="mb-1">{{ $contenu->auteur->name ?? 'Auteur inconnu' }}</h5>
-                        <p class="mb-0 text-white-50">
-                            {{ $contenu->auteur->role->nom_role ?? 'Contributeur' }}
-                        </p>
-                    </div>
-                </div>
+        <div class="d-flex align-items-center gap-3 text-white" data-aos="fade-up" data-aos-delay="300">
+            <div class="d-flex align-items-center gap-2">
+                <i class="far fa-eye"></i>
+                <span>{{ number_format($views) }} vues</span>
             </div>
-
-            <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="d-flex justify-content-center justify-content-lg-end gap-5">
-                    <div class="text-center text-white">
-                        <div class="display-5 fw-bold" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
-                            {{ $stats['vues'] ?? '1.5K' }}
-                        </div>
-                        <small class="text-white-50">Vues</small>
-                    </div>
-                    <div class="text-center text-white">
-                        <div class="display-5 fw-bold" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
-                            {{ $stats['likes'] ?? '356' }}
-                        </div>
-                        <small class="text-white-50">Likes</small>
-                    </div>
-                    <div class="text-center text-white">
-                        <div class="display-5 fw-bold" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
-                            {{ $stats['commentaires'] ?? '42' }}
-                        </div>
-                        <small class="text-white-50">Commentaires</small>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="far fa-clock"></i>
+                <span>{{ $contenu->date_creation ? \Carbon\Carbon::parse($contenu->date_creation)->diffForHumans() : 'Récemment' }}</span>
             </div>
+            @if($contenu->typeContenu)
+            <span class="badge bg-white text-primary">
+                {{ $contenu->typeContenu->nom_contenu }}
+            </span>
+            @endif
         </div>
     </div>
 </section>
 
-<div class="container py-5">
-    <div class="row">
-        <!-- Contenu Principal -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-lg mb-5">
-                <div class="card-body p-4 p-md-5">
-                    <!-- Galerie Pinterest -->
-                    @if(isset($contenu->media_urls) && count($contenu->media_urls) > 0)
-                    <div class="mb-5">
-                        <div class="text-center mb-4">
-                            <img src="{{ is_array($contenu->media_urls[0]) ? $contenu->media_urls[0]['url'] : $contenu->media_urls[0] }}"
-                                 alt="{{ $contenu->titre ?? 'Image principale' }}"
-                                 class="img-fluid rounded-3 shadow-lg w-100"
-                                 style="max-height: 500px; object-fit: cover;"
-                                 id="mainImage">
-                        </div>
-
-                        @if(count($contenu->media_urls) > 1)
-                        <div class="media-gallery-pinterest">
-                            @foreach($contenu->media_urls as $index => $media)
-                            <div class="media-thumbnail" onclick="document.getElementById('mainImage').src = '{{ is_array($media) ? $media['url'] : $media }}'">
-                                <img src="{{ is_array($media) ? $media['url'] : $media }}"
-                                     alt="Image {{ $index + 1 }}">
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
-                    </div>
-                    @endif
-
-                    <!-- Contenu texte enrichi -->
-                    <div class="content-body mb-5">
-                        {!! $contenu->texte ?? '<p class="text-muted fst-italic">Aucun contenu disponible pour le moment.</p>' !!}
-                    </div>
-
-                    <!-- Section "En savoir plus" avec offre -->
-                    @if($isPremium ?? false)
-                    <div class="premium-offer-card">
-                        <div class="row align-items-center">
-                            <div class="col-lg-8">
-                                <div class="premium-badge">
-                                    <i class="bi bi-star-fill me-2"></i> CONTENU PREMIUM
-                                </div>
-
-                                <h3 class="fw-bold mb-3">Accédez à la version complète</h3>
-                                <p class="mb-4 opacity-90">
-                                    Débloquez toutes les informations détaillées, les analyses exclusives
-                                    et les ressources supplémentaires de ce contenu.
-                                </p>
-
-                                <div class="premium-features mb-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                                                <span>Contenu intégral détaillé</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                                                <span>Sources et références</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                                                <span>Médias exclusifs</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                                                <span>Support de l'auteur</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-4 text-center">
-                                <div class="pricing-card">
-                                    <div class="price-display mb-3">
-                                        <span class="old-price text-decoration-line-through opacity-75 me-2">
-                                            {{ ($contenu->prix_fictif ?? 15) + 5 }} €
-                                        </span>
-                                        <span class="current-price">
-                                            {{ $contenu->prix_fictif ?? 15 }} €
-                                        </span>
-                                        <div class="text-sm opacity-90 mt-2">une seule fois</div>
-                                    </div>
-
-                                    <div class="savings-badge mb-4">
-                                        <i class="bi bi-arrow-down me-1"></i>
-                                        Économisez 5€
-                                    </div>
-
-                                    <a href="{{ route('boutique.index') }}?contenu_id={{ $contenu->id_contenu }}&type=premium"
-                                       class="btn-en-savoir-plus">
-                                        <i class="bi bi-arrow-right-circle-fill"></i>
-                                        En savoir plus
-                                    </a>
-
-                                    <div class="mt-3 text-sm opacity-75">
-                                        <i class="bi bi-shield-check me-1"></i>
-                                        Paiement 100% sécurisé
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @else
-                    <div class="cta-section">
-                        <div class="cta-card">
-                            <h3 class="fw-bold mb-3">Vous aimez ce contenu ?</h3>
-                            <p class="mb-4 opacity-90">
-                                Découvrez d'autres trésors culturels et soutenez notre mission de préservation.
-                            </p>
-
-                            <div class="row justify-content-center">
-                                <div class="col-md-8">
-                                    <div class="offer-options mb-4">
-                                        <h5 class="fw-bold mb-3">Nos offres spéciales</h5>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="offer-item" onclick="window.location.href='{{ route('boutique.index') }}?type=pack'">
-                                                    <i class="bi bi-collection-play display-6 mb-3"></i>
-                                                    <h6 class="fw-bold">Pack Culturel</h6>
-                                                    <small>Accès à 10 contenus</small>
-                                                    <div class="price">2500 FCFA</div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="offer-item" onclick="window.location.href='{{ route('boutique.index') }}?type=abonnement'">
-                                                    <i class="bi bi-infinity display-6 mb-3"></i>
-                                                    <h6 class="fw-bold">Abonnement</h6>
-                                                    <small>Accès illimité</small>
-                                                    <div class="price">5000 FCFA<small>/mois</small></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="text-center">
-                                <a href="{{ route('boutique.index') }}"
-                                   class="btn-en-savoir-plus" style="max-width: 300px;">
-                                    <i class="bi bi-gem"></i>
-                                    Explorer nos offres
-                                </a>
-
-                                <div class="mt-4 text-sm opacity-75">
-                                    <i class="bi bi-award me-1"></i>
-                                    Soutenez la culture béninoise
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- Boutons d'action Pinterest -->
-                    <div class="action-buttons">
-                        <button class="action-btn btn-like">
-                            <i class="bi bi-hand-thumbs-up-fill"></i>
-                            <span>J'aime</span>
-                            <span class="badge-count">{{ $stats['likes'] ?? 356 }}</span>
-                        </button>
-
-                        <button class="action-btn btn-comment" data-bs-toggle="modal" data-bs-target="#commentModal">
-                            <i class="bi bi-chat-dots-fill"></i>
-                            <span>Commenter</span>
-                            <span class="badge-count">{{ $stats['commentaires'] ?? 42 }}</span>
-                        </button>
-
-                        <button class="action-btn btn-favorite">
-                            <i class="bi bi-heart-fill"></i>
-                            <span>Favori</span>
-                            <span class="badge-count">{{ $stats['favoris'] ?? 89 }}</span>
-                        </button>
-
-                        <button class="action-btn btn-share" onclick="shareContent()">
-                            <i class="bi bi-share-fill"></i>
-                            <span>Partager</span>
-                            <span class="badge-count">{{ $stats['partages'] ?? 45 }}</span>
-                        </button>
-                    </div>
-
-                    <!-- Tags et langues -->
-                    <div class="border-top pt-4 mt-4">
-                        <h5 class="fw-bold mb-3">
-                            <i class="bi bi-tags-fill me-2" style="color: var(--primary);"></i>
-                            Mots-clés & Langues
-                        </h5>
-                        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
-                            @if(isset($contenu->langue))
-                            <a href="#" class="tag-bubble">
-                                <i class="bi bi-translate me-1"></i>
-                                {{ $contenu->langue->nom_langue ?? 'Français' }}
-                            </a>
-                            @endif
-
-                            @if(isset($auteurLangues) && is_array($auteurLangues))
-                                @foreach($auteurLangues as $langue)
-                                <a href="#" class="tag-bubble">{{ $langue }}</a>
-                                @endforeach
-                            @endif
-
-                            <a href="#" class="tag-bubble">Bénin</a>
-                            <a href="#" class="tag-bubble">Culture</a>
-                            <a href="#" class="tag-bubble">Tradition</a>
-                            <a href="#" class="tag-bubble">Patrimoine</a>
-                        </div>
-
-                        <!-- Traductions -->
-                        @if(isset($traductions) && count($traductions) > 0)
-                        <div class="mt-4">
-                            <h6 class="fw-bold mb-3">
-                                <i class="bi bi-translate me-2"></i>
-                                Disponible en d'autres langues
-                            </h6>
-                            @foreach($traductions as $traduction)
-                            <div class="translation-card">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <span class="badge bg-primary mb-2">{{ $traduction['langue'] }}</span>
-                                        <p class="mb-0 small">{{ $traduction['texte'] }}</p>
-                                    </div>
-                                    <small class="text-muted">Traduit par {{ $traduction['traducteur'] }}</small>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
-                    </div>
+<!-- Carte Auteur -->
+<div class="container">
+    <div class="author-card" data-aos="fade-up" data-aos-delay="400">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                @if($authorAvatar['has_photo'] && $authorAvatar['photo_url'])
+                    {{-- CORRECTION : Utiliser photo_url --}}
+                    <img src="{{ $authorAvatar['photo_url'] }}"
+                         alt="{{ $authorAvatar['name'] }}"
+                         class="author-avatar"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                @endif
+                {{-- CORRECTION : Afficher les initiales si pas de photo ou si la photo a échoué --}}
+                <div class="avatar-initials" style="{{ $authorAvatar['has_photo'] && $authorAvatar['photo_url'] ? 'display: none;' : 'display: flex;' }}">
+                    {{ $authorAvatar['initials'] }}
                 </div>
             </div>
-
-            <!-- Section Commentaires -->
-            <div class="card border-0 shadow-lg mb-5">
-                <div class="card-header bg-white border-0 py-4" style="background: var(--primary-gradient); color: white;">
-                    <h4 class="mb-0">
-                        <i class="bi bi-chat-left-text-fill me-2"></i>
-                        Commentaires ({{ $stats['commentaires'] ?? 42 }})
-                    </h4>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    <!-- Formulaire commentaire Pinterest -->
-                    @auth
-                    <div class="mb-5">
-                        <div class="d-flex gap-3 align-items-start">
-                            @if(Auth::user()->photo)
-                            <img src="{{ asset('storage/' . Auth::user()->photo) }}"
-                                 alt="Photo de profil"
-                                 class="rounded-circle border border-3 border-primary"
-                                 style="width: 60px; height: 60px; object-fit: cover;">
-                            @else
-                            <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center border border-3 border-primary"
-                                 style="width: 60px; height: 60px; background: var(--primary-gradient);">
-                                <i class="bi bi-person text-white fs-5"></i>
-                            </div>
-                            @endif
-                            <div class="flex-grow-1">
-                                <textarea class="form-control" rows="4" placeholder="Partagez vos pensées sur ce contenu..."
-                                          style="border-radius: 15px; border: 2px solid #e2e8f0; resize: none;"></textarea>
-                                <div class="mt-3 d-flex justify-content-end gap-2">
-                                    <button class="btn btn-outline-secondary">Annuler</button>
-                                    <button class="btn btn-primary" style="border-radius: 15px; padding: 10px 25px;">
-                                        <i class="bi bi-send me-2"></i>Publier
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="fw-bold mb-1">{{ $authorAvatar['name'] }}</h3>
+                        <p class="text-muted mb-2">
+                            {{ $author->role->nom_role ?? 'Contributeur' }}
+                        </p>
+                        <p class="mb-0 text-muted">{{ $author->bio ?? 'Passionné de culture béninoise' }}</p>
                     </div>
-                    @else
-                    <div class="alert alert-info border-0 shadow-sm" style="border-radius: 15px; background: var(--accent-gradient); color: white;">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
-                            <div>
-                                <h6 class="fw-bold mb-1">Connectez-vous pour commenter</h6>
-                                <p class="mb-0">Rejoignez la communauté pour partager vos réflexions.</p>
-                            </div>
-                        </div>
-                    </div>
-                    @endauth
-
-                    <!-- Liste des commentaires -->
-                    <div class="comments-list">
-                        @if(isset($contenu->commentaires) && $contenu->commentaires->count() > 0)
-                            @foreach($contenu->commentaires as $commentaire)
-                            <div class="comment-card">
-                                <div class="d-flex gap-3">
-                                    @if($commentaire->utilisateur && $commentaire->utilisateur->photo)
-                                    <img src="{{ asset('storage/' . $commentaire->utilisateur->photo) }}"
-                                         alt="Photo de {{ $commentaire->utilisateur->name }}"
-                                         class="comment-avatar">
-                                    @else
-                                    <div class="comment-avatar bg-gradient d-flex align-items-center justify-content-center"
-                                         style="background: var(--secondary-gradient);">
-                                        <i class="bi bi-person text-white"></i>
-                                    </div>
-                                    @endif
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <div>
-                                                <h6 class="fw-bold mb-0">{{ $commentaire->utilisateur->name ?? 'Utilisateur' }}</h6>
-                                                <small class="text-muted">
-                                                    {{ $commentaire->utilisateur->role->nom_role ?? 'Membre' }}
-                                                </small>
-                                            </div>
-                                            <small class="text-muted">
-                                                <i class="bi bi-clock me-1"></i>
-                                                {{ \Carbon\Carbon::parse($commentaire->date)->diffForHumans() }}
-                                            </small>
-                                        </div>
-                                        <p class="mb-3">{{ $commentaire->texte }}</p>
-
-                                        <div class="comment-actions">
-                                            <button class="comment-action-btn">
-                                                <i class="bi bi-hand-thumbs-up"></i> {{ rand(1, 50) }}
-                                            </button>
-                                            <button class="comment-action-btn">
-                                                <i class="bi bi-reply"></i> Répondre
-                                            </button>
-                                            <button class="comment-action-btn">
-                                                <i class="bi bi-flag"></i> Signaler
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
-                        @else
-                        <div class="text-center py-5">
-                            <div class="empty-state">
-                                <i class="bi bi-chat-dots display-1 text-muted mb-4"></i>
-                                <h4 class="mb-3">Soyez le premier à commenter</h4>
-                                <p class="text-muted mb-4">
-                                    Partagez vos réflexions et démarrez la conversation !
-                                </p>
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Auteur - Carte Pinterest -->
-            <div class="author-card-sidebar mb-5">
-                <div class="author-header">
-                    @if(isset($contenu->author_photo_url) && $contenu->author_photo_url)
-                    <img src="{{ $contenu->author_photo_url }}"
-                         alt="Photo de {{ $contenu->auteur->name ?? 'Auteur' }}"
-                         class="author-avatar-large">
-                    @else
-                    <div class="author-avatar-large bg-gradient d-flex align-items-center justify-content-center mx-auto mb-3"
-                         style="background: var(--primary-gradient);">
-                        <i class="bi bi-person text-white fs-2"></i>
-                    </div>
-                    @endif
-
-                    <h4 class="fw-bold mb-2">{{ $contenu->auteur->name ?? 'Auteur' }}</h4>
-                    <p class="mb-0 opacity-90">
-                        <i class="bi bi-award me-1"></i>
-                        {{ $contenu->auteur->role->nom_role ?? 'Contributeur Premium' }}
-                    </p>
-                </div>
-
-                <div class="author-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">{{ $auteurStats['contenus'] ?? 24 }}</span>
-                        <span class="stat-label">Contenus</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ $auteurStats['followers'] ?? '1.2K' }}</span>
-                        <span class="stat-label">Abonnés</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ $auteurStats['total_likes'] ?? '4.5K' }}</span>
-                        <span class="stat-label">Likes</span>
-                    </div>
-                </div>
-
-                <div class="p-4 text-center">
-                    <button class="btn-subscribe mb-3 w-100">
-                        <i class="bi bi-plus-circle"></i>
-                        S'abonner
+                    <button class="btn btn-outline-primary" id="followAuthorBtn">
+                        <i class="fas fa-plus-circle me-2"></i>Suivre
                     </button>
-
-                    <div class="d-flex justify-content-center gap-4 text-muted small">
-                        <div>
-                            <i class="bi bi-calendar3 me-1"></i>
-                            {{ $auteurStats['inscrit_depuis'] ?? '2 ans' }}
-                        </div>
-                        <div>
-                            <i class="bi bi-globe me-1"></i>
-                            {{ $contenu->region->nom_region ?? 'Bénin' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contenus similaires Pinterest -->
-            <div class="card border-0 shadow-lg mb-5">
-                <div class="card-header bg-white border-0 py-4" style="background: var(--secondary-gradient); color: white;">
-                    <h4 class="mb-0">
-                        <i class="bi bi-collection-play-fill me-2"></i>
-                        Vous aimerez aussi
-                    </h4>
-                </div>
-                <div class="card-body p-4">
-                    @if(isset($contenusSimilaires) && $contenusSimilaires->count() > 0)
-                        @foreach($contenusSimilaires as $similar)
-                        <a href="{{ route('front.contenu', ['id' => $similar->id_contenu]) }}" class="text-decoration-none text-dark">
-                            <div class="similar-card-pinterest mb-4">
-                                <div class="similar-card-img">
-                                    @if(isset($similar->cover_image))
-                                    <img src="{{ $similar->cover_image }}"
-                                         alt="{{ $similar->titre }}">
-                                    @else
-                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                        <i class="bi bi-image text-muted fs-1"></i>
-                                    </div>
-                                    @endif
-                                </div>
-                                <div class="p-3">
-                                    <h6 class="fw-bold mb-2">{{ Str::limit($similar->titre ?? 'Sans titre', 40) }}</h6>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="bi bi-{{ $typeIcons[$similar->typeContenu->id_type_contenu ?? 1]['icon'] ?? 'grid' }} me-1"></i>
-                                            {{ $similar->typeContenu->nom_contenu ?? 'Général' }}
-                                        </small>
-                                        <small class="text-muted">
-                                            <i class="bi bi-eye me-1"></i>
-                                            {{ $similar->vues_count ?? 0 }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        @endforeach
-                    @else
-                    <div class="text-center py-4">
-                        <div class="empty-state">
-                            <i class="bi bi-info-circle display-4 text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Aucun contenu similaire</p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Stats détaillées Pinterest -->
-            <div class="stats-card-sidebar">
-                <h5 class="fw-bold mb-4">
-                    <i class="bi bi-bar-chart-fill me-2" style="color: var(--primary);"></i>
-                    Statistiques détaillées
-                </h5>
-
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-bold">Vues totales</span>
-                        <span class="fw-bold text-primary">{{ $stats['vues'] ?? '2.5K' }}</span>
-                    </div>
-                    <div class="stat-progress">
-                        <div class="stat-progress-bar" style="width: {{ min(100, (($stats['vues'] ?? 2500) / 5000 * 100)) }}%"></div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-bold">Taux d'engagement</span>
-                        <span class="fw-bold text-success">{{ rand(15, 85) }}%</span>
-                    </div>
-                    <div class="stat-progress">
-                        <div class="stat-progress-bar" style="width: {{ rand(15, 85) }}%; background: var(--success-gradient);"></div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-share-fill me-2" style="color: var(--primary);"></i>
-                            <span>Partages</span>
-                        </div>
-                        <span class="fw-bold">{{ $stats['partages'] ?? 45 }}</span>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-heart-fill me-2" style="color: #f5576c;"></i>
-                            <span>Ajouté aux favoris</span>
-                        </div>
-                        <span class="fw-bold text-danger">{{ $stats['favoris'] ?? 89 }}</span>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal pour les commentaires -->
-<div class="modal fade" id="commentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-0" style="background: var(--primary-gradient); color: white; border-radius: 20px 20px 0 0;">
-                <h5 class="modal-title">
-                    <i class="bi bi-chat-left-text-fill me-2"></i>
-                    Ajouter un commentaire
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- Contenu Principal -->
+<div class="content-wrapper">
+    <div class="container">
+        <!-- Actions flottantes -->
+        <div class="action-buttons">
+            <button class="action-btn" onclick="toggleLike()" id="likeBtn">
+                <i class="far fa-heart"></i>
+            </button>
+            <button class="action-btn" onclick="toggleBookmark()" id="bookmarkBtn">
+                <i class="far fa-bookmark"></i>
+            </button>
+            <button class="action-btn" onclick="shareContent()">
+                <i class="fas fa-share-alt"></i>
+            </button>
+            <!-- BOUTON COURONNE QUI REDIRIGE VERS LA BOUTIQUE -->
+            <a href="{{ $shopUrl }}" class="action-btn premium" title="Découvrir nos offres premium">
+                <i class="fas fa-crown"></i>
+            </a>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-grid" data-aos="fade-up">
+            <div class="stat-item">
+                <div class="stat-number" id="viewsCount">{{ number_format($views) }}</div>
+                <div class="stat-label">Vues</div>
             </div>
-            <div class="modal-body p-4">
-                <textarea class="form-control" rows="5" placeholder="Écrivez votre commentaire ici..."
-                          style="border-radius: 15px; border: 2px solid #e2e8f0; resize: none;"></textarea>
+            <div class="stat-item">
+                <div class="stat-number" id="likesCount">{{ number_format($likes) }}</div>
+                <div class="stat-label">Likes</div>
             </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 15px;">Annuler</button>
-                <button type="button" class="btn btn-primary" style="border-radius: 15px;">
-                    <i class="bi bi-send me-2"></i>Publier
-                </button>
+            <div class="stat-item">
+                <div class="stat-number" id="commentsCount">{{ number_format($commentsCount) }}</div>
+                <div class="stat-label">Commentaires</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ number_format($shares) }}</div>
+                <div class="stat-label">Partages</div>
             </div>
         </div>
+
+        <!-- Excerpt (contenu visible gratuitement) -->
+        <div class="content-excerpt" data-aos="fade-up">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-book-open me-2 text-primary"></i>
+                Aperçu du contenu
+            </h4>
+            <p class="mb-0">{{ $excerpt }}...</p>
+        </div>
+
+        <!-- Payment Wall (TOUJOURS VISIBLE) -->
+        <div class="payment-wall" data-aos="fade-up">
+            <div class="premium-badge">
+                <i class="fas fa-crown me-2"></i>
+                OFFRE SPECIALE
+            </div>
+
+            <h3 class="text-white fw-bold mb-3">
+                Accédez à tous nos contenus premium
+            </h3>
+
+            <p class="text-white-50 mb-4">
+                Soutenez la culture béninoise et profitez d'avantages exclusifs
+            </p>
+
+            <div class="payment-options">
+                <div class="payment-option" data-plan="single" onclick="selectPlan('single')">
+                    <h4 class="text-white fw-bold">2500 FCFA</h4>
+                    <p class="text-white-50 mb-2">Article à l'unité</p>
+                    <ul class="text-white-50 text-start small">
+                        <li>Accès complet à un article</li>
+                        <li>Téléchargement PDF inclus</li>
+                        <li>Accès permanent</li>
+                    </ul>
+                </div>
+
+                <div class="payment-option recommended" data-plan="monthly" onclick="selectPlan('monthly')">
+                    <h4 class="text-white fw-bold">5 000 FCFA/mois</h4>
+                    <p class="text-white-50 mb-2">Formule la plus populaire</p>
+                    <ul class="text-white-50 text-start small">
+                        <li>Tous les articles premium</li>
+                        <li>Téléchargements illimités</li>
+                        <li>Support prioritaire</li>
+                        <li>Contenus exclusifs mensuels</li>
+                    </ul>
+                </div>
+
+                <div class="payment-option" data-plan="yearly" onclick="selectPlan('yearly')">
+                    <h4 class="text-white fw-bold">10 000 FCFA/an</h4>
+                    <p class="text-white-50 mb-2">Économisez 16%</p>
+                    <ul class="text-white-50 text-start small">
+                        <li>Tous les avantages premium</li>
+                        <li>2 mois gratuits</li>
+                        <li>Badge "Soutien Culturel"</li>
+                        <li>Accès anticipé aux nouveautés</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- BOUTON QUI REDIRIGE VERS LA BOUTIQUE -->
+            <a href="{{ $shopUrl }}" class="btn btn-lg btn-warning px-5 py-3 fw-bold shop-btn">
+                <i class="fas fa-store-alt shop-icon me-2"></i>
+                DÉCOUVRIR NOS OFFRES
+            </a>
+
+            <p class="text-white-50 mt-3 small">
+                <i class="fas fa-shield-alt me-1"></i>
+                Paiement 100% sécurisé - Annulation à tout moment
+            </p>
+        </div>
+
+        <!-- Contenu complet -->
+        <div class="content-full visible" id="fullContent">
+            <div class="content-body" data-aos="fade-up">
+                {!! $fullText !!}
+            </div>
+
+            <!-- Tags -->
+            <div class="mt-4" data-aos="fade-up">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-tags me-2 text-primary"></i>
+                    Tags
+                </h6>
+                <div class="d-flex flex-wrap gap-2">
+                    @if($contenu->langue)
+                    <span class="badge bg-primary">{{ $contenu->langue->nom_langue }}</span>
+                    @endif
+                    @if($contenu->region)
+                    <span class="badge bg-success">{{ $contenu->region->nom_region }}</span>
+                    @endif
+                    @if($contenu->typeContenu)
+                    <span class="badge bg-warning text-dark">{{ $contenu->typeContenu->nom_contenu }}</span>
+                    @endif
+                    <span class="badge bg-info">Culture Béninoise</span>
+                    <span class="badge bg-dark">Patrimoine</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section commentaires -->
+        <div class="comments-section" id="commentsSection" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0">
+                    <i class="fas fa-comments text-primary me-2"></i>
+                    Commentaires
+                    <span class="text-primary">({{ $commentsCount }})</span>
+                </h3>
+
+                <button class="btn btn-primary" onclick="showCommentForm()">
+                    <i class="fas fa-plus me-2"></i>Ajouter un commentaire
+                </button>
+            </div>
+
+            @auth
+            <!-- Formulaire de commentaire fictif -->
+            <div class="comment-form mb-4" id="commentForm" style="display: none;">
+                <div class="d-flex gap-3">
+                    <div>
+                        @php
+                            $currentUser = auth()->user();
+                            $userAvatar = CloudinaryHelper::getUserAvatarInfo($currentUser);
+                            // CORRECTION : S'assurer que photo_url existe
+                            if (!isset($userAvatar['photo_url'])) {
+                                $userAvatar['photo_url'] = null;
+                            }
+                        @endphp
+                        @if($userAvatar['has_photo'] && $userAvatar['photo_url'])
+                            <img src="{{ $userAvatar['photo_url'] }}"
+                                 alt="{{ $currentUser->name }}"
+                                 class="comment-avatar"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        @endif
+                        <div class="comment-initials" style="{{ $userAvatar['has_photo'] && $userAvatar['photo_url'] ? 'display: none;' : 'display: flex;' }}">
+                            {{ $userAvatar['initials'] }}
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <form id="commentFormEl">
+                            @csrf
+                            <div class="mb-3">
+                                <textarea class="form-control"
+                                          rows="3"
+                                          placeholder="Partagez votre pensée..."
+                                          id="commentText"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="hideCommentForm()">
+                                    Annuler
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Publier
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @else
+            <div class="alert alert-primary">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                    <div>
+                        <strong>Connectez-vous pour commenter</strong>
+                        <p class="mb-0">Rejoignez la discussion et partagez vos pensées.</p>
+                        <a href="{{ route('front.connexion') }}" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-sign-in-alt me-1"></i>Se connecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endauth
+
+            <!-- Liste des commentaires fictifs -->
+            <div id="commentsList">
+                @foreach($fictiveComments as $comment)
+                <div class="comment-card">
+                    <div class="d-flex gap-3">
+                        <div>
+                            <div class="comment-initials">
+                                {{ $comment['user']['initials'] }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0">{{ $comment['user']['name'] }}</h6>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock me-1"></i>
+                                        {{ $comment['time'] }}
+                                    </small>
+                                </div>
+                                <button class="btn btn-sm btn-link text-muted comment-like-btn"
+                                        onclick="likeComment({{ $comment['id'] }})"
+                                        id="commentLike-{{ $comment['id'] }}">
+                                    <i class="far fa-heart me-1"></i>
+                                    <span id="commentLikes-{{ $comment['id'] }}">{{ $comment['likes'] }}</span>
+                                </button>
+                            </div>
+                            <p class="mb-0">{{ $comment['text'] }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Contenu similaire -->
+        @if(isset($contenusSimilaires) && $contenusSimilaires->count() > 0)
+        <div class="mt-5" data-aos="fade-up">
+            <h3 class="fw-bold mb-4">
+                <i class="fas fa-compass text-primary me-2"></i>
+                Contenus similaires
+            </h3>
+            <div class="row g-4">
+                @foreach($contenusSimilaires->take(3) as $similar)
+                    @php
+                        $similarImage = CloudinaryHelper::getContentImage($similar);
+                        $similarAuthor = $similar->auteur ?? null;
+                        $similarAuthorAvatar = $similarAuthor ? CloudinaryHelper::getUserAvatarInfo($similarAuthor) : [
+                            'photo_url' => null, // CORRECTION
+                            'initials' => '??',
+                            'has_photo' => false,
+                            'color' => '#E8112D',
+                            'name' => 'Auteur inconnu'
+                        ];
+                    @endphp
+                    <div class="col-md-4">
+                        <a href="{{ route('front.contenu', ['id' => $similar->id_contenu]) }}"
+                           class="card text-decoration-none h-100 border-0 shadow-sm">
+                            <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                                <img src="{{ $similarImage }}"
+                                     alt="{{ $similar->titre }}"
+                                     class="w-100 h-100 object-fit-cover"
+                                     onerror="this.src='{{ CloudinaryHelper::static('default-content.jpg') }}'">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">{{ Str::limit($similar->titre, 60) }}</h5>
+                                <div class="d-flex align-items-center mt-3">
+                                    @if($similarAuthorAvatar['has_photo'] && $similarAuthorAvatar['photo_url'])
+                                        <img src="{{ $similarAuthorAvatar['photo_url'] }}"
+                                             alt="{{ $similarAuthorAvatar['name'] }}"
+                                             class="rounded-circle me-2"
+                                             style="width: 30px; height: 30px; object-fit: cover;"
+                                             onerror="this.style.display='none';">
+                                    @else
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                                             style="width: 30px; height: 30px; background: var(--primary); color: white; font-size: 0.8rem;">
+                                            {{ $similarAuthorAvatar['initials'] }}
+                                        </div>
+                                    @endif
+                                    <span class="text-muted small">{{ $similarAuthorAvatar['name'] }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mt-2">
+                                    <span><i class="far fa-eye me-1"></i>{{ number_format($similar->views ?? rand(1000, 50000)) }}</span>
+                                    <span><i class="far fa-clock me-1"></i>{{ $similar->date_creation ? \Carbon\Carbon::parse($similar->date_creation)->diffForHumans() : 'Récemment' }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page contenu chargée avec succès');
-
-    // Animation des statistiques
-    animateStats();
-
-    // Gestion des images miniatures
-    const thumbnails = document.querySelectorAll('.media-thumbnail');
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            const mainImage = document.getElementById('mainImage');
-            if (mainImage) {
-                mainImage.style.opacity = '0.7';
-                setTimeout(() => {
-                    const imgSrc = this.querySelector('img').src;
-                    mainImage.src = imgSrc;
-                    mainImage.style.opacity = '1';
-                }, 200);
-            }
-        });
+    // Initialiser AOS
+    AOS.init({
+        duration: 1000,
+        once: true
     });
 
-    // Animation des badges
-    const badges = document.querySelectorAll('.meta-badge, .tag-bubble');
-    badges.forEach(badge => {
-        badge.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
-            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
-        });
+    // Variables globales
+    let liked = false;
+    let bookmarked = false;
+    let following = false;
 
-        badge.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
-        });
+    // Données fictives pour les compteurs
+    let views = {{ $views }};
+    let likes = {{ $likes }};
+    let comments = {{ $commentsCount }};
+
+    // Simuler des vues en direct
+    setInterval(() => {
+        if (Math.random() > 0.7) { // 30% de chance d'incrémenter
+            views++;
+            updateCounter('viewsCount', views);
+        }
+    }, 10000); // Toutes les 10 secondes
+
+    // Gérer les likes
+    window.toggleLike = function() {
+        const likeBtn = document.getElementById('likeBtn');
+        liked = !liked;
+
+        if (liked) {
+            likes++;
+            likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
+            likeBtn.style.background = 'var(--primary)';
+            likeBtn.style.color = 'white';
+            showToast('Merci pour votre like ! ❤️', 'success');
+
+            // Animation
+            createHeartAnimation(likeBtn);
+        } else {
+            likes--;
+            likeBtn.innerHTML = '<i class="far fa-heart"></i>';
+            likeBtn.style.background = '';
+            likeBtn.style.color = '';
+            showToast('Like retiré', 'info');
+        }
+
+        updateCounter('likesCount', likes);
+    };
+
+    // Gérer les bookmarks
+    window.toggleBookmark = function() {
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        bookmarked = !bookmarked;
+
+        if (bookmarked) {
+            bookmarkBtn.innerHTML = '<i class="fas fa-bookmark"></i>';
+            bookmarkBtn.style.background = 'var(--primary)';
+            bookmarkBtn.style.color = 'white';
+            showToast('Contenu sauvegardé 📌', 'success');
+        } else {
+            bookmarkBtn.innerHTML = '<i class="far fa-bookmark"></i>';
+            bookmarkBtn.style.background = '';
+            bookmarkBtn.style.color = '';
+            showToast('Retiré des favoris', 'info');
+        }
+    };
+
+    // Suivre l'auteur
+    document.getElementById('followAuthorBtn')?.addEventListener('click', function() {
+        const btn = this;
+        following = !following;
+
+        if (following) {
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary');
+            btn.innerHTML = '<i class="fas fa-check me-2"></i>Suivi';
+            showToast('Vous suivez maintenant cet auteur 👤', 'success');
+        } else {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+            btn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Suivre';
+            showToast('Vous ne suivez plus cet auteur', 'info');
+        }
     });
 
-    // Gestion des boutons d'action
-    const actionButtons = document.querySelectorAll('.action-btn');
-    actionButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const badge = this.querySelector('.badge-count');
-            if (badge) {
-                let count = parseInt(badge.textContent);
-                badge.textContent = count + 1;
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-            }
-        });
+    // Partager le contenu
+    window.shareContent = function() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ $contenu->titre }}',
+                text: 'Découvrez ce contenu sur Bénin Culture',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showToast('Lien copié dans le presse-papier 📋', 'success');
+            });
+        }
+    };
+
+    // Gérer les commentaires
+    window.showCommentForm = function() {
+        const commentForm = document.getElementById('commentForm');
+        if (commentForm) {
+            commentForm.style.display = 'block';
+            document.getElementById('commentText').focus();
+        }
+    };
+
+    window.hideCommentForm = function() {
+        const commentForm = document.getElementById('commentForm');
+        if (commentForm) {
+            commentForm.style.display = 'none';
+        }
+    };
+
+    document.getElementById('commentFormEl')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const commentText = document.getElementById('commentText');
+
+        if (commentText && commentText.value.trim()) {
+            // Ajouter un nouveau commentaire fictif
+            addComment(commentText.value);
+            commentText.value = '';
+            hideCommentForm();
+            showToast('Commentaire publié 💬', 'success');
+        }
     });
 
-    // Animation des cartes similaires
-    const similarCards = document.querySelectorAll('.similar-card-pinterest');
-    similarCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-10px)';
-            this.style.boxShadow = '0 20px 40px rgba(0,0,0,0.15)';
-        });
+    // Ajouter un commentaire fictif
+    function addComment(text) {
+        comments++;
+        updateCounter('commentsCount', comments);
 
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.08)';
-        });
-    });
-
-    // Gestion des offres
-    const offerItems = document.querySelectorAll('.offer-item');
-    offerItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const onclickAttr = this.getAttribute('onclick');
-            if (onclickAttr) {
-                const url = onclickAttr.match(/'([^']+)'/)?.[1];
-                if (url) {
-                    window.location.href = url;
-                }
-            }
-        });
-    });
-
-    // Animation pour la carte premium
-    const premiumCard = document.querySelector('.premium-offer-card');
-    if (premiumCard) {
-        premiumCard.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-            this.style.boxShadow = '0 30px 60px rgba(102, 126, 234, 0.4)';
-        });
-
-        premiumCard.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 25px 50px rgba(102, 126, 234, 0.4)';
-        });
-    }
-
-    // Animation pour la carte CTA
-    const ctaCard = document.querySelector('.cta-card');
-    if (ctaCard) {
-        ctaCard.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-            this.style.boxShadow = '0 25px 50px rgba(240, 147, 251, 0.4)';
-        });
-
-        ctaCard.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 20px 40px rgba(240, 147, 251, 0.4)';
-        });
-    }
-});
-
-function animateStats() {
-    const stats = document.querySelectorAll('.stat-number');
-    stats.forEach(stat => {
-        const finalValue = parseInt(stat.textContent.replace(/[^\d]/g, ''));
-        let startValue = 0;
-        const duration = 2000;
-        const increment = finalValue / (duration / 16);
-
-        const timer = setInterval(() => {
-            startValue += increment;
-            if (startValue >= finalValue) {
-                stat.textContent = finalValue.toLocaleString();
-                clearInterval(timer);
-            } else {
-                stat.textContent = Math.floor(startValue).toLocaleString();
-            }
-        }, 16);
-    });
-}
-
-function shareContent() {
-    if (navigator.share) {
-        navigator.share({
-            title: '{{ $contenu->titre }}',
-            text: 'Découvrez ce contenu sur Bénin Culture',
-            url: window.location.href,
-        })
-        .then(() => console.log('Contenu partagé avec succès'))
-        .catch((error) => console.log('Erreur de partage:', error));
-    } else {
-        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
-        window.open(shareUrl, '_blank', 'width=600,height=400');
-    }
-}
-
-function redirectToBoutique(type = 'premium', contenuId = null) {
-    let url = '/boutique';
-
-    if (contenuId) {
-        url += `?contenu_id=${contenuId}&type=${type}`;
-    } else if (type) {
-        url += `?type=${type}`;
-    }
-
-    const loader = document.createElement('div');
-    loader.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        ">
-            <div style="
-                background: white;
-                padding: 30px;
-                border-radius: 15px;
-                text-align: center;
-            ">
-                <div class="spinner-border text-primary mb-3" role="status"></div>
-                <p class="mb-0">Redirection vers la boutique...</p>
+        const commentList = document.getElementById('commentsList');
+        const newComment = document.createElement('div');
+        newComment.className = 'comment-card';
+        newComment.innerHTML = `
+            <div class="d-flex gap-3">
+                <div>
+                    <div class="comment-initials">
+                        {{ auth()->check() ? CloudinaryHelper::getInitials(auth()->user()->name) : "U" }}
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="fw-bold mb-0">{{ auth()->check() ? auth()->user()->name : "Utilisateur" }}</h6>
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i>
+                                À l'instant
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-link text-muted comment-like-btn"
+                                onclick="likeComment('new')"
+                                id="commentLike-new">
+                            <i class="far fa-heart me-1"></i>
+                            <span id="commentLikes-new">0</span>
+                        </button>
+                    </div>
+                    <p class="mb-0">${text}</p>
+                </div>
             </div>
-        </div>
-    `;
-    document.body.appendChild(loader);
+        `;
 
+        commentList.prepend(newComment);
+    }
+
+    // Liker un commentaire
+    window.likeComment = function(commentId) {
+        const likeBtn = document.getElementById(`commentLike-${commentId}`);
+        const likesSpan = document.getElementById(`commentLikes-${commentId}`);
+
+        if (likeBtn && likesSpan) {
+            let currentLikes = parseInt(likesSpan.textContent);
+            const liked = likeBtn.classList.contains('liked');
+
+            if (!liked) {
+                currentLikes++;
+                likeBtn.classList.add('liked');
+                likeBtn.innerHTML = '<i class="fas fa-heart me-1"></i>' + currentLikes;
+            } else {
+                currentLikes--;
+                likeBtn.classList.remove('liked');
+                likeBtn.innerHTML = '<i class="far fa-heart me-1"></i>' + currentLikes;
+            }
+
+            likesSpan.textContent = currentLikes;
+        }
+    };
+
+    // Fonctions utilitaires
+    function updateCounter(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            const formatted = new Intl.NumberFormat().format(value);
+            element.textContent = formatted;
+
+            // Animation
+            element.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }
+
+    function createHeartAnimation(element) {
+        const heart = document.createElement('div');
+        heart.innerHTML = '❤️';
+        heart.style.position = 'fixed';
+        heart.style.fontSize = '20px';
+        heart.style.pointerEvents = 'none';
+        heart.style.zIndex = '9999';
+
+        const rect = element.getBoundingClientRect();
+        heart.style.left = rect.left + rect.width/2 + 'px';
+        heart.style.top = rect.top + 'px';
+
+        document.body.appendChild(heart);
+
+        const animation = heart.animate([
+            { transform: 'translateY(0) scale(1)', opacity: 1 },
+            { transform: 'translateY(-100px) scale(2)', opacity: 0 }
+        ], {
+            duration: 1000,
+            easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+        });
+
+        animation.onfinish = () => heart.remove();
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 9999;
+            border-left: 4px solid ${type === 'success' ? '#28a745' : '#007bff'};
+            max-width: 300px;
+        `;
+
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.transform = 'translateX(0)';
+        }, 10);
+
+        setTimeout(() => {
+            toast.style.transform = 'translateX(150%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Initialiser les likes des commentaires
     setTimeout(() => {
-        window.location.href = url;
+        document.querySelectorAll('.comment-like-btn').forEach(btn => {
+            if (Math.random() > 0.5 && !btn.classList.contains('liked')) {
+                btn.click();
+            }
+        });
     }, 1000);
-}
+});
 </script>
 @endpush

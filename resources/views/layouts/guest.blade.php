@@ -10,7 +10,7 @@
 <body class="font-sans text-gray-900 antialiased">
 
     <div class="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
-         style="background-image: url('{{ asset('adminlte/img/danse.jpg') }}');">
+         style="background-image: url('{{ App\Helpers\CloudinaryHelper::static('danse.jpg') }}');">
 
         <!-- Cadre formulaire -->
         <div class="w-full sm:max-w-md bg-white rounded-2xl shadow-xl p-6">
@@ -21,3 +21,4 @@
 
 </body>
 </html>
+

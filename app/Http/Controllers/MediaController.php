@@ -11,17 +11,49 @@ use Illuminate\Support\Facades\Log;
 
 class MediaController extends Controller
 {
-    /**
-     * Liste des médias
-     */
-    public function index()
-    {
-        $medias = Media::with(['contenu', 'typeMedia'])
-                       ->orderBy('id_media', 'desc')
-                       ->get();
+    // app/Http\Controllers\MediaController.php
 
-        return view('medias.index', compact('medias'));
+/**
+ * Liste des médias
+ */
+public function index()
+{
+    try {
+        // Récupérer les médias avec leurs relations
+        $medias = Media::with([
+                'contenu' => function($query) {
+                    $query->select('id_contenu', 'titre', 'statut', 'id_type_contenu');
+                },
+                'contenu.typeContenu' => function($query) {
+                    $query->select('id_type_contenu', 'nom_contenu');
+                },
+                'typeMedia'
+            ])
+            ->orderBy('id_media', 'desc')
+            ->get();
+
+        // Récupérer uniquement les contenus validés pour les filtres
+        $contenus = Contenu::where('statut', 'validé')
+            ->orderBy('titre')
+            ->get(['id_contenu', 'titre']);
+
+        // Compter les statistiques
+        $stats = [
+            'total' => $medias->count(),
+            'images' => $medias->where('id_type_media', 1)->count(),
+            'videos' => $medias->where('id_type_media', 2)->count(),
+            'audios' => $medias->where('id_type_media', 3)->count(),
+            'with_content' => $medias->whereNotNull('id_contenu')->count(),
+            'without_content' => $medias->whereNull('id_contenu')->count(),
+        ];
+
+        return view('medias.index', compact('medias', 'contenus', 'stats'));
+
+    } catch (\Exception $e) {
+        Log::error('Erreur dans MediaController@index: ' . $e->getMessage());
+        return view('medias.index')->with('error', 'Erreur lors du chargement des médias');
     }
+}
 
     /**
      * Formulaire de création

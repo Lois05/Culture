@@ -6,14 +6,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Crypt;
+use App\HasCloudinaryImage;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasCloudinaryImage;
 
     protected $table = 'users';
     protected $primaryKey = 'id';
 
+    // Champs remplissables
     protected $fillable = [
         'name',
         'prenom',
@@ -26,13 +28,27 @@ class User extends Authenticatable
         'id_langue',
         'statut',
         'date_inscription',
+        'id_abonnement',
+        'date_debut_abonnement',
+        'date_fin_abonnement',
+        'statut_abonnement',
+        // Champs Cloudinary
+        'cloudinary_url',
+        'cloudinary_public_id',
+        'has_cloudinary',
+        'image_thumbnail'
     ];
 
+    // Accessors disponibles
+    protected $appends = ['image_url', 'thumbnail_url', 'nom_complet', 'photo_url'];
+
+    // Champs cachés
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    // Casts
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -41,8 +57,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Relation avec le rôle - CORRIGÉ
-     * users.id_role → roles.id
+     * Relation avec le rôle
      */
     public function role()
     {
@@ -58,7 +73,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relation avec les contenus
+     * Relation avec les contenus (en tant qu'auteur)
      */
     public function contenus()
     {
@@ -66,45 +81,34 @@ class User extends Authenticatable
     }
 
     /**
-     * Accesseur pour le nom complet
+     * Nom complet
      */
     public function getNomCompletAttribute()
     {
-        return ($this->prenom ?? '') . ' ' . $this->name;
+        return ($this->prenom ? $this->prenom . ' ' : '') . $this->name;
     }
 
     /**
-     * Accesseur pour l'URL de la photo
+     * URL de la photo (alias pour image_url)
      */
     public function getPhotoUrlAttribute()
     {
-        if ($this->photo && file_exists(storage_path('app/public/' . $this->photo))) {
-            return asset('storage/' . $this->photo);
-        }
-
-        // Photo par défaut avec initiales
-        $initials = strtoupper(
-            substr($this->prenom ?? $this->name, 0, 1) .
-            substr($this->name, 0, 1)
-        );
-
-        return "https://ui-avatars.com/api/?name={$initials}&background=random&color=fff&size=150";
+        return $this->image_url;
     }
 
     /**
-     * Accesseur pour l'âge
+     * Âge
      */
     public function getAgeAttribute()
     {
         if (!$this->date_naissance) {
             return null;
         }
-
         return $this->date_naissance->age;
     }
 
     /**
-     * Vérifie si l'utilisateur est admin
+     * Vérifie si admin
      */
     public function isAdmin()
     {
@@ -112,11 +116,31 @@ class User extends Authenticatable
     }
 
     /**
-     * Vérifie si l'utilisateur est actif
+     * Vérifie si actif
      */
     public function isActive()
     {
         return $this->statut === 'actif';
+    }
+
+    /**
+     * Upload une photo de profil
+     */
+    public function uploadPhoto($file)
+    {
+        // Garde l'ancien nom
+        $this->photo = $file->getClientOriginalName();
+
+        // Upload vers Cloudinary
+        if ($this->uploadToCloudinary($file, [
+            'folder' => 'culture_app/users',
+            'public_id' => 'user_' . $this->id . '_' . time()
+        ])) {
+            $this->save();
+            return true;
+        }
+
+        return false;
     }
 
      public function setGoogle2faSecretAttribute($value)
@@ -148,6 +172,78 @@ class User extends Authenticatable
         } catch (\Exception $e) {
             return [];
         }
+    }
+
+      /**
+     * Relation avec les transactions.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Relation avec les abonnements.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    /**
+     * Récupérer l'abonnement actif.
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(UserSubscription::class)
+            ->where('statut', 'actif')
+            ->where('date_fin', '>', now())
+            ->latest();
+    }
+
+    /**
+     * Vérifier si l'utilisateur a un abonnement actif.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return UserSubscription::userHasActiveSubscription($this->id);
+    }
+
+    /**
+     * Récupérer le type d'abonnement actif.
+     */
+    public function getSubscriptionTypeAttribute()
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription ? $subscription->type : null;
+    }
+
+    /**
+     * Récupérer le niveau d'abonnement.
+     */
+    public function getSubscriptionLevelAttribute()
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription ? $subscription->abonnement_id : 0;
+    }
+
+    /**
+     * Récupérer les transactions récentes.
+     */
+    public function recentTransactions($limit = 5)
+    {
+        return $this->transactions()
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * Ajouter une transaction.
+     */
+    public function addTransaction($data)
+    {
+        return $this->transactions()->create($data);
     }
 }
 

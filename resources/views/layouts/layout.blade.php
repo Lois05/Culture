@@ -118,111 +118,527 @@
                     </li>
                 </ul>
 
-                <!-- Right Side -->
-                <ul class="navbar-nav ms-auto">
-                    <!-- Search -->
-                    <li class="nav-item">
-                        <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+               <!-- Right Side -->
+<ul class="navbar-nav ms-auto">
+    <!-- Search -->
+    <li class="nav-item">
+        <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+            <i class="bi bi-search fs-5"></i>
+        </a>
+        <div class="navbar-search-block">
+            <form class="form-inline">
+                <div class="input-group">
+                    <input class="form-control form-control-lg" type="search" placeholder="Rechercher..." aria-label="Search">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">
                             <i class="bi bi-search"></i>
-                        </a>
-                        <div class="navbar-search-block">
-                            <form class="form-inline">
-                                <div class="input-group">
-                                    <input class="form-control" type="search" placeholder="Rechercher..." aria-label="Search">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-navbar" type="submit">
-                                            <i class="bi bi-search"></i>
-                                        </button>
-                                        <button class="btn btn-navbar" type="button" data-widget="navbar-search">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </li>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" data-widget="navbar-search">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </li>
 
-                    <!-- Messages -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                            <i class="bi bi-chat-text"></i>
-                            <span class="badge bg-danger navbar-badge">3</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                            <span class="dropdown-header">3 Messages</span>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ asset('assets/img/user1-128x128.jpg') }}" class="rounded-circle me-2" width="40" height="40">
-                                    <div>
-                                        <strong>Brad Diesel</strong>
-                                        <small class="text-muted">Call me whenever you can...</small>
-                                    </div>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item dropdown-footer">Voir tous les messages</a>
+    <!-- Messages Dropdown -->
+    <li class="nav-item dropdown mx-2">
+        <a class="nav-link position-relative" data-bs-toggle="dropdown" href="#" role="button">
+            <i class="bi bi-chat-text fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                3
+                <span class="visually-hidden">messages non lus</span>
+            </span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 shadow-lg border-0" style="min-width: 320px;">
+            <div class="bg-primary text-white p-3 rounded-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-chat-text me-2"></i> Messages
+                    </h6>
+                    <span class="badge bg-white text-primary">3 nouveaux</span>
+                </div>
+            </div>
+            <div class="p-2" style="max-height: 300px; overflow-y: auto;">
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-start">
+                        <div class="position-relative me-3">
+                            <img src="{{ asset('assets/img/user1-128x128.jpg') }}"
+                                 class="rounded-circle"
+                                 width="45" height="45"
+                                 alt="User">
+                            <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle"
+                                  style="width: 12px; height: 12px;"></span>
                         </div>
-                    </li>
-
-                    <!-- Notifications -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                            <i class="bi bi-bell"></i>
-                            <span class="badge bg-warning navbar-badge">5</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                            <span class="dropdown-header">5 Notifications</span>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item">
-                                <i class="bi bi-envelope me-2"></i> Nouveau message
-                                <span class="float-end text-muted text-sm">3 min</span>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1 fw-bold">Brad Diesel</h6>
+                                <small class="text-muted">2 min</small>
+                            </div>
+                            <p class="mb-0 text-muted small">Call me whenever you can...</p>
                         </div>
-                    </li>
+                    </div>
+                </a>
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-start">
+                        <div class="position-relative me-3">
+                            <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center"
+                                 style="width: 45px; height: 45px;">
+                                <span class="fw-bold">JD</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1 fw-bold">John Doe</h6>
+                                <small class="text-muted">1h</small>
+                            </div>
+                            <p class="mb-0 text-muted small">I've finished the task you assigned...</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="dropdown-item p-3">
+                    <div class="d-flex align-items-start">
+                        <div class="position-relative me-3">
+                            <img src="{{ asset('assets/img/user3-128x128.jpg') }}"
+                                 class="rounded-circle"
+                                 width="45" height="45"
+                                 alt="User">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1 fw-bold">Sarah Connor</h6>
+                                <small class="text-muted">3h</small>
+                            </div>
+                            <p class="mb-0 text-muted small">Meeting tomorrow at 10AM...</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="text-center p-2 border-top">
+                <a href="#" class="btn btn-link text-decoration-none">
+                    <i class="bi bi-arrow-right me-1"></i> Voir tous les messages
+                </a>
+            </div>
+        </div>
+    </li>
 
-                    <!-- User Menu -->
-                    <li class="nav-item dropdown user-menu">
-                        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
-                            @if (Auth::user()->photo)
-                                <img src="{{ asset('storage/' . Auth::user()->photo) }}" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
-                            @else
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                </div>
-                            @endif
-                            <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+    <!-- Notifications Dropdown -->
+    <li class="nav-item dropdown mx-2">
+        <a class="nav-link position-relative" data-bs-toggle="dropdown" href="#" role="button">
+            <i class="bi bi-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                5
+                <span class="visually-hidden">notifications non lues</span>
+            </span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 shadow-lg border-0" style="min-width: 320px;">
+            <div class="bg-warning text-dark p-3 rounded-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-bell me-2"></i> Notifications
+                    </h6>
+                    <span class="badge bg-dark text-white">5 nouvelles</span>
+                </div>
+            </div>
+            <div class="p-2" style="max-height: 300px; overflow-y: auto;">
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">Nouveau message</h6>
+                            <p class="mb-0 text-muted small">Vous avez reçu un nouveau message</p>
+                        </div>
+                        <small class="text-muted">3 min</small>
+                    </div>
+                </a>
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">Tâche complétée</h6>
+                            <p class="mb-0 text-muted small">"Rapport mensuel" a été complété</p>
+                        </div>
+                        <small class="text-muted">1h</small>
+                    </div>
+                </a>
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">Alerte système</h6>
+                            <p class="mb-0 text-muted small">Utilisation CPU élevée détectée</p>
+                        </div>
+                        <small class="text-muted">2h</small>
+                    </div>
+                </a>
+                <a href="#" class="dropdown-item p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">Nouvel utilisateur</h6>
+                            <p class="mb-0 text-muted small">Un nouvel utilisateur s'est inscrit</p>
+                        </div>
+                        <small class="text-muted">5h</small>
+                    </div>
+                </a>
+            </div>
+            <div class="text-center p-2 border-top">
+                <a href="#" class="btn btn-link text-decoration-none">
+                    <i class="bi bi-arrow-right me-1"></i> Voir toutes les notifications
+                </a>
+            </div>
+        </div>
+    </li>
+
+    <!-- User Menu -->
+    <li class="nav-item dropdown user-menu ms-3">
+        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center p-0" data-bs-toggle="dropdown">
+            <div class="position-relative">
+                @php
+                    $user = Auth::user();
+                    $initial = strtoupper(substr($user->name ?? 'A', 0, 1));
+
+                    // Vérifier si l'utilisateur a une photo
+                    if ($user->photo) {
+                        $photoPath = 'adminlte/img/' . $user->photo;
+                        $photoUrl = asset($photoPath);
+                        $photoExists = file_exists(public_path($photoPath));
+                    }
+                @endphp
+
+                @if($user->photo && ($photoExists ?? false))
+                    <img src="{{ $photoUrl }}"
+                         class="rounded-circle border border-3 border-primary"
+                         width="40" height="40"
+                         alt="{{ $user->name }}"
+                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                @endif
+
+                <div class="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center
+                           {{ ($user->photo && ($photoExists ?? false)) ? 'd-none' : '' }}"
+                     style="width: 40px; height: 40px; background: linear-gradient(45deg, #4e73df, #224abe);">
+                    <span class="text-white fw-bold fs-5">{{ $initial }}</span>
+                </div>
+
+                <!-- Badge de statut -->
+                <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle"
+                      style="width: 12px; height: 12px;"
+                      title="{{ $user->statut == 'actif' ? 'En ligne' : 'Hors ligne' }}"></span>
+            </div>
+            <div class="d-none d-lg-block ms-2">
+                <span class="fw-bold">{{ $user->name }}</span>
+                <br>
+                <small class="text-muted">{{ $user->role->nom_role ?? 'Utilisateur' }}</small>
+            </div>
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3" style="min-width: 280px;">
+            <!-- En-tête du profil -->
+            <li class="dropdown-header bg-gradient-primary text-white p-4 rounded-top">
+                <div class="text-center mb-3">
+                    <div class="position-relative d-inline-block">
+                        @if($user->photo && ($photoExists ?? false))
+                            <img src="{{ $photoUrl }}"
+                                 class="rounded-circle border border-3 border-white shadow"
+                                 width="70" height="70"
+                                 alt="{{ $user->name }}"
+                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        @endif
+
+                        <div class="rounded-circle border border-3 border-white shadow d-flex align-items-center justify-content-center
+                                   {{ ($user->photo && ($photoExists ?? false)) ? 'd-none' : '' }}"
+                             style="width: 70px; height: 70px; background: linear-gradient(45deg, #4e73df, #224abe);">
+                            <span class="text-white fw-bold fs-3">{{ $initial }}</span>
+                        </div>
+                    </div>
+                </div>
+                <h6 class="mb-1 fw-bold text-center">{{ $user->name }} {{ $user->prenom }}</h6>
+                <p class="mb-0 text-center small opacity-75">{{ $user->email }}</p>
+                <div class="text-center mt-2">
+                    <span class="badge {{ $user->statut == 'actif' ? 'bg-success' : 'bg-danger' }}">
+                        <i class="bi bi-circle-fill me-1"></i> {{ ucfirst($user->statut) }}
+                    </span>
+                    <span class="badge bg-info ms-1">{{ $user->role->nom_role ?? 'Utilisateur' }}</span>
+                </div>
+            </li>
+
+            <li class="dropdown-divider my-0"></li>
+
+            <!-- Liens rapides -->
+            <li>
+                <a href="{{ route('admin.profile.show', $user->id) }}" class="dropdown-item py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 36px; height: 36px;">
+                            <i class="bi bi-person text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Mon profil</h6>
+                            <small class="text-muted">Voir votre profil</small>
+                        </div>
+                    </div>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('admin.profile.edit', $user->id) }}" class="dropdown-item py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 36px; height: 36px;">
+                            <i class="bi bi-pencil-square text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Modifier profil</h6>
+                            <small class="text-muted">Mettre à jour vos informations</small>
+                        </div>
+                    </div>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('profile.edit') }}" class="dropdown-item py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 36px; height: 36px;">
+                            <i class="bi bi-gear text-info"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Paramètres</h6>
+                            <small class="text-muted">Gérer vos préférences</small>
+                        </div>
+                    </div>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('admin.tableaudebord') }}" class="dropdown-item py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 36px; height: 36px;">
+                            <i class="bi bi-speedometer2 text-success"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Tableau de bord</h6>
+                            <small class="text-muted">Accéder au tableau de bord</small>
+                        </div>
+                    </div>
+                </a>
+            </li>
+
+            <li class="dropdown-divider my-0"></li>
+
+            <!-- Actions rapides -->
+            <li class="px-3 py-2">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary w-100 btn-sm">
+                            <i class="bi bi-people me-1"></i> Utilisateurs
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li class="dropdown-header text-center">
-                                <p class="mb-0">{{ Auth::user()->name }} {{ Auth::user()->prenom }}</p>
-                                <small class="text-muted">{{ Auth::user()->role->nom_role ?? 'Utilisateur' }}</small>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a href="{{ route('profile.edit') }}" class="dropdown-item">
-                                    <i class="bi bi-person me-2"></i> Profil
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('profile.edit') }}" class="dropdown-item">
-                                    <i class="bi bi-gear me-2"></i> Paramètres
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
-                                        <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ route('admin.settings') }}" class="btn btn-outline-warning w-100 btn-sm">
+                            <i class="bi bi-sliders me-1"></i> Réglages
+                        </a>
+                    </div>
+                </div>
+            </li>
+
+            <li class="dropdown-divider my-0"></li>
+
+            <!-- Déconnexion -->
+            <li class="p-3">
+                <form action="{{ route('logout') }}" method="POST" class="d-inline w-100">
+                    @csrf
+                    <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                    </button>
+                </form>
+            </li>
+
+            <!-- Footer -->
+            <li class="dropdown-footer bg-light p-3 rounded-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Dernière connexion : {{ $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() : 'Jamais' }}
+                    </small>
+                </div>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<style>
+/* Styles pour le navbar amélioré */
+.navbar-search-block {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    z-index: 1050;
+}
+
+.navbar-search-block.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu-lg {
+    min-width: 320px;
+}
+
+.user-menu .dropdown-toggle::after {
+    display: none;
+}
+
+.user-menu .dropdown-menu {
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(78, 115, 223, 0.1);
+    transform: translateX(5px);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+/* Animation des badges */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.bg-danger, .bg-warning {
+    animation: pulse 2s infinite;
+}
+
+/* Style pour les avatars */
+.rounded-circle.border-primary {
+    border-color: #4e73df !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-search-block {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        width: auto;
+        margin: 0 1rem;
+    }
+
+    .dropdown-menu-lg {
+        min-width: 280px;
+        margin-right: 1rem;
+    }
+
+    .user-menu .dropdown-menu {
+        position: fixed;
+        top: 70px;
+        right: 1rem;
+        left: 1rem;
+        margin: 0;
+    }
+}
+
+/* Effet hover pour les icônes */
+.nav-link {
+    position: relative;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+}
+
+.nav-link i {
+    transition: transform 0.3s;
+}
+
+.nav-link:hover i {
+    transform: scale(1.1);
+}
+
+/* Style pour le statut en ligne */
+.bg-success {
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Gestion de la recherche
+    $('[data-widget="navbar-search"]').on('click', function(e) {
+        e.preventDefault();
+        const searchBlock = $(this).closest('.nav-item').find('.navbar-search-block');
+        searchBlock.toggleClass('show');
+
+        if (searchBlock.hasClass('show')) {
+            searchBlock.find('input[type="search"]').focus();
+        }
+    });
+
+    // Fermer la recherche en cliquant ailleurs
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.navbar-search-block, [data-widget="navbar-search"]').length) {
+            $('.navbar-search-block').removeClass('show');
+        }
+    });
+
+    // Vérifier les images de profil
+    $('.user-menu img').on('error', function() {
+        $(this).hide();
+        $(this).next('.rounded-circle').show();
+    });
+
+    // Animation des dropdowns
+    $('.dropdown').on('show.bs.dropdown', function() {
+        $(this).find('.dropdown-menu').addClass('animate__animated animate__fadeIn');
+    });
+
+    $('.dropdown').on('hide.bs.dropdown', function() {
+        $(this).find('.dropdown-menu').removeClass('animate__animated animate__fadeIn');
+    });
+});
+</script>
             </div>
         </nav>
 
@@ -236,7 +652,7 @@
                 </a>
             </div>
 
-            
+
 
             <!-- Menu amélioré -->
             <div class="sidebar-wrapper">
@@ -419,3 +835,4 @@
     @yield('scripts')
 </body>
 </html>
+

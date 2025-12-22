@@ -4,6 +4,237 @@
 @section('page-title', 'Tableau de bord')
 @section('page-subtitle', 'Bienvenue dans votre espace personnel')
 
+@push('styles')
+<style>
+    :root {
+        --primary-color: #E8112D;
+        --accent-color: #FCD116;
+        --success-color: #008751;
+        --dark-color: #0A0F2D;
+        --light-color: #F8F9FA;
+        --primary-color-rgb: 232, 17, 45;
+    }
+
+    /* Correction des avatars */
+    .avatar-container {
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .avatar-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-color);
+        display: block;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    }
+
+    .avatar-fallback {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+        font-size: 2.5rem;
+        font-weight: bold;
+        border: 4px solid var(--primary-color);
+        text-transform: uppercase;
+    }
+
+    /* Dashboard cards */
+    .dashboard-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-color);
+    }
+
+    .card-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-title i {
+        color: var(--primary-color);
+    }
+
+    /* Stats cards */
+    .stat-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+        text-align: center;
+        padding: 2rem 1rem;
+        border-radius: 15px;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(var(--primary-color-rgb), 0.3);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin-bottom: 1rem;
+    }
+
+    /* Buttons */
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.3);
+        color: white;
+    }
+
+    .btn-outline-custom {
+        background: transparent;
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-custom:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Profile section */
+    .profile-info-item {
+        background: var(--light-color);
+        border-radius: 15px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .profile-info-item i {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        width: 30px;
+    }
+
+    /* Animations */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Quick actions */
+    .quick-action-card {
+        height: 100%;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .quick-action-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-5px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-card {
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+
+        .avatar-image,
+        .avatar-fallback {
+            width: 100px;
+            height: 100px;
+            font-size: 2rem;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="row fade-in">
     <!-- Statistiques -->
@@ -57,7 +288,7 @@
                     <i class="bi bi-clock-history"></i>
                     Dernières contributions
                 </h3>
-                <a href="{{ route('dashboard.contributions') }}" class="btn btn-sm btn-outline-custom">
+                <a href="{{ route('dashboard.contributions') }}" class="btn btn-outline-custom btn-sm">
                     Voir tout
                 </a>
             </div>
@@ -83,18 +314,24 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary-custom">
+                                    <span class="badge" style="background: var(--primary-color); color: white;">
                                         {{ $contribution->typeContenu->nom_contenu ?? 'Général' }}
                                     </span>
                                 </td>
                                 <td>
-                                    @if($contribution->statut == 'validé')
-                                        <span class="badge badge-success">Validé</span>
-                                    @elseif($contribution->statut == 'en_attente')
-                                        <span class="badge badge-warning">En attente</span>
-                                    @else
-                                        <span class="badge badge-danger">Rejeté</span>
-                                    @endif
+                                    @switch($contribution->statut)
+                                        @case('validé')
+                                            <span class="badge bg-success">Validé</span>
+                                            @break
+                                        @case('en_attente')
+                                            <span class="badge bg-warning text-dark">En attente</span>
+                                            @break
+                                        @case('rejeté')
+                                            <span class="badge bg-danger">Rejeté</span>
+                                            @break
+                                        @default
+                                            <span class="badge bg-secondary">{{ $contribution->statut }}</span>
+                                    @endswitch
                                 </td>
                                 <td>{{ $contribution->date_creation->format('d/m/Y') }}</td>
                             </tr>
@@ -127,25 +364,74 @@
             @if($popular_contents->count() > 0)
                 <div class="list-group list-group-flush">
                     @foreach($popular_contents as $content)
-                    <a href="{{ route('front.contenu', $content->id_contenu) }}"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1">{{ Str::limit($content->titre, 40) }}</h6>
-                            <small class="text-muted">
-                                {{ $content->typeContenu->nom_contenu ?? 'Général' }}
-                            </small>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <!-- Avatar du contenu -->
+                            @php
+                                $mediaUrl = null;
+                                $hasMedia = false;
+                                $initial = strtoupper(substr($content->titre, 0, 1));
+
+                                if ($content->medias && $content->medias->count() > 0) {
+                                    $media = $content->medias->first();
+
+                                    // Priorité 1: Cloudinary
+                                    if (!empty($media->cloudinary_url)) {
+                                        $hasMedia = true;
+                                        $mediaUrl = $media->cloudinary_url;
+                                    }
+                                    // Priorité 2: URL complète
+                                    elseif (!empty($media->chemin) && filter_var($media->chemin, FILTER_VALIDATE_URL)) {
+                                        $hasMedia = true;
+                                        $mediaUrl = $media->chemin;
+                                    }
+                                    // Priorité 3: Chemin local
+                                    elseif (!empty($media->chemin)) {
+                                        $hasMedia = true;
+                                        $mediaUrl = asset('storage/' . $media->chemin);
+                                    }
+                                }
+                            @endphp
+
+                            <div class="avatar-container me-3">
+                                @if($hasMedia && $mediaUrl)
+                                    <img src="{{ $mediaUrl }}"
+                                         alt="{{ $content->titre }}"
+                                         class="avatar-image"
+                                         data-initial="{{ $initial }}"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                @endif
+                                <div class="avatar-fallback {{ $hasMedia && $mediaUrl ? 'd-none' : '' }}">
+                                    {{ $initial }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{{ route('front.contenu', $content->id_contenu) }}"
+                                       class="text-decoration-none text-dark fw-bold">
+                                        {{ Str::limit($content->titre, 40) }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    {{ $content->typeContenu->nom_contenu ?? 'Général' }}
+                                </small>
+                            </div>
                         </div>
                         <div class="text-end">
                             <div class="d-flex gap-3">
-                                <span class="text-muted">
+                                <span class="text-muted" title="J'aime">
                                     <i class="bi bi-heart me-1"></i>{{ $content->likes_count ?? 0 }}
                                 </span>
-                                <span class="text-muted">
+                                <span class="text-muted" title="Vues">
                                     <i class="bi bi-eye me-1"></i>{{ $content->vues_count ?? 0 }}
+                                </span>
+                                <span class="text-muted" title="Commentaires">
+                                    <i class="bi bi-chat me-1"></i>{{ $content->commentaires_count ?? 0 }}
                                 </span>
                             </div>
                         </div>
-                    </a>
+                    </div>
                     @endforeach
                 </div>
             @else
@@ -169,36 +455,379 @@
 
     <div class="row">
         <div class="col-lg-3 col-md-6 mb-3">
-            <a href="{{ route('dashboard.contribuer') }}" class="btn btn-primary-custom w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-plus-circle display-6 mb-2"></i>
-                <div>Nouvelle contribution</div>
-                <small class="text-white-50 mt-1">Partagez votre savoir</small>
+            <a href="{{ route('dashboard.contribuer') }}" class="quick-action-card dashboard-card text-decoration-none text-center">
+                <i class="bi bi-plus-circle display-6 mb-3 text-primary"></i>
+                <h5 class="fw-bold">Nouvelle contribution</h5>
+                <small class="text-muted">Partagez votre savoir</small>
             </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <a href="{{ route('front.explorer') }}" class="btn btn-outline-custom w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-compass display-6 mb-2"></i>
-                <div>Explorer</div>
-                <small class="text-muted mt-1">Découvrez du contenu</small>
+            <a href="{{ route('front.explorer') }}" class="quick-action-card dashboard-card text-decoration-none text-center">
+                <i class="bi bi-compass display-6 mb-3 text-primary"></i>
+                <h5 class="fw-bold">Explorer</h5>
+                <small class="text-muted">Découvrez du contenu</small>
             </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <a href="{{ route('front.regions') }}" class="btn btn-outline-custom w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-globe display-6 mb-2"></i>
-                <div>Régions</div>
-                <small class="text-muted mt-1">Explorez par région</small>
+            <a href="{{ route('front.regions') }}" class="quick-action-card dashboard-card text-decoration-none text-center">
+                <i class="bi bi-globe display-6 mb-3 text-primary"></i>
+                <h5 class="fw-bold">Régions</h5>
+                <small class="text-muted">Explorez par région</small>
             </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <a href="{{ route('dashboard.settings') }}" class="btn btn-outline-custom w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-gear display-6 mb-2"></i>
-                <div>Paramètres</div>
-                <small class="text-muted mt-1">Gérez votre compte</small>
+            <a href="{{ route('dashboard.settings') }}" class="quick-action-card dashboard-card text-decoration-none text-center">
+                <i class="bi bi-gear display-6 mb-3 text-primary"></i>
+                <h5 class="fw-bold">Paramètres</h5>
+                <small class="text-muted">Gérez votre compte</small>
             </a>
         </div>
     </div>
 </div>
+
+<!-- Section profil améliorée -->
+<div class="dashboard-card fade-in mt-4">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="bi bi-person-circle"></i>
+            Mon profil
+        </h3>
+    </div>
+
+    <div class="row align-items-center">
+        <div class="col-md-3 text-center mb-4 mb-md-0">
+            @php
+                use App\Helpers\CloudinaryHelper;
+                $user = Auth::user();
+
+                // Utiliser l'helper Cloudinary pour obtenir l'URL de l'avatar
+                $avatarInfo = CloudinaryHelper::getUserAvatarInfo($user);
+
+                $hasPhoto = $avatarInfo['has_photo'];
+                $photoUrl = $avatarInfo['photo_url'];
+                $initials = $avatarInfo['initials'];
+
+                // Si pas de photo, vérifier si l'utilisateur a uploadé une photo
+                if (!$hasPhoto && $user->photo) {
+                    if (str_contains($user->photo, 'cloudinary.com')) {
+                        $hasPhoto = true;
+                        $photoUrl = $user->photo;
+                    } elseif (Storage::disk('public')->exists($user->photo)) {
+                        $hasPhoto = true;
+                        $photoUrl = asset('storage/' . $user->photo);
+                    }
+                }
+            @endphp
+
+            <div class="avatar-container">
+                @if($hasPhoto && $photoUrl)
+                    <img src="{{ $photoUrl }}"
+                         alt="Photo de profil de {{ $user->name }}"
+                         class="avatar-image"
+                         id="userAvatarImage"
+                         onerror="this.style.display='none'; document.getElementById('userAvatarFallback').style.display='flex';">
+                @endif
+
+                <div class="avatar-fallback {{ $hasPhoto && $photoUrl ? 'd-none' : '' }}"
+                     id="userAvatarFallback">
+                    {{ $initials }}
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ route('dashboard.settings') }}#avatar"
+                   class="btn btn-outline-custom btn-sm">
+                    <i class="bi bi-camera me-1"></i>Changer la photo
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="profile-info-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person"></i>
+                            <div class="ms-3">
+                                <div class="text-muted small">Nom complet</div>
+                                <div class="fw-bold fs-5">{{ $user->name }} {{ $user->prenom ?? '' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="profile-info-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-envelope"></i>
+                            <div class="ms-3">
+                                <div class="text-muted small">Email</div>
+                                <div class="fw-bold">{{ $user->email }}</div>
+                                @if($user->email_verified_at)
+                                    <span class="badge bg-success mt-1">
+                                        <i class="bi bi-check-circle me-1"></i>Vérifié
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger mt-1">
+                                        <i class="bi bi-x-circle me-1"></i>Non vérifié
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="profile-info-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-check"></i>
+                            <div class="ms-3">
+                                <div class="text-muted small">Membre depuis</div>
+                                <div class="fw-bold">{{ $user->created_at->format('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="profile-info-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock-history"></i>
+                            <div class="ms-3">
+                                <div class="text-muted small">Dernière connexion</div>
+                                <div class="fw-bold">{{ $user->last_login_at ? $user->last_login_at->format('d/m/Y H:i') : 'Jamais' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <a href="{{ route('dashboard.settings') }}" class="btn btn-primary-custom">
+                    <i class="bi bi-pencil me-2"></i>Modifier le profil
+                </a>
+                <a href="{{ route('dashboard.contributions') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-journal-text me-2"></i>Mes contributions
+                </a>
+                <a href="{{ route('front.connexion') }}"
+                   class="btn btn-outline-secondary"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                </a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard loaded');
+
+    // Gestion améliorée des erreurs d'images
+    document.querySelectorAll('img.avatar-image').forEach(img => {
+        // Vérifier si l'image est déjà chargée
+        if (img.complete) {
+            if (img.naturalHeight === 0) {
+                // Image a échoué
+                img.style.display = 'none';
+                const fallback = img.nextElementSibling;
+                if (fallback && fallback.classList.contains('avatar-fallback')) {
+                    fallback.style.display = 'flex';
+                }
+            }
+        } else {
+            // Ajouter un écouteur d'erreur
+            img.addEventListener('error', function() {
+                console.log('Image failed to load:', this.src);
+                this.style.display = 'none';
+                const fallback = this.nextElementSibling;
+                if (fallback && fallback.classList.contains('avatar-fallback')) {
+                    fallback.style.display = 'flex';
+                }
+            });
+
+            // Ajouter un écouteur de chargement
+            img.addEventListener('load', function() {
+                console.log('Image loaded successfully:', this.src);
+            });
+        }
+    });
+
+    // Vérification périodique de l'avatar (pour les changements en temps réel)
+    let avatarCheckAttempts = 0;
+    const maxAvatarChecks = 10;
+
+    function checkAvatarUpdate() {
+        if (avatarCheckAttempts >= maxAvatarChecks) return;
+
+        const avatarImage = document.getElementById('userAvatarImage');
+        if (!avatarImage) return;
+
+        // Ajouter un timestamp pour éviter le cache
+        const timestamp = new Date().getTime();
+        const currentSrc = avatarImage.src;
+        const newSrc = currentSrc.split('?')[0] + '?t=' + timestamp;
+
+        // Créer une nouvelle image pour vérifier si elle existe
+        const testImage = new Image();
+        testImage.onload = function() {
+            if (currentSrc !== newSrc) {
+                avatarImage.src = newSrc;
+            }
+            avatarCheckAttempts++;
+            setTimeout(checkAvatarUpdate, 2000);
+        };
+        testImage.onerror = function() {
+            avatarCheckAttempts++;
+            setTimeout(checkAvatarUpdate, 2000);
+        };
+        testImage.src = newSrc;
+    }
+
+    // Démarrer la vérification après un délai
+    setTimeout(checkAvatarUpdate, 3000);
+
+    // Animation des cartes
+    const cards = document.querySelectorAll('.dashboard-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 15px 35px rgba(0,0,0,0.1)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 5px 20px rgba(0,0,0,0.08)';
+        });
+    });
+
+    // Rafraîchissement automatique des statistiques toutes les 30 secondes
+    function refreshStats() {
+        fetch('/api/dashboard/stats', {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mettre à jour les compteurs
+            const statElements = {
+                'total_contributions': document.querySelectorAll('.stat-number')[0],
+                'total_likes_received': document.querySelectorAll('.stat-number')[1],
+                'total_comments_received': document.querySelectorAll('.stat-number')[2],
+                'total_views': document.querySelectorAll('.stat-number')[3]
+            };
+
+            Object.keys(statElements).forEach((key, index) => {
+                if (data[key] && statElements[key]) {
+                    const current = parseInt(statElements[key].textContent.replace(/\D/g, ''));
+                    const target = data[key];
+
+                    if (current !== target) {
+                        // Animation du compteur
+                        animateCounter(statElements[key], current, target);
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error refreshing stats:', error));
+    }
+
+    // Animation des compteurs
+    function animateCounter(element, start, end) {
+        const duration = 1000;
+        const stepTime = 20;
+        const steps = duration / stepTime;
+        const increment = (end - start) / steps;
+        let current = start;
+        let step = 0;
+
+        const timer = setInterval(() => {
+            current += increment;
+            step++;
+
+            if (step >= steps) {
+                current = end;
+                clearInterval(timer);
+            }
+
+            element.textContent = Math.floor(current).toLocaleString();
+        }, stepTime);
+    }
+
+    // Démarrer le rafraîchissement automatique
+    setInterval(refreshStats, 30000);
+
+    // Notification pour les nouvelles contributions
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    // Supprimer les anciennes notifications
+    const oldNotifications = document.querySelectorAll('.dashboard-notification');
+    oldNotifications.forEach(notification => notification.remove());
+
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.className = `dashboard-notification alert alert-${type} alert-dismissible fade show`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        max-width: 400px;
+    `;
+
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-3 fs-4"></i>
+            <div>${message}</div>
+        </div>
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// CSS pour l'animation des notifications
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(notificationStyle);
+</script>
+@endpush

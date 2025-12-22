@@ -1,633 +1,636 @@
 @extends('layouts.layout_front')
 
-@section('title', $region->nom_region . ' - Bénin Culture')
+@section('title', ($region->nom_region ?? 'Région') . ' - Bénin Culture')
 
 @push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    .region-detail-hero {
-        background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(26, 26, 46, 0.95)),
-                    url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1600&q=80');
+    :root {
+        --benin-red: #E8112D;
+        --benin-yellow: #FCD116;
+        --benin-green: #008751;
+        --benin-dark: #0A0F2D;
+        --benin-light: #F8F9FA;
+        --neon-glow: 0 0 20px rgba(232, 17, 45, 0.8),
+                     0 0 40px rgba(252, 209, 22, 0.6),
+                     0 0 60px rgba(0, 135, 81, 0.4);
+        --gradient-neon: linear-gradient(135deg,
+                        #E8112D 0%,
+                        #FF3366 25%,
+                        #FCD116 50%,
+                        #33CC99 75%,
+                        #008751 100%);
+    }
+
+    /* Holographic Background */
+    .holographic-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+            radial-gradient(circle at 20% 30%, rgba(232, 17, 45, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(252, 209, 22, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(0, 135, 81, 0.15) 0%, transparent 50%),
+            linear-gradient(135deg, #0A0F2D 0%, #1A1A2E 100%);
+        z-index: -1;
+        animation: hologramPulse 20s ease-in-out infinite;
+    }
+
+    @keyframes hologramPulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 1; }
+    }
+
+    /* Hero Section */
+    .hero-3d-section {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        perspective: 1000px;
+        background: linear-gradient(rgba(10, 15, 45, 0.9), rgba(10, 15, 45, 0.7)),
+                    url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=2070');
         background-size: cover;
         background-position: center;
-        color: white;
-        padding: 8rem 0 4rem;
         margin-top: -80px;
-        position: relative;
+        padding-top: 80px;
     }
 
-    .region-flag {
-        width: 100px;
-        height: 70px;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .region-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin: 2rem 0;
-    }
-
-    .stat-card-region {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 1.5rem;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .region-tabs {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        margin-top: -50px;
-        position: relative;
-        z-index: 10;
-    }
-
-    .nav-tabs-custom {
-        border: none;
-        padding: 1.5rem 1.5rem 0;
-        background: #f8f9fa;
-    }
-
-    .nav-tabs-custom .nav-link {
-        border: none;
-        color: #6c757d;
-        font-weight: 600;
-        padding: 1rem 1.5rem;
-        border-radius: 15px 15px 0 0;
-        margin-right: 5px;
-        transition: all 0.3s ease;
-    }
-
-    .nav-tabs-custom .nav-link:hover {
-        color: var(--primary);
-        background: rgba(232, 17, 45, 0.1);
-    }
-
-    .nav-tabs-custom .nav-link.active {
-        color: var(--primary);
-        background: white;
-        border-bottom: 3px solid var(--primary);
-    }
-
-    .tab-content-custom {
-        padding: 2.5rem;
-    }
-
-    .culture-highlight {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 20px;
-        padding: 3rem;
-        margin: 2rem 0;
-    }
-
-    .tradition-card {
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-        transition: all 0.3s ease;
-        height: 100%;
-        border-left: 5px solid var(--primary);
-    }
-
-    .tradition-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    }
-
-    .language-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        border-top: 4px solid var(--secondary);
-    }
-
-    .content-filter-bar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 2rem 0;
-        padding: 1.5rem;
-        background: #f8f9fa;
-        border-radius: 15px;
-    }
-
-    .filter-btn-region {
-        padding: 8px 20px;
-        border-radius: 20px;
-        border: 2px solid #dee2e6;
-        background: white;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: inherit;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .filter-btn-region:hover,
-    .filter-btn-region.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-        text-decoration: none;
-    }
-
-    .map-mini {
-        height: 300px;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .contributor-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .contributor-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .contributor-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto 1rem;
-        border: 3px solid var(--primary);
-    }
-
-    .region-sidebar {
-        position: sticky;
-        top: 100px;
-    }
-
-    .sidebar-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    .hero-3d-title {
+        font-size: 4.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        background: var(--gradient-neon);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: var(--neon-glow);
+        line-height: 0.9;
         margin-bottom: 2rem;
     }
 
-    .culture-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        height: 100%;
+    /* Holographic Cards */
+    .hologram-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         position: relative;
-    }
-
-    .culture-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .culture-card-img {
-        height: 200px;
         overflow: hidden;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .culture-card-img img {
+    .hologram-card:hover {
+        transform: translateY(-15px) rotateY(10deg);
+        box-shadow: var(--neon-glow),
+                    inset 0 0 50px rgba(255, 255, 255, 0.1);
+    }
+
+    .hologram-stat {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: var(--gradient-neon);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    /* AVATAR STYLES - CORRECTION */
+    .avatar-container {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        margin: 0 auto 1rem;
+        border: 3px solid var(--benin-red);
+    }
+
+    .avatar-photo {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.5s ease;
     }
 
-    .culture-card:hover .culture-card-img img {
-        transform: scale(1.05);
-    }
-
-    .culture-card-body {
-        padding: 1.5rem;
-    }
-
-    .culture-card-badge {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.85rem;
+    .avatar-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
         color: white;
-        z-index: 1;
     }
 
+    /* Couleurs pour les initiales */
+    .avatar-red { background: linear-gradient(135deg, #E8112D, #FF3366); }
+    .avatar-yellow { background: linear-gradient(135deg, #FCD116, #FFD700); }
+    .avatar-green { background: linear-gradient(135deg, #008751, #00B894); }
+    .avatar-purple { background: linear-gradient(135deg, #8B5CF6, #6366F1); }
+    .avatar-blue { background: linear-gradient(135deg, #0A0F2D, #1A1A2E); }
+
+    /* Navigation Orbs */
+    .nav-orb {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-orb:hover {
+        transform: scale(1.2) rotate(180deg);
+        box-shadow: var(--neon-glow);
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-        .region-tabs {
-            margin-top: 0;
+        .hero-3d-title {
+            font-size: 2.8rem;
         }
 
-        .region-stats {
-            grid-template-columns: repeat(2, 1fr);
+        .hologram-stat {
+            font-size: 2.5rem;
         }
 
-        .tab-content-custom {
-            padding: 1.5rem 1rem;
+        .avatar-container {
+            width: 80px;
+            height: 80px;
         }
+    }
+
+    /* Timeline Styles */
+    .timeline-vertical {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-vertical::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gradient-neon);
+    }
+
+    .timeline-item {
+        position: relative;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -36px;
+        top: 20px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gradient-neon);
+        border: 3px solid #0A0F2D;
     }
 </style>
 @endpush
 
 @section('content')
-<!-- Hero Section -->
-<section class="region-detail-hero">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="region-flag" style="background: var(--primary);"></div>
-                <h1 class="display-3 fw-bold mb-3">Région de {{ $region->nom_region }}</h1>
-                @if($region->description)
-                <p class="lead mb-4">
-                    {{ $region->description }}
-                </p>
-                @endif
+<!-- Holographic Background -->
+<div class="holographic-bg"></div>
 
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="#contents" class="btn btn-primary-custom">
-                        <i class="bi bi-book me-2"></i>Explorer les contenus
-                    </a>
-                    <a href="#carte" class="btn btn-outline-light">
-                        <i class="bi bi-map me-2"></i>Voir sur la carte
-                    </a>
-                    <a href="{{ route('dashboard.contribuer') }}?region={{ $region->id_region }}" class="btn btn-outline-light">
-                        <i class="bi bi-plus-circle me-2"></i>Contribuer
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- Variables sécurisées -->
+@php
+    use App\Helpers\CloudinaryHelper;
 
-<!-- Region Stats -->
-<section class="py-5">
-    <div class="container">
-        <div class="region-stats">
-            <div class="stat-card-region">
-                <div class="display-6 fw-bold text-primary">{{ number_format($stats['contenus_count'], 0, ',', ' ') }}</div>
-                <div>Contenus culturels</div>
-            </div>
-            <div class="stat-card-region">
-                <div class="display-6 fw-bold text-secondary">{{ $stats['groupes_count'] }}</div>
-                <div>Groupes ethniques</div>
-            </div>
-            <div class="stat-card-region">
-                <div class="display-6 fw-bold text-accent">{{ $stats['contributeurs_count'] }}</div>
-                <div>Contributeurs actifs</div>
-            </div>
-            <div class="stat-card-region">
-                <div class="display-6 fw-bold text-primary">{{ $stats['langues_count'] }}</div>
-                <div>Langues principales</div>
-            </div>
-            <div class="stat-card-region">
-                <div class="display-6 fw-bold text-secondary">{{ $stats['types_count'] }}</div>
-                <div>Types de contenus</div>
-            </div>
-        </div>
-    </div>
-</section>
+    // Définir toutes les variables avec des valeurs par défaut
+    $regionName = $region->nom_region ?? 'Région';
+    $regionDescription = $region->description ?? 'Une région riche en culture et traditions.';
+    $regionId = $region->id_region ?? 0;
 
-<!-- Region Tabs -->
-<section class="region-tabs">
-    <div class="container">
-        <ul class="nav nav-tabs nav-tabs-custom" id="regionTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview">
-                    <i class="bi bi-info-circle me-2"></i>Vue d'ensemble
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="contents-tab" data-bs-toggle="tab" data-bs-target="#contents">
-                    <i class="bi bi-book me-2"></i>Contenus ({{ number_format($contenus->total(), 0, ',', ' ') }})
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="traditions-tab" data-bs-toggle="tab" data-bs-target="#traditions">
-                    <i class="bi bi-calendar3 me-2"></i>Traditions
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="languages-tab" data-bs-toggle="tab" data-bs-target="#languages">
-                    <i class="bi bi-translate me-2"></i>Langues
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="contributors-tab" data-bs-toggle="tab" data-bs-target="#contributors">
-                    <i class="bi bi-people me-2"></i>Contributeurs
-                </button>
-            </li>
-        </ul>
+    // Variables de statistiques avec valeurs par défaut
+    $stats = $stats ?? [
+        'contenus_count' => 0,
+        'contributeurs_count' => 0,
+        'langues_count' => 0,
+        'festivals_count' => 0,
+        'sites_count' => 0,
+    ];
 
-        <div class="tab-content tab-content-custom" id="regionTabContent">
-            <!-- Overview Tab -->
-            <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                <div class="row">
-                    <div class="col-lg-8">
-                        <h3 class="fw-bold mb-4">La richesse culturelle de {{ $region->nom_region }}</h3>
+    // Collections avec valeurs par défaut
+    $contenus = $contenus ?? collect([]);
+    $contributeurs = $contributeurs ?? collect([]);
+    $langues = $langues ?? ['Fon', 'Yoruba', 'Français'];
+    $types = $types ?? collect([]);
 
-                        @if($region->description)
-                        <p>{{ $region->description }}</p>
-                        @else
-                        <p>Découvrez la richesse culturelle unique de la région {{ $region->nom_region }},
-                           avec ses traditions ancestrales et son patrimoine exceptionnel.</p>
-                        @endif
+    // Données culturelles avec valeurs par défaut
+    $traditions = $traditions ?? [];
+    $festivals = $festivals ?? [];
+    $sitesCulturels = $sitesCulturels ?? [];
 
-                        <div class="culture-highlight">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h4 class="fw-bold mb-3">Patrimoine culturel</h4>
-                                    <p class="mb-0">
-                                        Cette région possède un riche patrimoine culturel avec {{ $stats['contenus_count'] }} contenus documentés
-                                        par {{ $stats['contributeurs_count'] }} contributeurs passionnés.
-                                    </p>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <i class="bi bi-award fs-1 text-primary"></i>
-                                </div>
-                            </div>
-                        </div>
+    // Si festivals est vide, créer des données par défaut
+    if (empty($festivals)) {
+        $festivals = [
+            [
+                'nom' => 'Festival Culturel Régional',
+                'date' => 'Décembre',
+                'tags' => ['Arts', 'Spectacle'],
+                'description' => 'Grande célébration annuelle de la culture locale'
+            ],
+            [
+                'nom' => 'Fête des Récoltes',
+                'date' => 'Septembre',
+                'tags' => ['Agriculture', 'Communauté'],
+                'description' => 'Célébration des bonnes récoltes'
+            ],
+        ];
+    }
 
-                        <h4 class="fw-bold mt-5 mb-3">Informations sur la région</h4>
-                        <div class="row g-4">
-                            @if($region->superficie)
-                            <div class="col-md-6">
-                                <div class="tradition-card">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="bg-primary rounded-circle p-2 me-3">
-                                            <i class="bi bi-geo text-white"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="fw-bold mb-0">Superficie</h5>
-                                            <small class="text-muted">{{ number_format($region->superficie, 0, ',', ' ') }} km²</small>
-                                        </div>
-                                    </div>
-                                    <p class="mb-0">{{ $region->localisation ?? 'Localisation non spécifiée' }}</p>
-                                </div>
-                            </div>
-                            @endif
+    // Si traditions est vide, créer des données par défaut
+    if (empty($traditions)) {
+        $traditions = [
+            [
+                'title' => 'Traditions Locales',
+                'tags' => ['Culture', 'Patrimoine'],
+                'icon' => 'bi-stars',
+                'color' => '#E8112D',
+                'description' => 'Traditions ancestrales préservées'
+            ],
+            [
+                'title' => 'Savoir-faire',
+                'tags' => ['Artisanat', 'Transmission'],
+                'icon' => 'bi-gear',
+                'color' => '#FCD116',
+                'description' => 'Compétences transmises de génération en génération'
+            ],
+        ];
+    }
 
-                            @if($region->population)
-                            <div class="col-md-6">
-                                <div class="tradition-card">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="bg-secondary rounded-circle p-2 me-3">
-                                            <i class="bi bi-people text-white"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="fw-bold mb-0">Population</h5>
-                                            <small class="text-muted">{{ number_format($region->population, 0, ',', ' ') }} habitants</small>
-                                        </div>
-                                    </div>
-                                    <p class="mb-0">Riche diversité culturelle et linguistique</p>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
+    // Si sitesCulturels est vide, créer des données par défaut
+    if (empty($sitesCulturels)) {
+        $sitesCulturels = [
+            [
+                'nom' => 'Site Historique Principal',
+                'type' => 'Patrimoine',
+                'icon' => 'bi-building',
+                'color' => '#E8112D',
+                'description' => 'Lieu historique important'
+            ],
+            [
+                'nom' => 'Marché Traditionnel',
+                'type' => 'Économie locale',
+                'icon' => 'bi-shop',
+                'color' => '#FCD116',
+                'description' => 'Centre d\'échanges économique'
+            ],
+            [
+                'nom' => 'Forêt Sacrée',
+                'type' => 'Nature spirituelle',
+                'icon' => 'bi-tree',
+                'color' => '#008751',
+                'description' => 'Site naturel chargé de spiritualité'
+            ],
+        ];
+    }
 
-                    <div class="col-lg-4">
-                        <div class="region-sidebar">
-                            <div class="sidebar-card">
-                                <h5 class="fw-bold mb-3">
-                                    <i class="bi bi-map me-2"></i>Carte de la région
-                                </h5>
-                                <div class="map-mini" id="region-map-mini"></div>
-                            </div>
+    // Coordonnées GPS
+    $regionCoordinates = $regionCoordinates ?? ['lat' => 9.3077, 'lng' => 2.3158];
+@endphp
 
-                            <div class="sidebar-card">
-                                <h5 class="fw-bold mb-3">
-                                    <i class="bi bi-pie-chart me-2"></i>Répartition des contenus
-                                </h5>
-                                @php
-                                    $topTypes = $types->sortByDesc('contenus_count')->take(5);
-                                    $maxCount = $topTypes->isNotEmpty() ? $topTypes->max('contenus_count') : 1;
-                                @endphp
-
-                                @if($topTypes->isNotEmpty())
-                                    @foreach($topTypes as $type)
-                                    <div class="mb-2">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span class="small">
-                                                <i class="bi {{ $typeIcons[$type->id_type_contenu]['icon'] ?? 'bi-grid' }} me-1"></i>
-                                                {{ $type->nom_contenu }}
-                                            </span>
-                                            <span class="small fw-bold">{{ $type->contenus_count }}</span>
-                                        </div>
-                                        <div class="progress" style="height: 8px;">
-                                            <div class="progress-bar"
-                                                 role="progressbar"
-                                                 style="width: {{ $type->contenus_count > 0 ? ($type->contenus_count / $maxCount * 100) : 0 }}%;
-                                                        background-color: {{ $typeIcons[$type->id_type_contenu]['color'] ?? '#6c757d' }};">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                @else
-                                    <div class="text-center py-3">
-                                        <p class="text-muted small mb-0">Aucun contenu disponible</p>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contents Tab -->
-            <div class="tab-pane fade" id="contents" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h3 class="fw-bold mb-0">{{ number_format($contenus->total(), 0, ',', ' ') }} contenus culturels</h3>
-                        <p class="text-muted mb-0">Explorez la richesse documentaire de la région</p>
-                    </div>
-                    <div>
-                        <a href="{{ route('front.explorer', ['region' => $region->id_region]) }}" class="btn btn-primary-custom">
-                            <i class="bi bi-compass me-2"></i>Explorer tous
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Filter by type -->
-                <div class="content-filter-bar">
-                    <a href="{{ route('front.explorer', ['region' => $region->id_region]) }}"
-                       class="filter-btn-region {{ !request('type') ? 'active' : '' }}">
-                        <i class="bi bi-grid-3x3 me-1"></i>Tous
-                    </a>
-
-                    @foreach($types as $type)
-                    @if($type->contenus_count > 0)
-                    <a href="{{ route('front.explorer', ['region' => $region->id_region, 'type' => $type->id_type_contenu]) }}"
-                       class="filter-btn-region {{ request('type') == $type->id_type_contenu ? 'active' : '' }}"
-                       style="border-left: 4px solid {{ $typeIcons[$type->id_type_contenu]['color'] ?? '#6c757d' }};">
-                        <i class="bi {{ $typeIcons[$type->id_type_contenu]['icon'] ?? 'bi-grid' }} me-1"></i>
-                        {{ $type->nom_contenu }}
-                        <span class="badge bg-secondary ms-1">{{ $type->contenus_count }}</span>
-                    </a>
-                    @endif
-                    @endforeach
-                </div>
-
-                <!-- Content Grid -->
-                @if($contenus->count() > 0)
-                <div class="row" id="region-contents-grid">
-                    @foreach($contenus as $contenu)
-                    @php
-                        $type = $contenu->typeContenu;
-                        $typeColor = isset($typeIcons[$type->id_type_contenu]['color']) ? $typeIcons[$type->id_type_contenu]['color'] : '#E8112D';
-                        $typeIcon = isset($typeIcons[$type->id_type_contenu]['icon']) ? $typeIcons[$type->id_type_contenu]['icon'] : 'bi-book';
-                        $typeName = $type ? $type->nom_contenu : 'Type inconnu';
-
-                        // Générer des stats fictives
-                        $vues = rand(300, 5000);
-                        $commentaires = (int) ($vues * (rand(1, 5) / 100));
-                    @endphp
-
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}" class="text-decoration-none">
-                            <div class="culture-card h-100">
-                              <div class="culture-card-img position-relative">
-    <img src="{{ $contenu->image_url ?? asset('adminlte/img/collage.png') }}"
-         class="img-fluid" alt="{{ $contenu->titre }}">
-    <div class="culture-card-badge" style="background-color: {{ $typeColor }};">
-        <i class="bi {{ $typeIcon }} me-1"></i>
-        {{ $typeName }}
+<!-- Floating Navigation -->
+<div class="floating-nav-orb position-fixed" style="right: 2rem; top: 50%; transform: translateY(-50%); z-index: 1000;">
+    <div class="d-flex flex-column gap-3">
+        <a href="#hero" class="nav-orb active">
+            <i class="bi bi-stars"></i>
+        </a>
+        <a href="#contenus" class="nav-orb">
+            <i class="bi bi-collection-play"></i>
+        </a>
+        <a href="#carte" class="nav-orb">
+            <i class="bi bi-globe-americas"></i>
+        </a>
+        <a href="#traditions" class="nav-orb">
+            <i class="bi bi-calendar-heart"></i>
+        </a>
+        <a href="#langues" class="nav-orb">
+            <i class="bi bi-translate"></i>
+        </a>
+        <a href="#contributeurs" class="nav-orb">
+            <i class="bi bi-people"></i>
+        </a>
     </div>
 </div>
-                                <div class="culture-card-body">
-                                    <h5 class="fw-bold mb-2">{{ $contenu->titre }}</h5>
-                                    <p class="text-muted small mb-3" style="min-height: 60px;">
-                                        {{ Str::limit(strip_tags($contenu->texte), 100) }}
-                                    </p>
 
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            @if($contenu->auteur)
-                                            <small class="text-muted">
-                                                <i class="bi bi-person-circle me-1"></i>
-                                                {{ $contenu->auteur->name }}
-                                            </small>
-                                            @endif
-                                        </div>
-                                        <div class="d-flex gap-3">
-                                            <small class="text-muted">
-                                                <i class="bi bi-eye me-1"></i>
-                                                {{ number_format($vues, 0, ',', ' ') }}
-                                            </small>
-                                            <small class="text-muted">
-                                                <i class="bi bi-chat me-1"></i>
-                                                {{ $commentaires }}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
+<!-- Hero Section -->
+<section class="hero-3d-section" id="hero">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-8">
+                <!-- Region Badge -->
+                <div class="d-inline-block mb-4">
+                    <span class="badge px-4 py-2 rounded-pill border-0"
+                          style="background: var(--gradient-neon); color: white;">
+                        <i class="bi bi-award me-2"></i>
+                        Région Culturelle
+                    </span>
+                </div>
+
+                <!-- 3D Title -->
+                <h1 class="hero-3d-title" data-aos="zoom-in" data-aos-duration="2000">
+                    {{ $regionName }}
+                </h1>
+
+                <!-- Hero Description -->
+                <p class="text-white fs-4 mb-5" data-aos="fade-up" data-aos-delay="400">
+                    {{ $regionDescription }}
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap gap-3 mb-5" data-aos="fade-up" data-aos-delay="600">
+                    <a href="#contenus" class="btn btn-lg px-5 py-3"
+                       style="background: var(--gradient-neon); color: white; border: none;">
+                       <i class="bi bi-compass me-2"></i>
+                       Explorer le Patrimoine
+                    </a>
+                    <a href="#contributeurs" class="btn btn-lg btn-outline-light px-5 py-3">
+                        <i class="bi bi-people me-2"></i>
+                        Rencontrer les Passeurs
+                    </a>
+                </div>
+
+                <!-- Holographic Stats Grid -->
+                <div class="row g-4">
+                    @foreach([
+                        ['count' => $stats['contenus_count'], 'label' => 'Trésors Culturels', 'icon' => 'bi-gem'],
+                        ['count' => $stats['contributeurs_count'], 'label' => 'Passeurs de Mémoire', 'icon' => 'bi-person-hearts'],
+                        ['count' => $stats['langues_count'], 'label' => 'Langues Vivantes', 'icon' => 'bi-translate'],
+                        ['count' => $stats['festivals_count'], 'label' => 'Rites & Festivals', 'icon' => 'bi-calendar-event'],
+                        ['count' => $stats['sites_count'], 'label' => 'Sites Sacrés', 'icon' => 'bi-award']
+                    ] as $index => $stat)
+                    <div class="col-md-4 col-6">
+                        <div class="hologram-card" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                            <div class="hologram-stat" data-count="{{ $stat['count'] }}">0</div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi {{ $stat['icon'] }} me-2 text-warning fs-4"></i>
+                                <span class="text-white">{{ $stat['label'] }}</span>
                             </div>
-                        </a>
+                        </div>
                     </div>
                     @endforeach
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-                <!-- Pagination -->
-                @if($contenus->hasPages())
-                <nav aria-label="Page navigation" class="mt-5">
-                    <ul class="pagination justify-content-center">
-                        @if($contenus->onFirstPage())
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                        @else
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $contenus->previousPageUrl() }}">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                        @endif
+<!-- Section Carte Interactive -->
+<section id="carte" class="py-6">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    <i class="bi bi-globe-asia-australia me-3"></i>
+                    Carte Interactive
+                </h2>
+                <p class="text-white-50 lead" data-aos="fade-up" data-aos-delay="200">
+                    Explorez {{ $regionName }} sur la carte
+                </p>
+            </div>
+        </div>
 
-                        @foreach(range(1, $contenus->lastPage()) as $i)
-                        @if($i == $contenus->currentPage())
-                        <li class="page-item active"><span class="page-link">{{ $i }}</span></li>
-                        @else
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $contenus->url($i) }}">{{ $i }}</a>
-                        </li>
-                        @endif
+        <div class="row" data-aos="zoom-in">
+            <div class="col-12">
+                <div id="region-map" style="height: 500px; border-radius: 20px; overflow: hidden;"></div>
+            </div>
+        </div>
+
+        <!-- Points d'intérêt -->
+        <div class="row mt-4">
+            <div class="col-lg-8 mx-auto">
+                <div class="bg-dark bg-opacity-75 p-4 rounded-3">
+                    <h4 class="text-white fw-bold mb-3">
+                        <i class="bi bi-stars me-2"></i>
+                        Points d'Intérêt
+                    </h4>
+
+                    <div class="row">
+                        @foreach($sitesCulturels as $site)
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle p-2 me-2"
+                                     style="background: linear-gradient(135deg, {{ $site['color'] ?? '#E8112D' }}, transparent);">
+                                    <i class="bi {{ $site['icon'] ?? 'bi-geo-alt' }} text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white mb-1">{{ $site['nom'] ?? 'Site' }}</h6>
+                                    <small class="text-white-50">{{ $site['type'] ?? 'Culturel' }}</small>
+                                </div>
+                            </div>
+                        </div>
                         @endforeach
-
-                        @if($contenus->hasMorePages())
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $contenus->nextPageUrl() }}">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                        @else
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                        @endif
-                    </ul>
-                </nav>
-                @endif
-                @else
-                <!-- Aucun contenu -->
-                <div class="text-center py-5">
-                    <div class="empty-state">
-                        <i class="bi bi-book display-1 text-muted mb-4"></i>
-                        <h3 class="mb-3">Aucun contenu disponible</h3>
-                        <p class="text-muted mb-4">
-                            Aucun contenu n'est disponible pour cette région pour le moment.
-                        </p>
-                        <a href="{{ route('dashboard.contribuer') }}?region={{ $region->id_region }}" class="btn btn-primary-custom">
-                            <i class="bi bi-plus-circle me-2"></i>Être le premier à contribuer
-                        </a>
                     </div>
                 </div>
-                @endif
             </div>
+        </div>
+    </div>
+</section>
 
-            <!-- Traditions Tab -->
-            <div class="tab-pane fade" id="traditions" role="tabpanel">
-                <h3 class="fw-bold mb-4">Traditions & Patrimoine</h3>
+<!-- Section Contenus -->
+<section id="contenus" class="py-6 bg-dark">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    <i class="bi bi-collection-play me-3"></i>
+                    Trésors Culturels
+                </h2>
+                <p class="text-white-50 lead" data-aos="fade-up" data-aos-delay="200">
+                    {{ $stats['contenus_count'] }} contenus documentant le patrimoine
+                </p>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="row mb-5" data-aos="fade-up">
+            <div class="col-12">
+                <div class="bg-dark bg-opacity-50 p-4 rounded-3">
+                    <div class="text-center">
+                        <button class="btn btn-outline-light m-1 filter-btn active" data-filter="all">
+                            Tous les types
+                        </button>
+                        @foreach($types as $type)
+                        <button class="btn btn-outline-light m-1 filter-btn"
+                                data-filter="type-{{ $type->id_type_contenu }}">
+                            {{ $type->nom_contenu }}
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grille de Contenus -->
+        @if($contenus->count() > 0)
+        <div class="row g-4">
+            @foreach($contenus as $contenu)
+            <div class="col-xl-3 col-lg-4 col-md-6"
+                 data-aos="fade-up"
+                 data-aos-delay="{{ $loop->index % 4 * 100 }}"
+                 data-content-type="{{ $contenu->typeContenu->id_type_contenu ?? 1 }}">
+                <div class="hologram-card h-100">
+                    <div class="mb-3">
+                        <span class="badge"
+                              style="background: {{ $contenu->color ?? '#E8112D' }}; color: white;">
+                            <i class="bi {{ $contenu->icon ?? 'bi-book' }} me-1"></i>
+                            {{ $contenu->type_name ?? 'Culture' }}
+                        </span>
+                    </div>
+
+                    <h4 class="text-white fw-bold mb-3">{{ $contenu->titre }}</h4>
+
+                    <p class="text-white-50 mb-4" style="min-height: 80px;">
+                        {{ Str::limit(strip_tags($contenu->texte ?? ''), 120) }}
+                    </p>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="text-center">
+                            <div class="text-primary fw-bold">{{ $contenu->reading_time ?? 5 }}</div>
+                            <small class="text-white-50">min</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-success fw-bold">{{ $contenu->vues ?? 0 }}</div>
+                            <small class="text-white-50">vues</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-warning fw-bold">{{ $contenu->likes ?? 0 }}</div>
+                            <small class="text-white-50">likes</small>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu ?? 1]) }}"
+                       class="btn w-100"
+                       style="background: var(--gradient-neon); color: white;">
+                       <i class="bi bi-compass me-2"></i>
+                       Découvrir
+                    </a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- Pagination -->
+        @if(method_exists($contenus, 'links'))
+        <div class="mt-5" data-aos="fade-up">
+            {{ $contenus->links() }}
+        </div>
+        @endif
+
+        @else
+        <!-- Aucun contenu -->
+        <div class="text-center py-5" data-aos="fade-up">
+            <div class="hologram-card">
+                <i class="bi bi-compass display-1 text-white-50 mb-4"></i>
+                <h3 class="text-white mb-3">Territoire vierge</h3>
+                <p class="text-white-50 mb-4">
+                    Soyez le premier à documenter la richesse culturelle
+                </p>
+                <a href="{{ route('dashboard.contribuer') }}?region={{ $regionId }}"
+                   class="btn px-5"
+                   style="background: var(--gradient-neon); color: white;">
+                   <i class="bi bi-plus-circle me-2"></i>Contribuer
+                </a>
+            </div>
+        </div>
+        @endif
+    </div>
+</section>
+
+<!-- Section Traditions -->
+<section id="traditions" class="py-6">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    <i class="bi bi-calendar-heart me-3"></i>
+                    Traditions & Festivals
+                </h2>
+                <p class="text-white-50 lead" data-aos="fade-up" data-aos-delay="200">
+                    Le calendrier culturel de {{ $regionName }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Traditions -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="text-white fw-bold mb-4" data-aos="fade-up">
+                    <i class="bi bi-stars me-2 text-warning"></i>
+                    Traditions
+                </h3>
 
                 <div class="row g-4">
                     @foreach($traditions as $tradition)
-                    <div class="col-lg-6">
-                        <div class="tradition-card">
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                        <div class="hologram-card h-100">
                             <div class="d-flex align-items-start mb-3">
-                                <div class="bg-primary rounded-circle p-2 me-3">
-                                   <i class="bi {{ $tradition['icon'] ?? 'bi-star' }} text-white"></i>
+                                <div class="rounded-circle p-3 me-3"
+                                     style="background: {{ $tradition['color'] ?? '#E8112D' }}; color: white;">
+                                    <i class="bi {{ $tradition['icon'] ?? 'bi-star' }} fs-4"></i>
                                 </div>
                                 <div>
-                                    <h5 class="fw-bold mb-1">{{ $tradition['title'] }}</h5>
+                                    <h4 class="text-white fw-bold mb-2">{{ $tradition['title'] }}</h4>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($tradition['tags'] as $tag)
+                                        <span class="badge bg-dark text-white border border-warning">{{ $tag }}</span>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-muted mb-3">
+                            <p class="text-white-50">
                                 {{ $tradition['description'] }}
                             </p>
-                            <div class="d-flex align-items-center">
-                                @foreach($tradition['tags'] as $tag)
-                                <span class="badge bg-secondary me-2">{{ $tag }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- Festivals Timeline -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="text-white fw-bold mb-4" data-aos="fade-up">
+                    <i class="bi bi-calendar3 me-2 text-primary"></i>
+                    Festivals
+                </h3>
+
+                <div class="timeline-vertical" data-aos="fade-up">
+                    @foreach($festivals as $festival)
+                    <div class="timeline-item mb-4" data-aos="fade-right" data-aos-delay="{{ $loop->index * 100 }}">
+                        <div class="timeline-dot"></div>
+                        <div class="hologram-card">
+                            <div class="d-flex align-items-center mb-3">
+                                <h4 class="text-white fw-bold mb-0">{{ $festival['nom'] }}</h4>
+                                <span class="badge bg-warning text-dark ms-3">{{ $festival['date'] }}</span>
+                            </div>
+                            <p class="text-white-50 mb-3">{{ $festival['description'] }}</p>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach($festival['tags'] as $tag)
+                                <span class="badge bg-dark text-white border border-primary">{{ $tag }}</span>
                                 @endforeach
                             </div>
                         </div>
@@ -635,129 +638,167 @@
                     @endforeach
                 </div>
             </div>
-
-            <!-- Languages Tab -->
-            <div class="tab-pane fade" id="languages" role="tabpanel">
-                <h3 class="fw-bold mb-4">Diversité linguistique</h3>
-
-                @if(!empty($langues))
-                <div class="row mb-5">
-                    @foreach($langues as $index => $langue)
-                    <div class="col-lg-6">
-                        <div class="language-card">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0">{{ $langue }}</h5>
-                                @if($index == 0)
-                                <span class="badge bg-primary">Langue principale</span>
-                                @else
-                                <span class="badge bg-secondary">Langue locale</span>
-                                @endif
-                            </div>
-                            <p class="text-muted mb-3">
-                                Langue traditionnelle parlée dans la région {{ $region->nom_region }}.
-                                Fait partie du patrimoine culturel immatériel de la région.
-                            </p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <div class="alert alert-info">
-                    <div class="d-flex align-items-start">
-                        <i class="bi bi-info-circle fs-4 me-3"></i>
-                        <div>
-                            <h6 class="fw-bold mb-2">Information linguistique</h6>
-                            <p class="mb-0">
-                                Les données linguistiques pour cette région ne sont pas encore disponibles.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                @endif
-            </div>
-
-            <!-- Contributors Tab -->
-            <div class="tab-pane fade" id="contributors" role="tabpanel">
-                <h3 class="fw-bold mb-4">Contributeurs de la région</h3>
-                <p class="text-muted mb-4">{{ $contributeurs->count() }} contributeurs actifs documentent la culture de {{ $region->nom_region }}</p>
-
-                @if($contributeurs->count() > 0)
-                <div class="row g-4">
-                    @foreach($contributeurs as $contributeur)
-                    <div class="col-lg-4 col-md-6">
-                        <div class="contributor-card">
-                            @if($contributeur->photo)
-                            <img src="{{ asset($contributeur->photo) }}"
-                                 class="contributor-avatar"
-                                 alt="{{ $contributeur->name }}">
-                            @else
-                            <div class="contributor-avatar bg-primary d-flex align-items-center justify-content-center text-white">
-                                <i class="bi bi-person fs-3"></i>
-                            </div>
-                            @endif
-                            <h5 class="fw-bold mb-1">{{ $contributeur->name }}</h5>
-                            <p class="text-muted small mb-3">Contributeur actif</p>
-
-                            <div class="d-flex justify-content-center gap-3 mb-3">
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ $contributeur->contenus_count }}</div>
-                                    <small class="text-muted">Contenus</small>
-                                </div>
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ rand(10, 500) }}</div>
-                                    <small class="text-muted">Followers</small>
-                                </div>
-                            </div>
-
-                            <a href="#" class="btn btn-outline-primary btn-sm w-100">
-                                <i class="bi bi-person-plus me-2"></i>Suivre
-                            </a>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <div class="text-center py-5">
-                    <div class="empty-state">
-                        <i class="bi bi-people display-1 text-muted mb-4"></i>
-                        <h3 class="mb-3">Aucun contributeur</h3>
-                        <p class="text-muted mb-4">
-                            Aucun contributeur n'a encore publié de contenu pour cette région.
-                        </p>
-                        <a href="{{ route('dashboard.contribuer') }}?region={{ $region->id_region }}" class="btn btn-primary-custom">
-                            <i class="bi bi-plus-circle me-2"></i>Devenir le premier contributeur
-                        </a>
-                    </div>
-                </div>
-                @endif
-
-                <div class="text-center mt-5">
-                    <a href="{{ route('dashboard.contribuer') }}?region={{ $region->id_region }}" class="btn btn-primary-custom px-5 py-3">
-                        <i class="bi bi-plus-circle me-2"></i>Devenir contributeur pour {{ $region->nom_region }}
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- CTA Section -->
-<section class="cta-section py-5">
+<!-- Section Langues -->
+<section id="langues" class="py-6 bg-dark">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    <i class="bi bi-translate me-3"></i>
+                    Langues
+                </h2>
+                <p class="text-white-50 lead" data-aos="fade-up" data-aos-delay="200">
+                    {{ count($langues) }} langues parlées
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center" data-aos="fade-up">
+            @foreach($langues as $index => $langue)
+            <span class="badge px-4 py-2 m-2 fs-5 border-0"
+                  style="background: linear-gradient(135deg,
+                          {{ $index == 0 ? '#E8112D' : ($index == 1 ? '#FCD116' : '#008751') }},
+                          {{ $index == 0 ? '#FCD116' : ($index == 1 ? '#008751' : '#0A0F2D') }});">
+                <i class="bi bi-chat-square-text me-2"></i>
+                {{ $langue }}
+            </span>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<!-- Section Contributeurs (AVEC CORRECTION DES AVATARS) -->
+<section id="contributeurs" class="py-6">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    <i class="bi bi-people me-3"></i>
+                    Contributeurs
+                </h2>
+                <p class="text-white-50 lead" data-aos="fade-up" data-aos-delay="200">
+                    {{ $contributeurs->count() }} passionnés
+                </p>
+            </div>
+        </div>
+
+        @if($contributeurs->count() > 0)
+        <div class="row g-4">
+            @foreach($contributeurs as $contributeur)
+            @php
+                // CORRECTION : Utiliser l'helper Cloudinary pour obtenir les infos de l'avatar
+                try {
+                    $avatarInfo = CloudinaryHelper::getUserAvatarInfo($contributeur);
+                } catch (\Exception $e) {
+                    $avatarInfo = [
+                        'photo_url' => null,
+                        'initials' => substr($contributeur->name ?? '??', 0, 2),
+                        'has_photo' => false,
+                        'color' => '#E8112D',
+                        'name' => $contributeur->name ?? 'Contributeur'
+                    ];
+                }
+
+                // Déterminer la classe de couleur en fonction de l'ID
+                $colorClasses = [
+                    'avatar-red',
+                    'avatar-yellow',
+                    'avatar-green',
+                    'avatar-purple',
+                    'avatar-blue'
+                ];
+                $colorIndex = abs($contributeur->id ?? 0) % count($colorClasses);
+                $colorClass = $colorClasses[$colorIndex];
+            @endphp
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ $loop->index % 4 * 100 }}">
+                <div class="hologram-card text-center">
+                    <!-- AVATAR CORRIGÉ -->
+                    <div class="avatar-container">
+                        @if($avatarInfo['has_photo'] && $avatarInfo['photo_url'])
+                            <img src="{{ $avatarInfo['photo_url'] }}"
+                                 alt="{{ $avatarInfo['name'] }}"
+                                 class="avatar-photo"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <!-- Fallback initiales -->
+                            <div class="avatar-initials {{ $colorClass }}" style="display: none;">
+                                {{ strtoupper($avatarInfo['initials']) }}
+                            </div>
+                        @else
+                            <!-- Initiales seulement -->
+                            <div class="avatar-initials {{ $colorClass }}">
+                                {{ strtoupper($avatarInfo['initials']) }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <h5 class="text-white fw-bold mb-2">{{ $avatarInfo['name'] }}</h5>
+                    <p class="text-white-50 mb-3">Contributeur</p>
+
+                    <div class="d-flex justify-content-center gap-3 mb-4">
+                        <div class="text-center">
+                            <div class="text-primary fw-bold">{{ $contributeur->total_contributions ?? 0 }}</div>
+                            <small class="text-white-50">Contenus</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-success fw-bold">{{ $contributeur->followers_count ?? 0 }}</div>
+                            <small class="text-white-50">Abonnés</small>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-light w-100">
+                        <i class="bi bi-person-plus me-1"></i>
+                        Suivre
+                    </button>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <!-- Aucun contributeur -->
+        <div class="text-center py-5" data-aos="fade-up">
+            <div class="hologram-card">
+                <i class="bi bi-people display-1 text-white-50 mb-4"></i>
+                <h3 class="text-white mb-3">Soyez le premier !</h3>
+                <p class="text-white-50 mb-4">
+                    Devenez le premier contributeur
+                </p>
+                <a href="{{ route('dashboard.contribuer') }}?region={{ $regionId }}"
+                   class="btn px-5"
+                   style="background: var(--gradient-neon); color: white;">
+                   <i class="bi bi-plus-circle me-2"></i>Devenir contributeur
+                </a>
+            </div>
+        </div>
+        @endif
+    </div>
+</section>
+
+<!-- CTA Final -->
+<section class="py-6 bg-dark">
     <div class="container">
         <div class="row">
             <div class="col-lg-10 mx-auto text-center">
-                <div class="cta-content">
-                    <h2 class="cta-title mb-4">Connaissez-vous bien {{ $region->nom_region }} ?</h2>
-                    <p class="lead mb-5 opacity-90" style="font-size: 1.3rem;">
-                        Partagez vos connaissances sur cette région et contribuez
-                        à préserver son patrimoine pour les générations futures.
+                <div class="p-5 rounded-4" style="background: var(--gradient-neon);">
+                    <h2 class="text-white fw-bold mb-4">
+                        <i class="bi bi-share me-3"></i>
+                        Partagez {{ $regionName }}
+                    </h2>
+                    <p class="text-white mb-5 fs-5">
+                        Chaque contribution préserve le patrimoine pour les générations futures.
                     </p>
-                    <div class="cta-buttons">
-                        <a href="{{ route('dashboard.contribuer') }}?region={{ $region->id_region }}" class="btn btn-cta-primary">
-                            <i class="bi bi-plus-circle me-2"></i>Ajouter un contenu
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="{{ route('front.explorer') }}?region={{ $regionId }}"
+                           class="btn btn-lg btn-light">
+                           <i class="bi bi-compass me-2"></i>Explorer
                         </a>
-                        <a href="{{ route('front.explorer', ['region' => $region->id_region]) }}" class="btn btn-cta-outline">
-                            <i class="bi bi-compass me-2"></i>Explorer davantage
+                        <a href="{{ route('dashboard.contribuer') }}?region={{ $regionId }}"
+                           class="btn btn-lg btn-outline-light">
+                           <i class="bi bi-plus-circle me-2"></i>Contribuer
                         </a>
                     </div>
                 </div>
@@ -768,36 +809,148 @@
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser la carte si l'élément existe
-    if (document.getElementById('region-map-mini')) {
-        initRegionMap();
+    // Initialiser AOS
+    AOS.init({
+        duration: 1000,
+        once: true
+    });
+
+    // Animer les compteurs
+    const counters = document.querySelectorAll('.hologram-stat');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-count')) || 0;
+        let current = 0;
+        const increment = target / 60;
+
+        const updateCounter = () => {
+            current += increment;
+            if (current >= target) {
+                counter.textContent = target.toLocaleString();
+            } else {
+                counter.textContent = Math.floor(current).toLocaleString();
+                requestAnimationFrame(updateCounter);
+            }
+        };
+        updateCounter();
+    });
+
+    // Initialiser la carte
+    const initMap = () => {
+        const mapElement = document.getElementById('region-map');
+        if (!mapElement) return;
+
+        try {
+            const map = L.map('region-map').setView([
+                {{ $regionCoordinates['lat'] }},
+                {{ $regionCoordinates['lng'] }}
+            ], 9);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Marqueur principal
+            const marker = L.marker([
+                {{ $regionCoordinates['lat'] }},
+                {{ $regionCoordinates['lng'] }}
+            ]).addTo(map);
+
+            marker.bindPopup(`
+                <div style="min-width: 250px;">
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-geo-alt me-2"></i>{{ $regionName }}
+                    </h5>
+                    <p class="mb-0">{{ Str::limit($regionDescription, 100) }}</p>
+                </div>
+            `);
+
+        } catch (error) {
+            console.error('Erreur carte:', error);
+            mapElement.innerHTML = `
+                <div class="h-100 d-flex align-items-center justify-content-center bg-dark">
+                    <div class="text-center text-white p-4">
+                        <i class="bi bi-map display-4 mb-3"></i>
+                        <p class="mb-0">Carte interactive</p>
+                    </div>
+                </div>
+            `;
+        }
+    };
+
+    // Initialiser la carte après un délai
+    setTimeout(initMap, 500);
+
+    // Filtrage des contenus
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const contentCards = document.querySelectorAll('[data-content-type]');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Retirer active de tous
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Activer le bouton cliqué
+            this.classList.add('active');
+
+            const filter = this.dataset.filter;
+
+            // Filtrer les cartes
+            contentCards.forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (filter.startsWith('type-')) {
+                    const typeId = filter.split('-')[1];
+                    const cardType = card.dataset.contentType;
+                    card.style.display = cardType === typeId ? 'block' : 'none';
+                }
+            });
+        });
+    });
+
+    // Navigation fluide
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                // Mettre à jour la navigation active
+                document.querySelectorAll('.nav-orb').forEach(orb => {
+                    orb.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Scroll vers la section
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Gestion des erreurs d'avatar
+    document.querySelectorAll('.avatar-photo').forEach(img => {
+        img.addEventListener('error', function() {
+            this.style.display = 'none';
+            const initialsDiv = this.nextElementSibling;
+            if (initialsDiv && initialsDiv.classList.contains('avatar-initials')) {
+                initialsDiv.style.display = 'flex';
+            }
+        });
+    });
+
+    // Masquer la navigation flottante sur mobile
+    if (window.innerWidth <= 768) {
+        document.querySelector('.floating-nav-orb').style.display = 'none';
     }
 });
-
-function initRegionMap() {
-    try {
-        // Coordonnées approximatives pour centrer sur le Bénin
-        const map = L.map('region-map-mini').setView([9.3077, 2.3158], 7);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 12,
-        }).addTo(map);
-
-        // Ajouter un marqueur pour la région
-        L.marker([9.3077, 2.3158]).addTo(map)
-            .bindPopup('<b>{{ $region->nom_region }}</b><br>Région culturelle');
-    } catch (error) {
-        console.log('Erreur lors de l\'initialisation de la carte:', error);
-        document.getElementById('region-map-mini').innerHTML = `
-            <div class="text-center py-5">
-                <i class="bi bi-map text-muted fs-1"></i>
-                <p class="text-muted mt-2">Carte non disponible</p>
-            </div>
-        `;
-    }
-}
 </script>
 @endpush

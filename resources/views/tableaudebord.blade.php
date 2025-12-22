@@ -295,13 +295,27 @@
                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-0">
                                 <div class="d-flex align-items-center">
                                     <div class="me-3">
-                                        @if($user->photo)
-                                            <img src="{{ asset('storage/' . $user->photo) }}"
+                                        @php
+                                            // UTILISEZ CLOUDINARYHELPER POUR LA PHOTO DE PROFIL
+                                            $userPhoto = \App\Helpers\CloudinaryHelper::user($user);
+                                            $userName = ($user->prenom ?? '') . ' ' . ($user->name ?? '');
+                                            $userInitials = \App\Helpers\CloudinaryHelper::getInitials($userName);
+                                        @endphp
+
+                                        @if($userPhoto)
+                                            <img src="{{ $userPhoto }}"
                                                  class="rounded-circle"
-                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                                 style="width: 40px; height: 40px; object-fit: cover;"
+                                                 alt="{{ $userName }}"
+                                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="avatar-default rounded-circle d-none"
+                                                 style="width: 40px; height: 40px; background: #E8112D; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                                {{ $userInitials }}
+                                            </div>
                                         @else
-                                            <div class="bg-light rounded-circle p-2">
-                                                <i class="bi bi-person-circle text-secondary"></i>
+                                            <div class="avatar-default rounded-circle"
+                                                 style="width: 40px; height: 40px; background: #E8112D; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                                {{ $userInitials }}
                                             </div>
                                         @endif
                                     </div>
@@ -440,6 +454,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .badge {
     font-weight: 500;
+}
+
+.avatar-default {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
 }
 </style>
 @endsection

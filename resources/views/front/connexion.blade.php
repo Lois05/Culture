@@ -4,94 +4,297 @@
 
 @push('styles')
 <style>
-    .auth-hero {
-        background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(26, 26, 46, 0.98)),
-                    url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1600&q=80');
-        background-size: cover;
-        background-position: center;
-        color: white;
-        padding: 8rem 0 4rem;
-        margin-top: -80px;
-        position: relative;
+    :root {
+        --auth-primary: #E8112D;
+        --auth-secondary: #FCD116;
+        --auth-accent: #008751;
+        --auth-dark: #0A0F2D;
+        --auth-gradient: linear-gradient(135deg, #E8112D 0%, #FCD116 50%, #008751 100%);
+        --auth-light-gradient: linear-gradient(135deg, rgba(232, 17, 45, 0.1) 0%, rgba(252, 209, 22, 0.1) 50%, rgba(0, 135, 81, 0.1) 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
-    .auth-hero::before {
+    /* Animated Background */
+    .auth-bg-animated {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(-45deg,
+            rgba(10, 15, 45, 0.9),
+            rgba(26, 26, 46, 0.9),
+            rgba(232, 17, 45, 0.8),
+            rgba(252, 209, 22, 0.8));
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+        z-index: -1;
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Floating Elements */
+    .floating-element {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    /* Main Container */
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        margin-top: -80px;
+        padding-top: 80px;
+    }
+
+    .auth-container {
+        max-width: 480px;
+        width: 100%;
+    }
+
+    /* Glassmorphism Card */
+    .auth-glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-glass-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        background: var(--gradient-bg);
-        opacity: 0.3;
+        height: 8px;
+        background: var(--auth-gradient);
         z-index: 1;
     }
 
-    .auth-hero-content {
+    /* Header Section */
+    .auth-header {
+        text-align: center;
+        padding: 3rem 2rem 2rem;
         position: relative;
+    }
+
+    .logo-orb {
+        width: 80px;
+        height: 80px;
+        background: var(--auth-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 10px 30px rgba(232, 17, 45, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .logo-orb i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .auth-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--auth-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .auth-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    /* Body Section */
+    .auth-body {
+        padding: 0 2rem 2rem;
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .input-group-auth {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 1.1rem;
         z-index: 2;
     }
 
-    .auth-container {
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 2rem 0;
-    }
-
-    .auth-card {
-        background: white;
-        border-radius: 25px;
-        overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        border: none;
-    }
-
-    .auth-header {
-        background: var(--gradient-bg);
-        padding: 3rem 2rem;
-        text-align: center;
-        color: white;
-    }
-
-    .auth-body {
-        padding: 3rem 2.5rem;
-    }
-
-    .form-control-auth {
+    .form-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
         border: 2px solid #e9ecef;
         border-radius: 15px;
-        padding: 1rem 1.5rem;
         font-size: 1rem;
         transition: all 0.3s ease;
+        background: white;
     }
 
-    .form-control-auth:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.25rem rgba(252, 209, 22, 0.25);
+    .form-input:focus {
+        outline: none;
+        border-color: var(--auth-primary);
+        box-shadow: 0 0 0 4px rgba(232, 17, 45, 0.1);
     }
 
-    .btn-auth {
-        background: var(--gradient-bg);
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+        padding: 0.5rem;
+        border-radius: 50%;
+    }
+
+    .password-toggle:hover {
+        color: var(--auth-primary);
+        background: rgba(232, 17, 45, 0.1);
+    }
+
+    /* Remember & Forgot */
+    .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--auth-primary);
+        border-color: var(--auth-primary);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        color: #555;
+        font-size: 0.9rem;
+        user-select: none;
+    }
+
+    .forgot-link {
+        color: var(--auth-primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .forgot-link:hover {
+        color: var(--auth-accent);
+        text-decoration: underline;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 1.2rem;
+        background: var(--auth-gradient);
         color: white;
         border: none;
-        padding: 1rem 2rem;
         border-radius: 15px;
-        font-weight: 600;
         font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
         transition: all 0.3s ease;
-        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
 
-    .btn-auth:hover {
+    .btn-submit:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        color: white;
+        box-shadow: 0 15px 40px rgba(232, 17, 45, 0.3);
     }
 
+    .btn-submit:active {
+        transform: translateY(-1px);
+    }
+
+    /* Divider */
     .divider {
         display: flex;
         align-items: center;
-        margin: 2rem 0;
+        margin: 2.5rem 0;
+        position: relative;
     }
 
     .divider::before,
@@ -99,238 +302,586 @@
         content: '';
         flex: 1;
         height: 1px;
-        background: #e9ecef;
+        background: linear-gradient(90deg, transparent, #e9ecef, transparent);
     }
 
-    .divider span {
-        padding: 0 1rem;
-        color: #6c757d;
+    .divider-text {
+        padding: 0 1.5rem;
+        color: #888;
         font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: white;
     }
 
-    .social-login-btn {
+    /* Social Login */
+    .social-login {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .social-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 0.8rem 1.5rem;
+        gap: 0.8rem;
+        padding: 1rem;
         border-radius: 15px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        width: 100%;
         border: 2px solid #e9ecef;
         background: white;
         color: #333;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
     }
 
-    .social-login-btn:hover {
+    .social-btn:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--auth-primary);
     }
 
+    .social-btn.google:hover {
+        border-color: #DB4437;
+        color: #DB4437;
+    }
+
+    .social-btn.facebook:hover {
+        border-color: #4267B2;
+        color: #4267B2;
+    }
+
+    .social-btn.twitter:hover {
+        border-color: #1DA1F2;
+        color: #1DA1F2;
+    }
+
+    /* Footer */
     .auth-footer {
         text-align: center;
-        margin-top: 2rem;
         padding-top: 2rem;
+        margin-top: 2rem;
         border-top: 1px solid #e9ecef;
     }
 
-    .remember-forgot {
+    .register-link {
+        color: var(--auth-primary);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 0.2rem 0;
+    }
+
+    .register-link::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--auth-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .register-link:hover {
+        color: var(--auth-accent);
+    }
+
+    .register-link:hover::after {
+        transform: scaleX(1);
+    }
+
+    /* Benefits */
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .benefit-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        border: 1px solid #f1f3f5;
+    }
+
+    .benefit-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .benefit-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--auth-light-gradient);
+        border-radius: 50%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: var(--auth-primary);
+        font-size: 1.8rem;
     }
 
-    .form-check-input:checked {
-        background-color: var(--primary);
-        border-color: var(--primary);
+    /* Error Messages */
+    .alert-container {
+        margin-bottom: 2rem;
     }
 
-    @media (max-width: 576px) {
-        .auth-body {
-            padding: 2rem 1.5rem;
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+        border: none;
+        font-size: 0.95rem;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, rgba(232, 17, 45, 0.1), rgba(232, 17, 45, 0.05));
+        border-left: 4px solid var(--auth-primary);
+        color: #721c24;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, rgba(0, 135, 81, 0.1), rgba(0, 135, 81, 0.05));
+        border-left: 4px solid var(--auth-accent);
+        color: #155724;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .auth-wrapper {
+            padding: 1rem;
+            padding-top: 100px;
+        }
+
+        .auth-glass-card {
+            border-radius: 25px;
         }
 
         .auth-header {
-            padding: 2rem 1.5rem;
+            padding: 2rem 1.5rem 1.5rem;
+        }
+
+        .auth-body {
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+        }
+
+        .social-login {
+            grid-template-columns: 1fr;
+        }
+
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .logo-orb {
+            width: 60px;
+            height: 60px;
+        }
+
+        .logo-orb i {
+            font-size: 1.5rem;
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+        }
+
+        .remember-forgot {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
         }
     }
 </style>
 @endpush
 
 @section('content')
-<!-- Hero Section -->
-<section class="auth-hero">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <div class="auth-hero-content">
-                    <h1 class="display-4 fw-bold mb-4">Bienvenue sur Bénin Culture</h1>
-                    <p class="lead mb-5">
-                        Connectez-vous pour contribuer, sauvegarder vos favoris et interagir
-                        avec notre communauté culturelle.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- Animated Background -->
+<div class="auth-bg-animated"></div>
 
-<!-- Formulaire de connexion -->
-<section class="py-5">
+<!-- Floating Elements -->
+<div class="floating-element" style="width: 100px; height: 100px; top: 10%; left: 5%; animation-delay: 0s;"></div>
+<div class="floating-element" style="width: 150px; height: 150px; top: 20%; right: 10%; animation-delay: 1s;"></div>
+<div class="floating-element" style="width: 80px; height: 80px; bottom: 15%; left: 15%; animation-delay: 2s;"></div>
+
+<!-- Main Content -->
+<div class="auth-wrapper">
     <div class="container">
         <div class="auth-container">
-            <div class="auth-card">
+            <!-- Glassmorphism Card -->
+            <div class="auth-glass-card">
+                <!-- Header -->
                 <div class="auth-header">
-                    <div class="mb-3">
-                        <i class="bi bi-globe-africa fs-1"></i>
+                    <div class="logo-orb">
+                        <i class="bi bi-globe-africa"></i>
                     </div>
-                    <h2 class="fw-bold mb-2">Connexion</h2>
-                    <p class="mb-0">Accédez à votre espace personnel</p>
+                    <h1 class="auth-title">Bienvenue de retour</h1>
+                    <p class="auth-subtitle">
+                        Connectez-vous à votre espace culturel pour continuer l'aventure
+                    </p>
                 </div>
 
+                <!-- Body -->
                 <div class="auth-body">
+                    <!-- Error Messages -->
                     @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
+                        <div class="alert-container">
+                            <div class="alert alert-danger">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <div>
+                                        <strong>Veuillez corriger les erreurs suivantes :</strong>
+                                        <ul class="mb-0 mt-2 ps-3">
+                                            @foreach($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
                     @if(session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
+                        <div class="alert-container">
+                            <div class="alert alert-success">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span>{{ session('status') }}</span>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('front.connexion') }}">
+                    <!-- Login Form -->
+                    <form method="POST" action="{{ route('front.connexion') }}" id="loginForm">
                         @csrf
 
-                        <!-- Email -->
-                        <div class="mb-4">
-                            <label for="email" class="form-label fw-bold">Adresse email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
+                        <!-- Email Field -->
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email</label>
+                            <div class="input-group-auth">
+                                <span class="input-icon">
                                     <i class="bi bi-envelope"></i>
                                 </span>
                                 <input type="email"
-                                       class="form-control form-control-auth border-start-0"
                                        id="email"
                                        name="email"
+                                       class="form-input"
+                                       placeholder="entrez votre email"
                                        value="{{ old('email') }}"
-                                       placeholder="votre@email.com"
-                                       required>
+                                       required
+                                       autocomplete="email"
+                                       autofocus>
                             </div>
                         </div>
 
-                        <!-- Mot de passe -->
-                        <div class="mb-4">
-                            <label for="password" class="form-label fw-bold">Mot de passe</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
+                        <!-- Password Field -->
+                        <div class="form-group">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <div class="input-group-auth">
+                                <span class="input-icon">
                                     <i class="bi bi-lock"></i>
                                 </span>
                                 <input type="password"
-                                       class="form-control form-control-auth border-start-0"
                                        id="password"
                                        name="password"
-                                       placeholder="Votre mot de passe"
-                                       required>
-                                <button class="btn btn-outline-secondary border-start-0"
-                                        type="button"
-                                        id="togglePassword">
+                                       class="form-input"
+                                       placeholder="votre mot de passe"
+                                       required
+                                       autocomplete="current-password">
+                                <button type="button" class="password-toggle" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Remember me & Forgot password -->
+                        <!-- Remember & Forgot -->
                         <div class="remember-forgot">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="remember"
+                                       name="remember" {{ old('remember') ? 'checked' : '' }}>
                                 <label class="form-check-label" for="remember">
                                     Se souvenir de moi
                                 </label>
                             </div>
                             @if(Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-primary text-decoration-none">
+                                <a href="{{ route('password.request') }}" class="forgot-link">
                                     Mot de passe oublié ?
                                 </a>
                             @endif
                         </div>
 
-                        <!-- Submit button -->
-                        <button type="submit" class="btn-auth mb-4">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>
-                            Se connecter
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Se connecter</span>
+                            <span class="spinner-border spinner-border-sm d-none" id="spinner"></span>
                         </button>
                     </form>
 
-                    <!-- Auth footer -->
+                    <!-- Social Login -->
+                    <div class="divider">
+                        <span class="divider-text">Ou connectez-vous avec</span>
+                    </div>
+
+                    <div class="social-login">
+                        <a href="#" class="social-btn google">
+                            <i class="bi bi-google"></i>
+                            <span>Google</span>
+                        </a>
+                        <a href="#" class="social-btn facebook">
+                            <i class="bi bi-facebook"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="#" class="social-btn twitter">
+                            <i class="bi bi-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                    </div>
+
+                    <!-- Registration Link -->
                     <div class="auth-footer">
-                        <p class="mb-0">
-                            Pas encore de compte ?
-                            <a href="{{ route('front.inscription') }}" class="text-primary fw-bold text-decoration-none">
-                                Inscrivez-vous ici
+                        <p class="text-muted mb-0">
+                            Nouveau sur Bénin Culture ?
+                            <a href="{{ route('front.inscription') }}" class="register-link ms-1">
+                                Créez votre compte
                             </a>
                         </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Benefits -->
-            <div class="row mt-5 g-4">
-                <div class="col-md-4">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-light rounded-circle p-3 me-3">
-                            <i class="bi bi-heart text-primary fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-2">Sauvegardez vos favoris</h6>
-                            <p class="text-muted small mb-0">Gardez une trace des contenus qui vous intéressent</p>
-                        </div>
+            <!-- Benefits Section -->
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-heart"></i>
                     </div>
+                    <h5 class="fw-bold mb-2">Favoris personnels</h5>
+                    <p class="text-muted mb-0">
+                        Sauvegardez et organisez vos contenus préférés
+                    </p>
                 </div>
-                <div class="col-md-4">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-light rounded-circle p-3 me-3">
-                            <i class="bi bi-chat text-primary fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-2">Participez aux discussions</h6>
-                            <p class="text-muted small mb-0">Échangez avec la communauté culturelle</p>
-                        </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-chat-dots"></i>
                     </div>
+                    <h5 class="fw-bold mb-2">Communauté active</h5>
+                    <p class="text-muted mb-0">
+                        Échangez avec des passionnés de culture béninoise
+                    </p>
                 </div>
-                <div class="col-md-4">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-light rounded-circle p-3 me-3">
-                            <i class="bi bi-plus-circle text-primary fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-2">Contribuez aux contenus</h6>
-                            <p class="text-muted small mb-0">Partagez vos connaissances culturelles</p>
-                        </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-plus-circle"></i>
                     </div>
+                    <h5 class="fw-bold mb-2">Contribution libre</h5>
+                    <p class="text-muted mb-0">
+                        Partagez vos connaissances et découvertes
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 @endsection
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     // Toggle password visibility
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const password = document.getElementById('password');
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password'
+            ? '<i class="bi bi-eye"></i>'
+            : '<i class="bi bi-eye-slash"></i>';
     });
+
+    // Form submission with loading state
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const submitText = submitBtn.querySelector('span');
+
+    loginForm.addEventListener('submit', function(e) {
+        // Basic validation
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!email || !password) {
+            e.preventDefault();
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.textContent = 'Connexion...';
+        spinner.classList.remove('d-none');
+
+        // Simulate network delay for UX
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitText.textContent = 'Se connecter';
+            spinner.classList.add('d-none');
+        }, 2000);
+    });
+
+    // Email validation on blur
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !isValidEmail(email)) {
+            this.style.borderColor = 'var(--auth-primary)';
+            showError(this, 'Veuillez entrer une adresse email valide');
+        } else {
+            this.style.borderColor = '';
+            clearError(this);
+        }
+    });
+
+    // Password strength check
+    const passwordInput = document.getElementById('password');
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        if (password.length > 0 && password.length < 6) {
+            this.style.borderColor = 'var(--auth-primary)';
+            showError(this, 'Le mot de passe doit contenir au moins 6 caractères');
+        } else {
+            this.style.borderColor = '';
+            clearError(this);
+        }
+    });
+
+    // Auto-focus on email field if empty
+    if (!emailInput.value) {
+        emailInput.focus();
+    }
+
+    // Helper functions
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function showError(element, message) {
+        // Remove existing error
+        clearError(element);
+
+        // Create error element
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-danger mt-2 small';
+        errorDiv.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>${message}`;
+
+        // Insert after element
+        element.parentNode.parentNode.appendChild(errorDiv);
+    }
+
+    function clearError(element) {
+        const parent = element.parentNode.parentNode;
+        const existingError = parent.querySelector('.text-danger');
+        if (existingError) {
+            existingError.remove();
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+
+        Object.assign(toast.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: type === 'error' ? 'linear-gradient(135deg, #E8112D, #FF3366)' : 'linear-gradient(135deg, #008751, #00B894)',
+            color: 'white',
+            padding: '15px 25px',
+            borderRadius: '10px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+            transform: 'translateX(150%)',
+            transition: 'transform 0.3s ease',
+            zIndex: '9999',
+            maxWidth: '350px'
+        });
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.transform = 'translateX(0)';
+        }, 10);
+
+        setTimeout(() => {
+            toast.style.transform = 'translateX(150%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + Enter to submit form
+        if (e.ctrlKey && e.key === 'Enter') {
+            loginForm.requestSubmit();
+        }
+
+        // Escape to clear form
+        if (e.key === 'Escape') {
+            emailInput.value = '';
+            passwordInput.value = '';
+            emailInput.focus();
+        }
+    });
+
+    // Add floating animation to benefit cards on hover
+    const benefitCards = document.querySelectorAll('.benefit-card');
+    benefitCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transition = 'all 0.3s ease';
+        });
+    });
+
+    // Pulse animation for the logo orb
+    const logoOrb = document.querySelector('.logo-orb');
+    setInterval(() => {
+        logoOrb.style.animation = 'pulse 2s ease-in-out';
+        setTimeout(() => {
+            logoOrb.style.animation = '';
+        }, 2000);
+    }, 10000);
+});
 </script>
 @endpush

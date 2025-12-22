@@ -5,6 +5,7 @@ use App\Http\Controllers\FrontController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\FedapayController; // <-- AJOUTER CE CONTROLLER
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Api\InteractionController;
@@ -50,11 +51,6 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
 });
 
 // ========== ROUTES BOUTIQUE/PAIEMENT ==========
-// routes/web.php
-
-/// routes/web.php
-
-// Routes boutique/paiement
 Route::get('/boutique', [PaiementController::class, 'index'])->name('boutique.index');
 
 // Routes protégées par auth
@@ -67,9 +63,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/boutique/paiement', [PaiementController::class, 'formulaire'])->name('paiement.formulaire');
     Route::post('/boutique/paiement', [PaiementController::class, 'processPaiement'])->name('paiement.process');
-    Route::get('/boutique/success/{id}', [PaiementController::class, 'success'])->name('paiement.success');
+    Route::get('/boutique/success/{reference}', [PaiementController::class, 'success'])->name('paiement.success');
+
+    // ROUTES FEDAPAY (Nouvelles routes) <-- AJOUTER CES ROUTES
+    Route::post('/paiement/fedapay', [FedapayController::class, 'process'])->name('paiement.fedapay.process');
+    Route::get('/paiement/callback', [FedapayController::class, 'callback'])->name('paiement.fedapay.callback');
+    Route::get('/paiement/echec', [FedapayController::class, 'echec'])->name('paiement.fedapay.echec');
 });
 
+// ========== INTERACTIONS API ==========
 Route::middleware(['auth:sanctum'])->group(function () {
     // Likes
     Route::post('/contenus/{contenu}/like', [InteractionController::class, 'toggleLike']);
@@ -92,6 +94,7 @@ Route::get('/contenus/{contenu}/comments', [InteractionController::class, 'getCo
 
 // Partage
 Route::post('/contenus/{contenu}/share', [InteractionController::class, 'shareContent']);
+
 // ========== DÉCONNEXION ==========
 Route::middleware('auth')->post('/deconnexion', function () {
     Auth::logout();

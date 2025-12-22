@@ -5,191 +5,172 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Abonnement;
-use App\Models\Paiement;
-use App\Models\Facture;
-use App\Models\Contenu;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 class PaiementController extends Controller
 {
     /**
-     * Page d'accueil boutique
+     * Page principale de la boutique
      */
-    public function index()
+    public function index(Request $request)
     {
-        Log::info('=== PAGE BOUTIQUE INDEX ===');
+        $abonnements = [
+            [
+                'id' => 1,
+                'nom' => 'Découverte',
+                'prix' => 2500,
+                'prix_mensuel' => 2500,
+                'devise' => 'FCFA',
+                'description' => 'Parfait pour débuter',
+                'features_list' => [
+                    'Accès à 10 contenus premium/mois',
+                    'Support par email',
+                    'Certificat standard',
+                    'Contenus en définition standard'
+                ],
+                'couleur' => '#667eea',
+                'icon' => 'bi-rocket-takeoff',
+                'description_courte' => 'Idéal pour commencer'
+            ],
+            [
+                'id' => 2,
+                'nom' => 'Passionné',
+                'prix' => 5000,
+                'prix_mensuel' => 5000,
+                'devise' => 'FCFA',
+                'description' => 'Le plus populaire',
+                'features_list' => [
+                    'Accès illimité aux contenus',
+                    'Support prioritaire',
+                    'Téléchargements HD',
+                    'Certificat premium',
+                    'Formations complètes',
+                    'Accès aux archives'
+                ],
+                'couleur' => '#764ba2',
+                'icon' => 'bi-stars',
+                'description_courte' => 'Le choix populaire'
+            ],
+            [
+                'id' => 3,
+                'nom' => 'Professionnel',
+                'prix' => 10000,
+                'prix_mensuel' => 10000,
+                'devise' => 'FCFA',
+                'description' => 'Pour les experts',
+                'features_list' => [
+                    'Licence commerciale',
+                    'Support 24/7',
+                    'Accès API',
+                    'Formations personnalisées',
+                    'Certificat expert',
+                    'Accès aux données brutes',
+                    'Consultations privées'
+                ],
+                'couleur' => '#2D3748',
+                'icon' => 'bi-award',
+                'description_courte' => 'Pour les experts'
+            ]
+        ];
 
-        try {
-            // Récupérer les abonnements actifs
-            $abonnements = Abonnement::where('statut', 'actif')
-                ->orderBy('prix', 'asc')
-                ->get();
-
-            // Si pas d'abonnements, créer des données de démo
-            if ($abonnements->isEmpty()) {
-                $abonnements = collect([
-                    (object) [
-                        'id' => 1,
-                        'nom' => 'Découverte',
-                        'prix' => 2500,
-                        'devise' => 'FCFA',
-                        'duree_jours' => 30,
-                        'description_courte' => 'Idéal pour commencer',
-                        'features' => json_encode([
-                            '5 contenus premium par mois',
-                            'Accès aux contenus gratuits',
-                            'Support par email'
-                        ])
-                    ],
-                    (object) [
-                        'id' => 2,
-                        'nom' => 'Passionné',
-                        'prix' => 5000,
-                        'devise' => 'FCFA',
-                        'duree_jours' => 30,
-                        'description_courte' => 'Le choix de 85% de nos membres',
-                        'features' => json_encode([
-                            'Contenus premium illimités',
-                            'Accès aux masters class',
-                            'Téléchargements HD',
-                            'Support prioritaire'
-                        ])
-                    ],
-                    (object) [
-                        'id' => 3,
-                        'nom' => 'Professionnel',
-                        'prix' => 10000,
-                        'devise' => 'FCFA',
-                        'duree_jours' => 30,
-                        'description_courte' => 'Pour institutions et entreprises',
-                        'features' => json_encode([
-                            'Tous les avantages Passionné',
-                            'Licence commerciale',
-                            'Formations personnalisées',
-                            'Support dédié 24/7'
-                        ])
-                    ]
-                ]);
-            }
-
-            // Récupérer un contenu premium aléatoire pour l'achat unitaire
-            $singleContent = Contenu::where('is_premium', true)
-                ->inRandomOrder()
-                ->first();
-
-            Log::info('Abonnements trouvés: ' . $abonnements->count());
-
-            return view('front.boutique.index', compact('abonnements', 'singleContent'));
-
-        } catch (\Exception $e) {
-            Log::error('Erreur page boutique: ' . $e->getMessage());
-            return view('front.boutique.error', [
-                'error' => 'Erreur technique: ' . $e->getMessage()
-            ]);
-        }
+        return view('front.boutique.index', compact('abonnements'));
     }
 
     /**
-     * Traiter le choix (abonnement, pack ou contenu unique)
+     * Page de choix d'abonnement
+     */
+    public function choisir()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('front.connexion')
+                ->with('info', 'Connectez-vous pour choisir un abonnement');
+        }
+
+        $abonnements = [
+            [
+                'id' => 1,
+                'nom' => 'Découverte',
+                'prix' => 2500,
+                'devise' => 'FCFA',
+                'icon' => 'bi-rocket-takeoff'
+            ],
+            [
+                'id' => 2,
+                'nom' => 'Passionné',
+                'prix' => 5000,
+                'devise' => 'FCFA',
+                'icon' => 'bi-stars'
+            ],
+            [
+                'id' => 3,
+                'nom' => 'Professionnel',
+                'prix' => 10000,
+                'devise' => 'FCFA',
+                'icon' => 'bi-award'
+            ]
+        ];
+
+        return view('front.boutique.choisir', compact('abonnements'));
+    }
+
+    /**
+     * Traiter le choix de l'abonnement
      */
     public function processChoix(Request $request)
     {
-        Log::info('=== PROCESS CHOIX ===');
-        Log::info('Données reçues:', $request->all());
-
-        // Validation selon le type
-        if ($request->has('id_abonnement')) {
-            $request->validate([
-                'id_abonnement' => 'required|exists:abonnements,id',
-            ]);
-
-            $type = 'abonnement';
-            $item = Abonnement::findOrFail($request->id_abonnement);
-            $itemData = [
-                'type' => 'abonnement',
-                'id' => $item->id,
-                'nom' => $item->nom,
-                'prix' => $item->prix,
-                'devise' => $item->devise ?? 'FCFA',
-                'duree_jours' => $item->duree_jours,
-                'description' => $item->description,
-            ];
-
-        } elseif ($request->has('contenu_id')) {
-            $request->validate([
-                'contenu_id' => 'required|exists:contenus,id_contenu',
-                'type' => 'required|in:single'
-            ]);
-
-            $type = 'contenu_single';
-            $item = Contenu::findOrFail($request->contenu_id);
-            $itemData = [
-                'type' => 'contenu_single',
-                'id' => $item->id_contenu,
-                'titre' => $item->titre,
-                'prix' => $item->prix ?? 9.99,
-                'devise' => 'EUR',
-                'description' => $item->description,
-            ];
-
-        } elseif ($request->has('type') && $request->type == 'pack') {
-            $request->validate([
-                'pack_name' => 'required|string',
-                'pack_price' => 'required|numeric',
-            ]);
-
-            $type = 'pack';
-            $itemData = [
-                'type' => 'pack',
-                'nom' => $request->pack_name,
-                'prix' => $request->pack_price,
-                'devise' => 'FCFA',
-                'description' => 'Pack de 10 contenus premium au choix',
-            ];
-
-        } else {
-            return redirect()->route('boutique.index')
-                ->with('error', 'Type d\'achat non reconnu');
+        if (!Auth::check()) {
+            return redirect()->route('front.connexion')
+                ->with('error', 'Connectez-vous pour continuer');
         }
 
-        try {
-            // Sauvegarder dans la session
-            session([
-                'achat_choisi' => $itemData
-            ]);
+        $request->validate([
+            'id_abonnement' => 'required|in:1,2,3',
+            'period' => 'required|in:monthly,yearly,lifetime'
+        ]);
 
-            Log::info('Achat choisi en session:', session('achat_choisi'));
+        // Sauvegarder en session
+        $abonnement = $this->getAbonnementById($request->id_abonnement);
+        $prix = $this->calculatePrice($abonnement['prix'], $request->period);
+        $duree_jours = $this->calculateDuration($request->period);
+        $prix_mensuel = $this->calculateMonthlyPrice($prix, $request->period);
 
-            // Rediriger vers le paiement
-            return redirect()->route('paiement.formulaire');
+        $achat = [
+            'type' => 'abonnement',
+            'id' => $abonnement['id'],
+            'nom' => $abonnement['nom'],
+            'prix' => $prix,
+            'prix_mensuel' => $prix_mensuel,
+            'prix_original' => $abonnement['prix'],
+            'devise' => $abonnement['devise'],
+            'period' => $request->period,
+            'duree_jours' => $duree_jours,
+            'icon' => $abonnement['icon'] ?? 'bi-star'
+        ];
 
-        } catch (\Exception $e) {
-            Log::error('Erreur choix achat: ' . $e->getMessage());
-            return redirect()->route('boutique.index')
-                ->with('error', 'Erreur lors du choix: ' . $e->getMessage());
-        }
+        session(['achat_choisi' => $achat]);
+
+        return redirect()->route('paiement.formulaire');
     }
 
     /**
-     * Page de formulaire de paiement
+     * Page de paiement
      */
     public function formulaire()
     {
-        Log::info('=== AFFICHAGE FORMULAIRE PAIEMENT ===');
+        if (!Auth::check()) {
+            return redirect()->route('front.connexion')
+                ->with('error', 'Connectez-vous pour payer');
+        }
 
         if (!session()->has('achat_choisi')) {
-            Log::warning('Pas d\'achat choisi en session');
-            return redirect()->route('boutique.index')
-                ->with('error', 'Veuillez choisir un produit d\'abord');
+            return redirect()->route('boutique.choisir')
+                ->with('warning', 'Veuillez choisir un abonnement d\'abord');
         }
 
         $achat = session('achat_choisi');
-        Log::info('Achat en session:', $achat);
+        $user = Auth::user();
 
-        return view('front.boutique.paiement', compact('achat'));
+        return view('front.boutique.paiement', compact('achat', 'user'));
     }
 
     /**
@@ -197,158 +178,163 @@ class PaiementController extends Controller
      */
     public function processPaiement(Request $request)
     {
-        Log::info('=== PROCESS PAIEMENT ===');
-        Log::info('Données reçues:', $request->except(['_token']));
+        if (!Auth::check()) {
+            return redirect()->route('front.connexion');
+        }
 
-        // Vérifier l'achat en session
         if (!session()->has('achat_choisi')) {
-            Log::error('Achat non trouvé en session');
-            return redirect()->route('boutique.index')
-                ->with('error', 'Session expirée. Veuillez choisir un produit à nouveau.');
+            return redirect()->route('boutique.index');
         }
 
         $achat = session('achat_choisi');
         $user = Auth::user();
 
-        // Démarrer une transaction
-        DB::beginTransaction();
+        // SIMULER un paiement réussi
+        $reference = 'PAY_' . date('Ymd') . '_' . strtoupper(uniqid());
 
-        try {
-            // Générer une référence unique
-            $reference = 'PAY_' . date('Ymd') . '_' . strtoupper(Str::random(8));
+        // Enregistrer la transaction
+        $this->createTransaction($user, $achat, $reference, 'completed');
 
-            // Créer le paiement
-            $paiement = Paiement::create([
-                'user_id' => $user->id,
-                'transaction_id' => null, // À remplir après FedaPay
-                'reference' => $reference,
-                'montant' => $achat['prix'],
-                'devise' => $achat['devise'],
-                'statut' => 'en_attente',
-                'service' => $achat['type'] == 'abonnement' ? 'abonnement' : 'contenu',
-                'type_service' => $achat['type'],
-                'metadata' => json_encode([
-                    'achat_details' => $achat,
-                    'user_info' => [
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'phone' => $user->telephone ?? null
-                    ]
-                ]),
-            ]);
+        // Activer l'abonnement
+        $this->activateSubscription($user, $achat);
 
-            Log::info('Paiement créé avec ID:', ['id' => $paiement->id]);
+        // Nettoyer la session
+        session()->forget('achat_choisi');
 
-            // ICI: INTÉGRER FEDAPAY
-            // Pour l'instant, simuler un paiement réussi
-            $transactionId = 'FEDAPAY_' . strtoupper(Str::random(16));
-
-            // Mettre à jour le paiement
-            $paiement->transaction_id = $transactionId;
-            $paiement->statut = 'payé';
-            $paiement->date_paiement = now();
-            $paiement->save();
-
-            // Si c'est un abonnement, mettre à jour l'utilisateur
-            if ($achat['type'] == 'abonnement') {
-                $abonnement = Abonnement::find($achat['id']);
-                if ($abonnement) {
-                    $user->id_abonnement = $abonnement->id;
-                    $user->date_debut_abonnement = now();
-                    $user->date_fin_abonnement = now()->addDays($abonnement->duree_jours);
-                    $user->statut_abonnement = 'actif';
-                    $user->save();
-                }
-            }
-
-            // Si c'est un contenu unique, lier à l'utilisateur
-            if ($achat['type'] == 'contenu_single') {
-                // Ici, vous pourriez avoir une table user_contenus
-                // Pour l'instant, on met dans les métadonnées
-                $metadata = json_decode($paiement->metadata, true);
-                $metadata['contenu_id'] = $achat['id'];
-                $paiement->metadata = json_encode($metadata);
-                $paiement->save();
-            }
-
-            // Nettoyer la session
-            session()->forget('achat_choisi');
-
-            // Valider la transaction
-            DB::commit();
-
-            // Rediriger vers la confirmation
-            return redirect()->route('paiement.success', $paiement->id)
-                ->with('success', 'Paiement effectué avec succès!');
-
-        } catch (\Exception $e) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-
-            Log::error('Erreur paiement: ' . $e->getMessage());
-            Log::error('Trace: ' . $e->getTraceAsString());
-
-            return redirect()->route('paiement.formulaire')
-                ->with('error', 'Erreur lors du paiement: ' . $e->getMessage())
-                ->withInput();
-        }
+        return redirect()->route('paiement.success', ['reference' => $reference]);
     }
 
     /**
-     * Page de succès/confirmation
+     * Page de succès
      */
-    public function success($id)
+    public function success($reference)
     {
-        Log::info('=== PAGE SUCCESS PAIEMENT ===', ['id' => $id]);
+        if (!Auth::check()) {
+            return redirect()->route('front.connexion');
+        }
 
-        try {
-            // Charger le paiement
-            $paiement = Paiement::findOrFail($id);
+        // Récupérer la transaction
+        $transaction = \App\Models\Transaction::where('reference', $reference)
+            ->where('user_id', Auth::id())
+            ->first();
 
-            // Vérifier que le paiement appartient à l'utilisateur connecté
-            if ($paiement->user_id !== Auth::id()) {
-                abort(403, 'Accès non autorisé');
-            }
-
-            Log::info('Affichage succès pour paiement ID: ' . $paiement->id);
-
-            return view('front.boutique.success', compact('paiement'));
-
-        } catch (\Exception $e) {
-            Log::error('Erreur page success: ' . $e->getMessage());
+        if (!$transaction) {
             return redirect()->route('dashboard.index')
-                ->with('error', 'Paiement non trouvé: ' . $e->getMessage());
-        }
-    }
-
-    // app/Http/Controllers/PaiementController.php
-
-/**
- * Page de choix d'abonnement (si vous voulez une page intermédiaire)
- */
-public function choisir()
-{
-    Log::info('=== PAGE CHOISIR ABONNEMENT ===');
-
-    try {
-        $abonnements = Abonnement::where('statut', 'actif')
-            ->orderBy('prix', 'asc')
-            ->get();
-
-        if ($abonnements->isEmpty()) {
-            Log::warning('Aucun abonnement actif trouvé');
-            return redirect()->route('boutique.index')
-                ->with('warning', 'Aucun abonnement disponible pour le moment.');
+                ->with('error', 'Transaction non trouvée');
         }
 
-        Log::info('Abonnements pour choisir: ' . $abonnements->count());
+        $paiement = [
+            'reference' => $transaction->reference,
+            'date' => $transaction->created_at->format('d/m/Y H:i'),
+            'montant' => number_format($transaction->amount, 0, ',', ' ') . ' ' . $transaction->currency,
+            'statut' => $transaction->status,
+            'description' => $transaction->description
+        ];
 
-        return view('front.boutique.choisir', compact('abonnements'));
-
-    } catch (\Exception $e) {
-        Log::error('Erreur page choisir: ' . $e->getMessage());
-        return redirect()->route('boutique.index')
-            ->with('error', 'Erreur technique: ' . $e->getMessage());
+        return view('front.boutique.success', compact('paiement'));
     }
-}
+
+    /**
+     * Méthodes utilitaires
+     */
+    private function getAbonnementById($id)
+    {
+        $abonnements = [
+            1 => [
+                'id' => 1,
+                'nom' => 'Découverte',
+                'prix' => 2500,
+                'devise' => 'FCFA',
+                'icon' => 'bi-rocket-takeoff'
+            ],
+            2 => [
+                'id' => 2,
+                'nom' => 'Passionné',
+                'prix' => 5000,
+                'devise' => 'FCFA',
+                'icon' => 'bi-stars'
+            ],
+            3 => [
+                'id' => 3,
+                'nom' => 'Professionnel',
+                'prix' => 10000,
+                'devise' => 'FCFA',
+                'icon' => 'bi-award'
+            ]
+        ];
+
+        return $abonnements[$id] ?? $abonnements[1];
+    }
+
+    private function calculatePrice($basePrice, $period)
+    {
+        return match($period) {
+            'monthly' => $basePrice,
+            'yearly' => $basePrice * 10, // 10 mois payés pour 1 an
+            'lifetime' => $basePrice * 50, // Prix à vie
+            default => $basePrice
+        };
+    }
+
+    private function calculateMonthlyPrice($totalPrice, $period)
+    {
+        return match($period) {
+            'monthly' => $totalPrice,
+            'yearly' => round($totalPrice / 12),
+            'lifetime' => round($totalPrice / 1200), // Sur 100 ans
+            default => $totalPrice
+        };
+    }
+
+    private function calculateDuration($period)
+    {
+        return match($period) {
+            'monthly' => 30,
+            'yearly' => 365,
+            'lifetime' => 36500, // 100 ans
+            default => 30
+        };
+    }
+
+    private function createTransaction($user, $achat, $reference, $status = 'pending')
+    {
+        if (!class_exists(\App\Models\Transaction::class)) {
+            return;
+        }
+
+        \App\Models\Transaction::create([
+            'user_id' => $user->id,
+            'reference' => $reference,
+            'amount' => $achat['prix'],
+            'currency' => $achat['devise'],
+            'description' => 'Abonnement ' . $achat['nom'],
+            'status' => $status,
+            'metadata' => json_encode([
+                'abonnement_id' => $achat['id'],
+                'period' => $achat['period'],
+                'duree_jours' => $achat['duree_jours']
+            ])
+        ]);
+    }
+
+    private function activateSubscription($user, $achat)
+    {
+        if (!class_exists(\App\Models\UserSubscription::class)) {
+            return;
+        }
+
+        $dateFin = now()->addDays($achat['duree_jours']);
+
+        \App\Models\UserSubscription::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'abonnement_id' => $achat['id'],
+                'type' => $achat['period'],
+                'date_debut' => now(),
+                'date_fin' => $dateFin,
+                'statut' => 'actif',
+                'montant' => $achat['prix']
+            ]
+        );
+    }
 }

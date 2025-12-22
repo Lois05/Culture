@@ -151,5 +151,100 @@ class UserController extends Controller
         return redirect()->route('users.show', $user)->with('success', 'Photo supprimée.');
     }
 
+    public function activer($id)
+{
+    $user = User::findOrFail($id);
+    $user->update(['statut' => 'actif']);
+
+    return redirect()->route('admin.users.index')
+        ->with('success', '✅ Utilisateur activé avec succès !');
+}
+
+public function desactiver($id)
+{
+    $user = User::findOrFail($id);
+    $user->update(['statut' => 'inactif']);
+
+    return redirect()->route('admin.users.index')
+        ->with('success', '⚠️ Utilisateur désactivé !');
+}
+
+// UserController.php - Ajoutez ces méthodes
+
+public function showProfile(Request $request)
+{
+    $user = $request->user();
+    $user->load(['role', 'langue']);
+    return view('profile.show', compact('user'));
+}
+
+public function editProfile(Request $request)
+{
+    $user = $request->user();
+    $roles = Role::all();
+    $langues = Langue::all();
+
+    return view('profile.edit', compact('user', 'roles', 'langues'));
+}
+
+public function updateProfile(Request $request)
+{
+    $user = $request->user();
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'prenom' => 'nullable|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'telephone' => 'nullable|string|max:20',
+        'adresse' => 'nullable|string|max:500',
+        'langue_id' => 'nullable|exists:langues,id',
+        'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    if ($request->hasFile('photo')) {
+        // Supprimer l'ancienne photo si elle existe
+        if ($user->photo && Storage::exists('public/adminlte/img/' . $user->photo)) {
+            Storage::delete('public/adminlte/img/' . $user->photo);
+        }
+
+        $photo = $request->file('photo');
+        $photoName = 'user_' . $user->id . '_' . time() . '.' . $photo->getClientOriginalExtension();
+        $photo->storeAs('public/adminlte/img', $photoName);
+        $validated['photo'] = $photoName;
+    }
+
+    if ($request->has('remove_photo') && $request->remove_photo == '1') {
+        if ($user->photo && Storage::exists('public/adminlte/img/' . $user->photo)) {
+            Storage::delete('public/adminlte/img/' . $user->photo);
+        }
+        $validated['photo'] = null;
+    }
+
+    $user->update($validated);
+
+    return redirect()->route('profile.show')
+        ->with('success', 'Votre profil a été mis à jour avec succès.');
+}
+
+public function showChangePasswordForm()
+{
+    return view('profile.change-password');
+}
+
+public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => ['required', 'current_password'],
+        'password' => ['required', 'confirmed', 'min:8'],
+    ]);
+
+    $user = $request->user();
+    $user->update([
+        'password' => Hash::make($request->password),
+    ]);
+
+    return redirect()->route('profile.show')
+        ->with('success', 'Votre mot de passe a été changé avec succès.');
+}
 
 }

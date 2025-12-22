@@ -44,7 +44,7 @@ class ContributionController extends Controller
         $contenu->id_region = $request->id_region;
         $contenu->texte = $request->texte;
         $contenu->id_auteur = Auth::id();
-        $contenu->statut = 'en attente'; // ou 'brouillon' selon ton workflow
+        $contenu->statut = 'en_attente'; // ou 'brouillon' selon ton workflow
         $contenu->slug = Str::slug($request->titre);
 
         // Image principale
@@ -71,8 +71,8 @@ class ContributionController extends Controller
             }
         }
 
-        return redirect()->route('user.contents')
-            ->with('success', 'Votre contribution a été soumise avec succès ! Elle sera publiée après validation.');
+         return redirect()->route('user.contents')
+        ->with('success', '✅ Votre contribution a été soumise avec succès ! Elle est maintenant en attente de validation par un administrateur.');
     }
 
     /**
