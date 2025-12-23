@@ -53,23 +53,25 @@
         50% { transform: translateY(-20px); }
     }
 
-    /* Main Container */
+    /* Main Container - CORRIGÉ */
     .auth-wrapper {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 2rem 1rem;
-        margin-top: -80px;
-        padding-top: 80px;
+        padding-top: 80px; /* Ajusté pour le header */
+        position: relative;
+        z-index: 1;
     }
 
     .auth-container {
         max-width: 480px;
         width: 100%;
+        margin: 0 auto;
     }
 
-    /* Glassmorphism Card */
+    /* Glassmorphism Card - CORRIGÉ */
     .auth-glass-card {
         background: var(--glass-bg);
         backdrop-filter: blur(20px);
@@ -79,6 +81,7 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         position: relative;
         overflow: hidden;
+        margin: 0 auto; /* Centré */
     }
 
     .auth-glass-card::before {
@@ -92,11 +95,12 @@
         z-index: 1;
     }
 
-    /* Header Section */
+    /* Header Section - CORRIGÉ */
     .auth-header {
         text-align: center;
         padding: 3rem 2rem 2rem;
         position: relative;
+        margin-top: 0;
     }
 
     .logo-orb {
@@ -140,7 +144,7 @@
         margin: 0 auto;
     }
 
-    /* Body Section */
+    /* Body Section - CORRIGÉ */
     .auth-body {
         padding: 0 2rem 2rem;
     }
@@ -177,7 +181,7 @@
 
     .form-input {
         width: 100%;
-        padding: 1rem 1rem 1rem 3rem;
+        padding: 1rem 3.5rem 1rem 3rem; /* Plus d'espace à droite pour l'œil */
         border: 2px solid #e9ecef;
         border-radius: 15px;
         font-size: 1rem;
@@ -191,6 +195,7 @@
         box-shadow: 0 0 0 4px rgba(232, 17, 45, 0.1);
     }
 
+    /* Password Toggle - CORRIGÉ */
     .password-toggle {
         position: absolute;
         right: 1rem;
@@ -200,10 +205,16 @@
         border: none;
         color: #999;
         cursor: pointer;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         transition: color 0.3s ease;
         padding: 0.5rem;
         border-radius: 50%;
+        z-index: 3;
+        height: 40px;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .password-toggle:hover {
@@ -456,15 +467,18 @@
         color: #155724;
     }
 
-    /* Responsive */
+    /* Responsive - CORRIGÉ */
     @media (max-width: 768px) {
         .auth-wrapper {
             padding: 1rem;
-            padding-top: 100px;
+            padding-top: 60px;
         }
 
         .auth-glass-card {
             border-radius: 25px;
+            margin: 0;
+            width: 100%;
+            max-width: 100%;
         }
 
         .auth-header {
@@ -485,10 +499,15 @@
 
         .benefits-grid {
             grid-template-columns: 1fr;
+            margin-top: 2rem;
         }
     }
 
     @media (max-width: 576px) {
+        .auth-wrapper {
+            padding-top: 40px;
+        }
+
         .logo-orb {
             width: 60px;
             height: 60px;
@@ -506,6 +525,14 @@
             flex-direction: column;
             gap: 1rem;
             align-items: flex-start;
+        }
+
+        .form-input {
+            padding: 1rem 3.2rem 1rem 2.8rem;
+        }
+
+        .password-toggle {
+            right: 0.8rem;
         }
     }
 </style>
@@ -710,106 +737,46 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Toggle password visibility
+    // Toggle password visibility - CORRIGÉ
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
 
-    togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.innerHTML = type === 'password'
-            ? '<i class="bi bi-eye"></i>'
-            : '<i class="bi bi-eye-slash"></i>';
-    });
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerHTML = type === 'password'
+                ? '<i class="bi bi-eye"></i>'
+                : '<i class="bi bi-eye-slash"></i>';
+        });
+    }
 
     // Form submission with loading state
     const loginForm = document.getElementById('loginForm');
     const submitBtn = document.getElementById('submitBtn');
     const spinner = document.getElementById('spinner');
-    const submitText = submitBtn.querySelector('span');
 
-    loginForm.addEventListener('submit', function(e) {
-        // Basic validation
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
+    if (loginForm && submitBtn) {
+        loginForm.addEventListener('submit', function(e) {
+            // Basic validation
+            const email = document.getElementById('email')?.value.trim();
+            const password = document.getElementById('password')?.value.trim();
 
-        if (!email || !password) {
-            e.preventDefault();
-            showToast('Veuillez remplir tous les champs', 'error');
-            return;
-        }
+            if (!email || !password) {
+                e.preventDefault();
+                showToast('Veuillez remplir tous les champs', 'error');
+                return;
+            }
 
-        // Show loading state
-        submitBtn.disabled = true;
-        submitText.textContent = 'Connexion...';
-        spinner.classList.remove('d-none');
-
-        // Simulate network delay for UX
-        setTimeout(() => {
-            submitBtn.disabled = false;
-            submitText.textContent = 'Se connecter';
-            spinner.classList.add('d-none');
-        }, 2000);
-    });
-
-    // Email validation on blur
-    const emailInput = document.getElementById('email');
-    emailInput.addEventListener('blur', function() {
-        const email = this.value.trim();
-        if (email && !isValidEmail(email)) {
-            this.style.borderColor = 'var(--auth-primary)';
-            showError(this, 'Veuillez entrer une adresse email valide');
-        } else {
-            this.style.borderColor = '';
-            clearError(this);
-        }
-    });
-
-    // Password strength check
-    const passwordInput = document.getElementById('password');
-    passwordInput.addEventListener('input', function() {
-        const password = this.value;
-        if (password.length > 0 && password.length < 6) {
-            this.style.borderColor = 'var(--auth-primary)';
-            showError(this, 'Le mot de passe doit contenir au moins 6 caractères');
-        } else {
-            this.style.borderColor = '';
-            clearError(this);
-        }
-    });
-
-    // Auto-focus on email field if empty
-    if (!emailInput.value) {
-        emailInput.focus();
+            // Show loading state
+            submitBtn.disabled = true;
+            const submitText = submitBtn.querySelector('span');
+            if (submitText) submitText.textContent = 'Connexion...';
+            if (spinner) spinner.classList.remove('d-none');
+        });
     }
 
-    // Helper functions
-    function isValidEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-
-    function showError(element, message) {
-        // Remove existing error
-        clearError(element);
-
-        // Create error element
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'text-danger mt-2 small';
-        errorDiv.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>${message}`;
-
-        // Insert after element
-        element.parentNode.parentNode.appendChild(errorDiv);
-    }
-
-    function clearError(element) {
-        const parent = element.parentNode.parentNode;
-        const existingError = parent.querySelector('.text-danger');
-        if (existingError) {
-            existingError.remove();
-        }
-    }
-
+    // Helper function to show toast
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast-notification toast-${type}`;
@@ -846,42 +813,6 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
-
-    // Add keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Ctrl + Enter to submit form
-        if (e.ctrlKey && e.key === 'Enter') {
-            loginForm.requestSubmit();
-        }
-
-        // Escape to clear form
-        if (e.key === 'Escape') {
-            emailInput.value = '';
-            passwordInput.value = '';
-            emailInput.focus();
-        }
-    });
-
-    // Add floating animation to benefit cards on hover
-    const benefitCards = document.querySelectorAll('.benefit-card');
-    benefitCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-        });
-
-        card.addEventListener('mouseleave', function() {
-            this.style.transition = 'all 0.3s ease';
-        });
-    });
-
-    // Pulse animation for the logo orb
-    const logoOrb = document.querySelector('.logo-orb');
-    setInterval(() => {
-        logoOrb.style.animation = 'pulse 2s ease-in-out';
-        setTimeout(() => {
-            logoOrb.style.animation = '';
-        }, 2000);
-    }, 10000);
 });
 </script>
 @endpush

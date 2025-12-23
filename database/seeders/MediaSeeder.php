@@ -4,22 +4,20 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\CloudinaryHelper;
 
 class MediaSeeder extends Seeder
 {
     public function run(): void
     {
-        $contenus = DB::table('contenus')->get();
-
-        if ($contenus->isEmpty()) {
-            echo "⚠️ Aucun contenu trouvé.\n";
-            return;
-        }
+        // Supprimer les anciens médias
+        DB::table('medias')->delete();
 
         $medias = [
             // ==================== CONTENU 1 ====================
             [
-                'chemin' => 'adminlte/img/mikwabo.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157101/roi_gbehanzin.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157101/roi_gbehanzin.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 2048000,
                 'description' => 'Portrait du Roi Gbêhanzin',
@@ -32,8 +30,9 @@ class MediaSeeder extends Seeder
 
             // ==================== CONTENU 2 ====================
             [
-                'chemin' => 'adminlte/img/tehou.webp',
-                'type_fichier' => 'image/jpeg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157102/legende_tehou.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157102/legende_tehou.jpg',
+                'type_fichier' => 'image/webp',
                 'taille' => 1800000,
                 'description' => 'Illustration de la légende de Têhou',
                 'id_contenu' => 2,
@@ -43,10 +42,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 3 ====================
             [
-                'chemin' => 'adminlte/img/amiwo.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157103/amiwo_plat.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157103/amiwo_plat.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1500000,
                 'description' => 'Plat de pâte rouge traditionnel',
@@ -57,10 +56,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 4 ====================
             [
-                'chemin' => 'adminlte/img/amiwo.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157104/preparation_amiwo.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157104/preparation_amiwo.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1700000,
                 'description' => 'Préparation de l\'Amiwo',
@@ -73,7 +72,8 @@ class MediaSeeder extends Seeder
 
             // ==================== CONTENU 5 ====================
             [
-                'chemin' => 'adminlte/img/danse.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157105/danse_zinli.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157105/danse_zinli.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1800000,
                 'description' => 'Danse traditionnelle Zinli',
@@ -84,10 +84,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 6 ====================
             [
-                'chemin' => 'adminlte/img/festi.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157106/festival_gaani.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157106/festival_gaani.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1900000,
                 'description' => 'Célébration du festival Gaani',
@@ -98,11 +98,11 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 7 ====================
             [
-                'chemin' => 'adminlte/img/kante.webp',
-                'type_fichier' => 'image/jpeg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157107/tissage_kente.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157107/tissage_kente.jpg',
+                'type_fichier' => 'image/webp',
                 'taille' => 2200000,
                 'description' => 'Tissage du Kente traditionnel',
                 'id_contenu' => 7,
@@ -112,10 +112,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 8 ====================
             [
-                'chemin' => 'adminlte/img/fon.webp',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157108/proverbe_fon.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157108/proverbe_fon.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1200000,
                 'description' => 'Illustration du proverbe Fon',
@@ -126,10 +126,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 9 ====================
             [
-                'chemin' => 'adminlte/img/chant.webp',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157109/chant_recolte.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157109/chant_recolte.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 1600000,
                 'description' => 'Chant de récolte Yoruba',
@@ -140,10 +140,10 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
-
             // ==================== CONTENU 10 ====================
             [
-                'chemin' => 'adminlte/img/Abomey_royal_palace_wall.jpg',
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157110/palais_abomey.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157110/palais_abomey.jpg',
                 'type_fichier' => 'image/jpeg',
                 'taille' => 2400000,
                 'description' => 'Portes du Palais Royal d\'Abomey',
@@ -154,14 +154,48 @@ class MediaSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
+            // ==================== AJOUTER PLUS DE CONTENUS ====================
+            [
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157111/vodoun_fetish.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157111/vodoun_fetish.jpg',
+                'type_fichier' => 'image/jpeg',
+                'taille' => 2100000,
+                'description' => 'Cérémonie Vodoun',
+                'id_contenu' => 11,
+                'id_type_media' => 1,
+                'id_langue' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            [
+                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157112/musique_traditionnelle.jpg',
+                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157112/musique_traditionnelle.jpg',
+                'type_fichier' => 'image/jpeg',
+                'taille' => 1900000,
+                'description' => 'Groupe de musique traditionnelle',
+                'id_contenu' => 12,
+                'id_type_media' => 1,
+                'id_langue' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         DB::table('medias')->insert($medias);
 
         echo "✅ MediaSeeder terminé. " . count($medias) . " médias créés.\n";
-        echo "📊 Répartition :\n";
-        echo "   - Images : " . count(array_filter($medias, fn($m) => $m['id_type_media'] == 1)) . "\n";
-        echo "   - Vidéos : " . count(array_filter($medias, fn($m) => $m['id_type_media'] == 2)) . "\n";
-        echo "   - Audios : " . count(array_filter($medias, fn($m) => $m['id_type_media'] == 3)) . "\n";
+        echo "📊 Tous les médias utilisent des URLs Cloudinary uniques\n";
+        echo "🚫 Plus de répétition de l'image beninwest\n";
+
+        // Vérifier les URLs uniques
+        $urls = array_column($medias, 'chemin');
+        $uniqueUrls = array_unique($urls);
+
+        if (count($urls) === count($uniqueUrls)) {
+            echo "✅ Toutes les URLs sont uniques\n";
+        } else {
+            echo "⚠️ Attention: certaines URLs sont dupliquées\n";
+        }
     }
 }
