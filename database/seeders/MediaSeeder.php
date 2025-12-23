@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\CloudinaryHelper;
 
 class MediaSeeder extends Seeder
 {
@@ -14,7 +13,6 @@ class MediaSeeder extends Seeder
         DB::table('medias')->delete();
 
         $medias = [
-            // ==================== CONTENU 1 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157101/roi_gbehanzin.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157101/roi_gbehanzin.jpg',
@@ -27,8 +25,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 2 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157102/legende_tehou.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157102/legende_tehou.jpg',
@@ -41,8 +37,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 3 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157103/amiwo_plat.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157103/amiwo_plat.jpg',
@@ -55,8 +49,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 4 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157104/preparation_amiwo.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157104/preparation_amiwo.jpg',
@@ -69,8 +61,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 5 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157105/danse_zinli.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157105/danse_zinli.jpg',
@@ -83,8 +73,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 6 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157106/festival_gaani.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157106/festival_gaani.jpg',
@@ -97,8 +85,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 7 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157107/tissage_kente.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157107/tissage_kente.jpg',
@@ -111,8 +97,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 8 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157108/proverbe_fon.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157108/proverbe_fon.jpg',
@@ -125,8 +109,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 9 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157109/chant_recolte.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157109/chant_recolte.jpg',
@@ -139,8 +121,6 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== CONTENU 10 ====================
             [
                 'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157110/palais_abomey.jpg',
                 'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157110/palais_abomey.jpg',
@@ -153,49 +133,10 @@ class MediaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // ==================== AJOUTER PLUS DE CONTENUS ====================
-            [
-                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157111/vodoun_fetish.jpg',
-                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157111/vodoun_fetish.jpg',
-                'type_fichier' => 'image/jpeg',
-                'taille' => 2100000,
-                'description' => 'Cérémonie Vodoun',
-                'id_contenu' => 11,
-                'id_type_media' => 1,
-                'id_langue' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            [
-                'chemin' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157112/musique_traditionnelle.jpg',
-                'cloudinary_url' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766157112/musique_traditionnelle.jpg',
-                'type_fichier' => 'image/jpeg',
-                'taille' => 1900000,
-                'description' => 'Groupe de musique traditionnelle',
-                'id_contenu' => 12,
-                'id_type_media' => 1,
-                'id_langue' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
         ];
 
         DB::table('medias')->insert($medias);
 
         echo "✅ MediaSeeder terminé. " . count($medias) . " médias créés.\n";
-        echo "📊 Tous les médias utilisent des URLs Cloudinary uniques\n";
-        echo "🚫 Plus de répétition de l'image beninwest\n";
-
-        // Vérifier les URLs uniques
-        $urls = array_column($medias, 'chemin');
-        $uniqueUrls = array_unique($urls);
-
-        if (count($urls) === count($uniqueUrls)) {
-            echo "✅ Toutes les URLs sont uniques\n";
-        } else {
-            echo "⚠️ Attention: certaines URLs sont dupliquées\n";
-        }
     }
 }
