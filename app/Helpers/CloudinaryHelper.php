@@ -21,12 +21,12 @@ class CloudinaryHelper
 
         // ========== MISSIONS ==========
         'mamaafrica.jpg' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1766156970/mamaafrica_vmmpcb.jpg',
-        'collage.png' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979182/fresque_s4pcmz.jpg', // Changé: pas beninwest
+        'collage.png' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
 
-        // ========== DEFAULTS ========== (TOUTES DIFFÉRENTES)
-        'default-content.jpg' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979252/discoverbenin_vq9mik.jpg',
+        // ========== DEFAULTS ==========
+        'default-content.jpg' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
         'default-avatar.png' => 'https://ui-avatars.com/api/?name=??&background=E8112D&color=fff&size=200',
-        'default.jpg' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp', // Changé: pas beninwest
+        'default.jpg' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
     ];
 
     /**
@@ -34,16 +34,16 @@ class CloudinaryHelper
      */
     public static function static($filename)
     {
-        return self::$staticImages[$filename] ?? self::randomDefaultImage();
+        return self::$staticImages[$filename] ?? self::$staticImages['default.jpg'];
     }
 
     /**
-     * Récupère l'URL d'un média (contenu) - AMÉLIORÉE
+     * Récupère l'URL d'un média (contenu)
      */
     public static function media($media)
     {
         if (!$media) {
-            return self::randomDefaultImage();
+            return self::static('default-content.jpg');
         }
 
         // Si c'est un tableau, convertir en objet
@@ -56,53 +56,28 @@ class CloudinaryHelper
             return $media->cloudinary_url;
         }
 
-        // PRIORITÉ 2: Chemin Cloudinary
-        if (!empty($media->chemin) && strpos($media->chemin, 'cloudinary.com') !== false) {
-            return $media->chemin;
-        }
-
-        // PRIORITÉ 3: Chemin local (avec vérification d'existence)
+        // PRIORITÉ 2: Chemin local
         if (!empty($media->chemin)) {
             // Si c'est déjà une URL complète
             if (filter_var($media->chemin, FILTER_VALIDATE_URL)) {
                 return $media->chemin;
             }
 
+            // Si c'est un chemin Cloudinary déjà
+            if (strpos($media->chemin, 'cloudinary.com') !== false) {
+                return $media->chemin;
+            }
+
             // Si c'est un chemin local
             if (strpos($media->chemin, 'storage/') === 0) {
-                $path = public_path($media->chemin);
-                if (file_exists($path)) {
-                    return asset($media->chemin);
-                }
-            } else {
-                // Essayer avec storage/
-                $path = public_path('storage/' . $media->chemin);
-                if (file_exists($path)) {
-                    return asset('storage/' . $media->chemin);
-                }
+                return asset($media->chemin);
             }
+
+            // Sinon, utiliser le chemin de stockage
+            return asset('storage/' . $media->chemin);
         }
 
-        // Par défaut aléatoire
-        return self::randomDefaultImage();
-    }
-
-    /**
-     * Retourne une image par défaut aléatoire (évite la répétition)
-     */
-    private static function randomDefaultImage()
-    {
-        $defaultImages = [
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765979252/discoverbenin_vq9mik.jpg',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765979182/fresque_s4pcmz.jpg',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765979195/mosqueeporto_hdaiki.jpg',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765980140/royaumeabo_hiduap.webp',
-            'https://res.cloudinary.com/drzud4wye/image/upload/v1765980111/independancegraph_erzbdw.jpg',
-        ];
-
-        return $defaultImages[array_rand($defaultImages)];
+        return self::static('default-content.jpg');
     }
 
     /**
@@ -154,17 +129,13 @@ class CloudinaryHelper
                 return $user->photo;
             }
 
-            // Si c'est un chemin local, vérifier qu'il existe
-            $path = '';
+            // Si c'est un chemin local, construire l'URL
             if (strpos($user->photo, 'storage/') === 0) {
-                $path = public_path($user->photo);
-            } else {
-                $path = public_path('storage/' . $user->photo);
-            }
-
-            if (file_exists($path)) {
                 return asset($user->photo);
             }
+
+            // Sinon, considérer comme chemin storage/
+            return asset('storage/' . $user->photo);
         }
 
         return null;
@@ -267,7 +238,7 @@ class CloudinaryHelper
     }
 
     /**
-     * Génère l'HTML complet de l'avatar (GARANTIE D'AFFICHAGE)
+     * NOUVELLE MÉTHODE : Génère l'HTML complet de l'avatar (GARANTIE D'AFFICHAGE)
      */
     public static function getAvatarHtml($user, $size = 40)
     {
@@ -309,7 +280,7 @@ class CloudinaryHelper
         $fontSize = max(12, $size * 0.35) . 'px';
 
         // HTML (toujours afficher quelque chose)
-        if ($hasPhoto && $photoUrl) {
+        if ($hasPhoto) {
             return <<<HTML
 <div class="author-avatar" style="width: {$sizePx}; height: {$sizePx}; border-radius: 50%; overflow: hidden; border: 2px solid rgba(232, 17, 45, 0.2); flex-shrink: 0;">
     <img src="{$photoUrl}"
@@ -334,34 +305,21 @@ HTML;
     }
 
     /**
-     * Récupère l'image d'un contenu (premier média) - AMÉLIORÉE
+     * Récupère l'image d'un contenu (premier média)
      */
     public static function getContentImage($contenu, $default = null)
     {
         if (!$contenu) {
-            return $default ?? self::randomDefaultImage();
+            return $default ?? self::static('default-content.jpg');
         }
 
         // Si le contenu a des médias
         if (isset($contenu->medias) && $contenu->medias->count() > 0) {
             $media = $contenu->medias->first();
-            $imageUrl = self::media($media);
-
-            // Vérifier que ce n'est pas une image par défaut
-            $defaultImages = [
-                'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
-                'https://res.cloudinary.com/drzud4wye/image/upload/v1765979252/discoverbenin_vq9mik.jpg',
-                'https://res.cloudinary.com/drzud4wye/image/upload/v1765979182/fresque_s4pcmz.jpg',
-                'https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp',
-            ];
-
-            if (!in_array($imageUrl, $defaultImages)) {
-                return $imageUrl;
-            }
+            return self::media($media);
         }
 
-        // Si pas d'image spécifique ou image par défaut, retourner une aléatoire
-        return $default ?? self::randomDefaultImage();
+        return $default ?? self::static('default-content.jpg');
     }
 
     /**
@@ -459,7 +417,7 @@ HTML;
     public static function display($filename = null, $type = 'content')
     {
         if (!$filename) {
-            return self::randomDefaultImage();
+            return self::static('default-content.jpg');
         }
 
         // Si c'est déjà une URL Cloudinary
@@ -487,7 +445,7 @@ HTML;
         // Par défaut selon le type
         return $type === 'avatar'
             ? self::static('default-avatar.png')
-            : self::randomDefaultImage();
+            : self::static('default-content.jpg');
     }
 
     /**

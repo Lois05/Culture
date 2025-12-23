@@ -19,7 +19,7 @@
                     </div>
                 </div>
 
-               
+
 
 
                     <div class="table-responsive">
@@ -44,48 +44,51 @@
                                         <td>
                                             <span class="badge bg-secondary">#{{ $contenu->id_contenu }}</span>
                                         </td>
-                                        <td>
-                                            @if ($contenu->medias && $contenu->medias->count() > 0)
-                                                @php
-                                                    $media = $contenu->medias->first();
-                                                    $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
-                                                    $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
-                                                    $fileUrl = asset('adminlte/img/' . $media->chemin);
-                                                    $filePath = public_path('adminlte/img/' . $media->chemin);
-                                                    $fileExists = file_exists($filePath);
-                                                @endphp
+                                     <td>
+    @if ($contenu->medias && $contenu->medias->count() > 0)
+        @php
+            $media = $contenu->medias->first();
+            $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
+            $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
 
-                                                @if ($isVideo)
-                                                    <div class="media-thumbnail video-thumbnail"
-                                                         onclick="window.open('{{ $fileUrl }}', '_blank')"
-                                                         title="Voir la vidéo">
-                                                        <i class="bi bi-play-circle-fill"></i>
-                                                    </div>
-                                                @elseif($isAudio)
-                                                    <div class="media-thumbnail audio-thumbnail"
-                                                         onclick="window.open('{{ $fileUrl }}', '_blank')"
-                                                         title="Écouter l'audio">
-                                                        <i class="bi bi-music-note-beamed"></i>
-                                                    </div>
-                                                @else
-                                                    <div class="media-thumbnail image-thumbnail"
-                                                         onclick="showImageModal('{{ $fileUrl }}', '{{ $contenu->titre }}')"
-                                                         title="Voir l'image">
-                                                        @if($fileExists)
-                                                            <img src="{{ $fileUrl }}"
-                                                                 alt="{{ $contenu->titre }}"
-                                                                 onerror="this.onerror=null; this.src='{{ App\Helpers\CloudinaryHelper::static('placeholder.jpg') }}'">
-                                                        @else
-                                                            <i class="bi bi-image text-muted"></i>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            @else
-                                                <div class="media-thumbnail no-media" title="Aucun média">
-                                                    <i class="bi bi-file-image text-muted"></i>
-                                                </div>
-                                            @endif
-                                        </td>
+            // UTILISER CLOUDINARYHELPER POUR L'URL
+            $imageUrl = $contenu->image_url ?? \App\Helpers\CloudinaryHelper::media($media);
+
+            // Fallback si pas d'URL Cloudinary
+            if (empty($imageUrl) || strpos($imageUrl, 'default-content.jpg') !== false) {
+                $imageUrl = asset('adminlte/img/' . $media->chemin);
+            }
+        @endphp
+
+        @if ($isVideo)
+            <div class="media-thumbnail video-thumbnail"
+                 onclick="window.open('{{ $imageUrl }}', '_blank')"
+                 title="Voir la vidéo">
+                <i class="bi bi-play-circle-fill"></i>
+            </div>
+        @elseif($isAudio)
+            <div class="media-thumbnail audio-thumbnail"
+                 onclick="window.open('{{ $imageUrl }}', '_blank')"
+                 title="Écouter l'audio">
+                <i class="bi bi-music-note-beamed"></i>
+            </div>
+        @else
+            <div class="media-thumbnail image-thumbnail"
+                 onclick="showImageModal('{{ $imageUrl }}', '{{ addslashes($contenu->titre) }}')"
+                 title="Voir l'image">
+                <img src="{{ $imageUrl }}"
+                     alt="{{ $contenu->titre }}"
+                     onerror="this.onerror=null; this.src='{{ \App\Helpers\CloudinaryHelper::static('default-content.jpg') }}'">
+            </div>
+        @endif
+    @else
+        <div class="media-thumbnail no-media" title="Aucun média">
+            <img src="{{ \App\Helpers\CloudinaryHelper::static('default-content.jpg') }}"
+                 alt="Pas d'image"
+                 style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+    @endif
+</td>
                                         <td>
                                             <div class="contenu-info">
                                                 <a href="{{ route('admin.contenus.show', $contenu->id_contenu) }}"

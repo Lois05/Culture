@@ -19,21 +19,19 @@ class ContenuController extends Controller
     /**
      * Liste des contenus
      */
-   public function index()
+public function index()
 {
     $user = Auth::user();
     $userRole = $user ? optional($user->role)->nom_role : null;
 
-    // Vérifier l'accès
     if (!in_array($userRole, ['Administrateur', 'Modérateur', 'Contributeur'])) {
         return redirect()->route('admin.tableaudebord')
             ->with('error', 'Accès non autorisé');
     }
 
-    // Construire la requête
     $query = Contenu::with([
         'medias' => function($q) {
-            $q->select('id_media', 'chemin', 'id_contenu', 'id_type_media');
+            $q->select('id_media', 'chemin', 'cloudinary_url', 'id_contenu', 'id_type_media'); // AJOUTER cloudinary_url
         },
         'medias.typeMedia',
         'region' => function($q) {
@@ -50,13 +48,19 @@ class ContenuController extends Controller
         }
     ]);
 
-    // Filtrer par rôle
     if ($userRole === 'Contributeur') {
         $query->where('id_auteur', $user->id);
     }
 
-    // Récupérer tous les contenus pour DataTables côté client
     $contenus = $query->latest('date_creation')->get();
+
+    // ========== AJOUTER CETTE LIGNE ==========
+    // Ajouter l'URL Cloudinary à chaque contenu
+    foreach ($contenus as $contenu) {
+        $contenu->image_url = \App\Helpers\CloudinaryHelper::getContentImage($contenu);
+    }
+    // ========================================
+
     $typesContenu = TypeContenu::all();
 
     return view('contenus.index', compact('contenus', 'typesContenu'));
@@ -165,42 +169,55 @@ class ContenuController extends Controller
     /**
      * Formater le média pour DataTables
      */
-    private function formatMedia($contenu)
-    {
-        if ($contenu->medias && $contenu->medias->count() > 0) {
-            $media = $contenu->medias->first();
-            $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
-            $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
-            $fileUrl = asset('adminlte/img/' . $media->chemin);
+   private function formatMedia($contenu)
+{
+    // Utiliser l'URL Cloudinary stockée dans $contenu->image_url
+    $imageUrl = $contenu->image_url ?? '';
 
-            if ($isVideo) {
-                return '<div class="media-thumbnail video-thumbnail" onclick="window.open(\'' . $fileUrl . '\', \'_blank\')" title="Voir la vidéo">
-                            <i class="bi bi-play-circle-fill"></i>
-                        </div>';
-            } elseif ($isAudio) {
-                return '<div class="media-thumbnail audio-thumbnail" onclick="window.open(\'' . $fileUrl . '\', \'_blank\')" title="Écouter l\'audio">
-                            <i class="bi bi-music-note-beamed"></i>
-                        </div>';
-            } else {
-                $filePath = public_path('adminlte/img/' . $media->chemin);
-                $fileExists = file_exists($filePath);
+    if ($contenu->medias && $contenu->medias->count() > 0) {
+        $media = $contenu->medias->first();
+        $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
+        $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
 
-                if ($fileExists) {
-                    return '<div class="media-thumbnail image-thumbnail" onclick="showImageModal(\'' . $fileUrl . '\', \'' . addslashes($contenu->titre) . '\')" title="Voir l\'image">
-                                <img src="' . $fileUrl . '" alt="' . htmlspecialchars($contenu->titre) . '" onerror="this.onerror=null; this.src=\'' . asset('adminlte/img/placeholder.jpg') . '\'">
-                            </div>';
-                } else {
-                    return '<div class="media-thumbnail image-thumbnail" title="Fichier manquant">
-                                <i class="bi bi-image text-muted"></i>
-                            </div>';
-                }
-            }
+        // Utiliser CloudinaryHelper pour obtenir l'URL
+        $cloudinaryUrl = $imageUrl ?: \App\Helpers\CloudinaryHelper::media($media);
+
+        // Si pas d'URL Cloudinary, essayer le chemin local
+        $localUrl = $cloudinaryUrl;
+        if (empty($cloudinaryUrl) || strpos($cloudinaryUrl, 'default-content.jpg') !== false) {
+            $localUrl = asset('adminlte/img/' . $media->chemin);
         }
 
-        return '<div class="media-thumbnail no-media" title="Aucun média">
-                    <i class="bi bi-file-image text-muted"></i>
-                </div>';
+        if ($isVideo) {
+            return '<div class="media-thumbnail video-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Voir la vidéo">
+                        <i class="bi bi-play-circle-fill"></i>
+                    </div>';
+        } elseif ($isAudio) {
+            return '<div class="media-thumbnail audio-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Écouter l\'audio">
+                        <i class="bi bi-music-note-beamed"></i>
+                    </div>';
+        } else {
+            // Utiliser l'URL Cloudinary si disponible, sinon local
+            $displayUrl = $cloudinaryUrl;
+            if (empty($cloudinaryUrl) || strpos($cloudinaryUrl, 'default-content.jpg') !== false) {
+                $displayUrl = asset('adminlte/img/' . $media->chemin);
+            }
+
+            return '<div class="media-thumbnail image-thumbnail" onclick="showImageModal(\'' . htmlspecialchars($displayUrl) . '\', \'' . addslashes($contenu->titre) . '\')" title="Voir l\'image">
+                        <img src="' . htmlspecialchars($displayUrl) . '"
+                             alt="' . htmlspecialchars($contenu->titre) . '"
+                             onerror="this.onerror=null; this.src=\'' . \App\Helpers\CloudinaryHelper::static('default-content.jpg') . '\'">
+                    </div>';
+        }
     }
+
+    // Aucun média - utiliser une image par défaut de Cloudinary
+    return '<div class="media-thumbnail no-media" title="Aucun média">
+                <img src="' . \App\Helpers\CloudinaryHelper::static('default-content.jpg') . '"
+                     alt="Pas d\'image"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+            </div>';
+}
 
     /**
      * Formater le titre pour DataTables

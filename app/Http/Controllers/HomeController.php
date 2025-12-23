@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/HomeController.php
+// app/Http\Controllers/HomeController.php
 
 namespace App\Http\Controllers;
 
@@ -10,6 +10,7 @@ use App\Models\Langue;
 use App\Models\Region;
 use App\Models\Contenu;
 use App\Models\Commentaire;
+use App\Helpers\CloudinaryHelper; // IMPORTANT : Ajoute cette ligne
 
 class HomeController extends Controller
 {
@@ -48,10 +49,17 @@ class HomeController extends Controller
             $totalContenus     = Contenu::count();
             $totalCommentaires = Commentaire::count();
 
-            $dernierContenus   = Contenu::orderBy('id_contenu', 'desc')->limit(5)->get();
-            $dernierUsers      = User::orderBy('id', 'desc')->limit(5)->get();
+            // CORRECTION : Charger les médias avec les contenus
+            $dernierContenus = Contenu::with(['medias' => function($query) {
+                $query->take(1); // Prendre seulement le premier média
+            }])
+            ->orderBy('id_contenu', 'desc')
+            ->limit(5)
+            ->get();
 
-            // Contenus par statut - CORRECTION : 'en_attente' avec underscore
+            $dernierUsers = User::orderBy('id', 'desc')->limit(5)->get();
+
+            // Contenus par statut
             $contenusValides    = Contenu::where('statut', 'validé')->count();
             $contenusEnAttente  = Contenu::where('statut', 'en_attente')->count();
             $contenusRejects    = Contenu::where('statut', 'rejeté')->count();
@@ -68,7 +76,26 @@ class HomeController extends Controller
             $totalContenus     = Contenu::count();
             $totalCommentaires = Commentaire::count();
 
-            $dernierContenus   = Contenu::orderBy('id_contenu', 'desc')->limit(5)->get();
+            // CORRECTION ICI aussi
+            $dernierContenus = Contenu::with(['medias' => function($query) {
+                $query->take(1);
+            }])
+            ->orderBy('id_contenu', 'desc')
+            ->limit(5)
+            ->get();
+        }
+
+        // === CORRECTION AJOUTÉE ICI ===
+        // Ajouter l'URL d'image à chaque contenu
+        foreach ($dernierContenus as $contenu) {
+            $contenu->image_url = CloudinaryHelper::getContentImage($contenu);
+
+            // DEBUG: Vérifier ce qui se passe
+            // \Log::info("Contenu {$contenu->id_contenu} - Titre: {$contenu->titre}", [
+            //     'medias_count' => $contenu->medias->count(),
+            //     'image_url' => $contenu->image_url,
+            //     'first_media' => $contenu->medias->first()
+            // ]);
         }
 
         return view('tableaudebord', compact(
