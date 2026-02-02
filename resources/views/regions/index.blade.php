@@ -9,7 +9,7 @@
             <h3 class="fw-bold text-primary">
                 <i class="bi bi-map"></i> Régions
             </h3>
-            <a href="{{ route('admin.regions.create') }}" class="btn btn-primary btn-lg shadow">
+            <a href="{{ route('admin.regions.create') }}" class="btn btn-gradient btn-lg shadow">
                 <i class="bi bi-plus-circle"></i> Ajouter une région
             </a>
         </div>
@@ -19,13 +19,13 @@
                 <table id="regionsTable" class="table table-striped table-hover align-middle w-100">
                     <thead class="table-primary">
                         <tr>
-                            <th>ID</th>
+                            <th width="50">ID</th>
                             <th>Nom</th>
                             <th>Description</th>
-                            <th>Population</th>
-                            <th>Superficie</th>
-                            <th>Localisation</th>
-                            <th class="text-center">Actions</th>
+                            <th width="100">Population</th>
+                            <th width="100">Superficie</th>
+                            <th width="100">Localisation</th>
+                            <th width="120" class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,28 +53,32 @@
                                 {{ $region->localisation ?? 'Non spécifiée' }}
                             </td>
                             <td class="text-center">
-                                <div class="btn-group" role="group">
+                                <div class="btn-group btn-group-sm" role="group">
                                     <!-- Bouton Voir ouvre le modal -->
                                     <button type="button"
-                                            class="btn btn-sm btn-outline-info rounded-circle"
+                                            class="btn btn-outline-info rounded-circle"
                                             data-bs-toggle="modal"
                                             data-bs-target="#mapModal{{ $region->id_region ?? $region->id }}"
-                                            title="Voir">
+                                            title="Voir"
+                                            data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </button>
 
                                     <a href="{{ route('admin.regions.edit', $region) }}"
-                                       class="btn btn-sm btn-outline-warning rounded-circle" title="Modifier">
+                                       class="btn btn-outline-warning rounded-circle"
+                                       title="Modifier"
+                                       data-bs-toggle="tooltip">
                                         <i class="bi bi-pencil"></i>
                                     </a>
 
-                                    <form action="{{ route('admin.regions.destroy', $region) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle btn-delete" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="btn btn-outline-danger rounded-circle btn-delete"
+                                            data-id="{{ $region->id_region ?? $region->id }}"
+                                            data-name="{{ $region->nom_region }}"
+                                            title="Supprimer"
+                                            data-bs-toggle="tooltip">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -107,13 +111,46 @@
     </div>
 </div>
 @endforeach
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la région :</p>
+                <p class="fw-bold" id="deleteRegionName"></p>
+                <p class="text-danger small">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
-<!-- Inclure DataTables CSS et JS si pas déjà dans le layout -->
+<!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
+<!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
@@ -136,40 +173,32 @@ $(document).ready(function () {
         "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Tous"]],
         "responsive": true,
         "autoWidth": false,
-        "columns": [
-            { "width": "5%" },  // ID
-            { "width": "15%" }, // Nom
-            { "width": "25%" }, // Description
-            { "width": "10%" }, // Population
-            { "width": "10%" }, // Superficie
-            { "width": "15%" }, // Localisation
-            { "width": "20%", "orderable": false } // Actions
-        ],
-        "order": [[0, 'asc']] // Tri par ID par défaut
+        "order": [[0, 'asc']],
+        "initComplete": function() {
+            // Initialiser les tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
     });
 
     console.log('DataTables initialisé avec succès');
 
-    // Confirmation de suppression
-    $('#regionsTable').on('click', '.btn-delete', function(e) {
+    // Gestion de la suppression avec modal
+    $('.btn-delete').on('click', function(e) {
         e.preventDefault();
-        let form = $(this).closest('form');
 
-        Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Cette action est irréversible !",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Oui, supprimer',
-            cancelButtonText: 'Annuler',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
+        const regionId = $(this).data('id');
+        const regionName = $(this).data('name');
+
+        // Mettre à jour le modal
+        $('#deleteRegionName').text(regionName);
+        $('#deleteForm').attr('action', '/admin/regions/' + regionId);
+
+        // Afficher le modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
     });
 
     // Initialiser les cartes Leaflet
@@ -220,28 +249,41 @@ $(document).ready(function () {
 </script>
 
 <style>
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter,
-.dataTables_wrapper .dataTables_info,
-.dataTables_wrapper .dataTables_paginate {
-    margin: 1rem 0;
+.btn-group-sm .btn {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Style pour les boutons d'action */
-.btn-group .btn {
-    margin: 0 2px;
+.btn-group-sm .btn i {
+    font-size: 0.9rem;
+}
+
+.btn-gradient {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-gradient:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .btn-group {
-        display: flex;
+    .btn-group-sm {
         flex-direction: column;
-        gap: 5px;
+        gap: 2px;
     }
 
-    .btn-group .btn {
-        margin: 0;
+    .btn-group-sm .btn {
+        width: 32px;
+        height: 32px;
     }
 }
 </style>

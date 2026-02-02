@@ -3,448 +3,524 @@
 @section('title', 'Choisir votre abonnement - Bénin Culture')
 
 @push('styles')
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <style>
     :root {
         --benin-red: #E8112D;
         --benin-yellow: #FCD116;
         --benin-green: #008751;
-        --benin-dark: #1A1A2E;
+        --benin-dark: #0A0F2D;
+        --gradient-premium: linear-gradient(135deg, #E8112D 0%, #FCD116 50%, #008751 100%);
+        --glow-shadow: 0 0 30px rgba(232, 17, 45, 0.3);
     }
 
-    .choix-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 100px 0 50px;
-    }
-
-    /* Header */
-    .choix-header {
-        background: linear-gradient(135deg, var(--benin-dark), var(--benin-red));
-        color: white;
-        padding: 3rem 0;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 3rem;
+    .hero-choix {
+        min-height: 60vh;
+        background: linear-gradient(135deg, var(--benin-dark) 0%, #1a1f3c 100%);
+        display: flex;
+        align-items: center;
         position: relative;
         overflow: hidden;
     }
 
-    .choix-header::before {
+    .hero-choix::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path fill="%23ffffff05" d="M0,0h1000v1000H0V0z M250,250h500v500H250V250z"/></svg>');
+        opacity: 0.1;
     }
 
-    /* Cartes de sélection */
     .plan-card {
         background: white;
-        border-radius: 20px;
+        border-radius: 25px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        height: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
-        cursor: pointer;
-        border: 3px solid transparent;
+        border: 2px solid transparent;
+        height: 100%;
     }
 
     .plan-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .plan-card.selected {
+        transform: translateY(-15px);
+        box-shadow: var(--glow-shadow);
         border-color: var(--benin-red);
-        box-shadow: 0 0 0 3px rgba(232, 17, 45, 0.2);
-    }
-
-    .plan-header {
-        padding: 2rem;
-        color: white;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
     }
 
     .plan-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 5px 15px;
+        top: 20px;
+        right: 20px;
+        background: var(--gradient-premium);
+        color: white;
+        padding: 8px 20px;
         border-radius: 20px;
-        font-size: 0.8rem;
         font-weight: bold;
+        font-size: 0.9rem;
+        z-index: 2;
     }
 
-    /* Périodes */
+    .plan-header {
+        background: linear-gradient(135deg, var(--benin-dark) 0%, #2d3a6e 100%);
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plan-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        0% { transform: rotate(45deg) translateX(-100%); }
+        100% { transform: rotate(45deg) translateX(100%); }
+    }
+
+    .plan-price {
+        font-size: 4rem;
+        font-weight: 900;
+        background: var(--gradient-premium);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        line-height: 1;
+        margin: 1rem 0;
+    }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--benin-red), var(--benin-purple));
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
     .period-selector {
         display: flex;
+        gap: 1rem;
         justify-content: center;
-        gap: 10px;
         margin: 2rem 0;
     }
 
     .period-btn {
-        padding: 12px 25px;
+        padding: 1rem 2rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
         background: white;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 600;
-        text-align: center;
-    }
-
-    .period-btn:hover {
-        border-color: var(--benin-red);
-        color: var(--benin-red);
     }
 
     .period-btn.active {
-        background: var(--benin-red);
+        background: var(--gradient-premium);
         color: white;
-        border-color: var(--benin-red);
+        border-color: transparent;
+        box-shadow: var(--glow-shadow);
     }
 
-    .period-btn .saving {
-        font-size: 0.8rem;
-        color: var(--benin-green);
-        font-weight: bold;
-    }
-
-    /* Features */
-    .feature-check {
-        color: var(--benin-green);
-        margin-right: 10px;
-    }
-
-    /* Bouton continuer */
-    .btn-continuer {
-        background: linear-gradient(135deg, var(--benin-red), var(--benin-yellow));
-        color: white;
-        border: none;
-        padding: 1.2rem 3rem;
+    .benefit-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         border-radius: 15px;
-        font-weight: bold;
-        font-size: 1.1rem;
+        padding: 1.5rem;
+        border-left: 5px solid var(--benin-green);
         transition: all 0.3s ease;
     }
 
-    .btn-continuer:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(232, 17, 45, 0.3);
+    .benefit-card:hover {
+        transform: translateX(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
-    /* Prix */
-    .price-display {
+    .action-panel {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 2rem;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        border-radius: 25px 25px 0 0;
+    }
+
+    .countdown-timer {
+        background: linear-gradient(135deg, var(--benin-red), var(--benin-yellow));
+        color: white;
+        padding: 1rem;
+        border-radius: 15px;
         text-align: center;
         margin: 1rem 0;
     }
 
-    .price-amount {
-        font-size: 2.5rem;
-        font-weight: 900;
-        line-height: 1;
+    .timer-digit {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 5px;
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem;
+        border-radius: 10px;
+        display: inline-block;
+        min-width: 60px;
     }
 
-    .price-period {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.9rem;
+    .guarantee-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #008751, #00c853);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
-        .choix-container {
-            padding: 80px 0 30px;
+        .plan-price {
+            font-size: 3rem;
         }
 
         .period-selector {
             flex-direction: column;
-            gap: 5px;
         }
 
-        .plan-card {
-            margin-bottom: 1rem;
+        .timer-digit {
+            font-size: 1.5rem;
+            min-width: 50px;
         }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="choix-container">
-    <!-- Header -->
-    <div class="choix-header">
-        <div class="container">
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb breadcrumb-light">
-                    <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-white text-decoration-none">Accueil</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('boutique.index') }}" class="text-white text-decoration-none">Boutique</a></li>
-                    <li class="breadcrumb-item active text-white">Choisir</li>
-                </ol>
-            </nav>
-
-            <div class="text-center">
-                <h1 class="display-5 fw-bold mb-3">Choisissez votre formule</h1>
-                <p class="lead mb-0" style="opacity: 0.9;">
-                    Sélectionnez la période et l'abonnement qui vous conviennent
+<!-- Hero Section -->
+<section class="hero-choix py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold text-white mb-4" data-aos="fade-up">
+                    Choisissez <span class="text-warning">Votre Offre</span>
+                </h1>
+                <p class="lead text-white-80 mb-5" data-aos="fade-up" data-aos-delay="200">
+                    Sélectionnez la formule qui correspond à vos ambitions culturelles
                 </p>
+
+                <!-- Période de facturation -->
+                <div class="period-selector" data-aos="fade-up" data-aos-delay="400">
+                    <div class="period-btn {{ $achat['period'] == 'monthly' ? 'active' : '' }}" data-period="monthly">
+                        <i class="bi bi-calendar-month me-2"></i>
+                        Mensuel
+                        <div class="small">Facturé chaque mois</div>
+                    </div>
+                    <div class="period-btn {{ $achat['period'] == 'yearly' ? 'active' : '' }}" data-period="yearly">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Annuel
+                        <div class="small">Économisez 2 mois</div>
+                    </div>
+                    <div class="period-btn {{ $achat['period'] == 'lifetime' ? 'active' : '' }}" data-period="lifetime">
+                        <i class="bi bi-infinity me-2"></i>
+                        À vie
+                        <div class="small">Paiement unique</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Contenu principal -->
+<!-- Détails de l'offre -->
+<section class="py-5 bg-light">
     <div class="container">
-        <!-- Sélecteur de période -->
-        <div class="row justify-content-center mb-5">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3 text-center">
-                            <i class="bi bi-calendar-range me-2 text-primary"></i>
-                            Choisissez la durée
-                        </h5>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="plan-card" data-aos="zoom-in">
+                    @if($achat['recommandé'] ?? false)
+                    <div class="plan-badge">
+                        <i class="bi bi-fire me-2"></i>LE PLUS POPULAIRE
+                    </div>
+                    @endif
 
-                        <div class="period-selector">
-                            <div class="period-btn active" data-period="monthly">
-                                <div>Mensuel</div>
-                                <small class="text-muted">Flexible</small>
+                    <div class="plan-header">
+                        <div class="mb-4">
+                            <i class="bi {{ $achat['icon'] ?? 'bi-star' }} display-1"></i>
+                        </div>
+                        <h2 class="fw-bold mb-2">{{ $achat['nom'] }}</h2>
+                        <p class="opacity-90">{{ $achat['description'] }}</p>
+                    </div>
+
+                    <div class="p-5">
+                        <!-- Prix dynamique selon période -->
+                        <div class="text-center mb-5">
+                            <div class="plan-price" id="dynamic-price">
+                                {{ number_format($achat['prix'], 0, ',', ' ') }} FCFA
                             </div>
-                            <div class="period-btn" data-period="yearly">
-                                <div>Annuel</div>
-                                <small class="saving">Économisez 20%</small>
+                            <div class="text-muted" id="period-label">
+                                {{ $achat['period'] == 'monthly' ? 'Par mois' : '' }}
+                                {{ $achat['period'] == 'yearly' ? 'Par an' : '' }}
+                                {{ $achat['period'] == 'lifetime' ? 'Paiement unique' : '' }}
                             </div>
-                            <div class="period-btn" data-period="lifetime">
-                                <div>À vie</div>
-                                <small class="saving">Meilleure offre</small>
+                            <div class="small text-muted mt-2" id="savings-info"></div>
+                        </div>
+
+                        <!-- Contextuel pour débloquer un article -->
+                        @if(isset($contenu))
+                        <div class="alert alert-warning" data-aos="fade-up">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-unlock-fill fs-3 me-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Débloquez cet article</h5>
+                                    <p class="mb-0">"{{ $contenu->titre }}" sera immédiatement accessible avec cet abonnement</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Liste des fonctionnalités -->
+                        <div class="mb-5">
+                            <h4 class="fw-bold mb-4">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Ce que vous obtenez :
+                            </h4>
+                            @foreach($achat['features'] as $feature)
+                            <div class="d-flex align-items-center mb-3" data-aos="fade-right" data-aos-delay="{{ $loop->index * 100 }}">
+                                <div class="feature-icon">
+                                    <i class="bi bi-check-lg"></i>
+                                </div>
+                                <span class="fs-5">{{ $feature }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Garantie -->
+                        <div class="text-center mb-5" data-aos="fade-up">
+                            <div class="guarantee-badge d-inline-flex">
+                                <i class="bi bi-shield-check"></i>
+                                Garantie satisfait ou remboursé 30 jours
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-        <!-- Cartes d'abonnement -->
-        <form id="choixForm" action="{{ route('paiement.process-choix') }}" method="POST">
-            @csrf
-            <input type="hidden" id="selectedPeriod" name="period" value="monthly">
+<!-- Avantages supplémentaires -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4" data-aos="fade-up">
+                    Pourquoi <span class="text-primary">Nous Choisir</span> ?
+                </h2>
+            </div>
+        </div>
 
-            @if($abonnements->isEmpty())
-                <div class="text-center py-5">
-                    <i class="bi bi-emoji-frown display-1 text-muted mb-3"></i>
-                    <h3 class="mb-3">Aucun abonnement disponible</h3>
-                    <p class="text-muted mb-4">
-                        Les abonnements seront bientôt disponibles.
-                    </p>
-                    <a href="{{ route('boutique.index') }}" class="btn btn-primary">
-                        <i class="bi bi-arrow-left me-2"></i>Retour à la boutique
-                    </a>
-                </div>
-            @else
-                <div class="row g-4">
-                    @foreach($abonnements as $abonnement)
-                        @php
-                            $color = $abonnement->couleur ?? '#667eea';
-                            $darkColor = $this->adjustColor($color, -30);
-                        @endphp
-
-                        <div class="col-lg-4">
-                            <input type="radio"
-                                   name="id_abonnement"
-                                   id="plan_{{ $abonnement->id }}"
-                                   value="{{ $abonnement->id }}"
-                                   class="d-none"
-                                   {{ $loop->first ? 'checked' : '' }}>
-
-                            <label for="plan_{{ $abonnement->id }}">
-                                <div class="plan-card">
-                                    <div class="plan-header" style="background: linear-gradient(135deg, {{ $color }}, {{ $darkColor }});">
-                                        @if($abonnement->nom == 'Passionné')
-                                            <span class="plan-badge">
-                                                <i class="bi bi-star-fill me-1"></i>Populaire
-                                            </span>
-                                        @endif
-
-                                        <div class="mb-3">
-                                            <i class="bi {{ $abonnement->icon }} display-4"></i>
-                                        </div>
-
-                                        <h4 class="fw-bold mb-2">{{ $abonnement->nom }}</h4>
-
-                                        <div class="price-display">
-                                            <div class="price-amount monthly-price">
-                                                {{ number_format($abonnement->prix, 0, ',', ' ') }}
-                                            </div>
-                                            <div class="price-amount yearly-price d-none">
-                                                {{ number_format($abonnement->prix * 10, 0, ',', ' ') }}
-                                            </div>
-                                            <div class="price-amount lifetime-price d-none">
-                                                {{ number_format($abonnement->prix * 100, 0, ',', ' ') }}
-                                            </div>
-                                            <div class="price-period">{{ $abonnement->devise }}</div>
-                                        </div>
-
-                                        <small>{{ $abonnement->description_courte }}</small>
-                                    </div>
-
-                                    <div class="p-4">
-                                        @foreach($abonnement->features_list as $feature)
-                                            <div class="d-flex align-items-center mb-3">
-                                                <i class="bi bi-check-circle-fill feature-check"></i>
-                                                <span>{{ $feature }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    @endforeach
-                </div>
-
-                <!-- Actions -->
-                <div class="text-center mt-5 pt-4">
-                    <a href="{{ route('boutique.index') }}" class="btn btn-outline-secondary btn-lg me-3">
-                        <i class="bi bi-arrow-left me-2"></i>Retour
-                    </a>
-
-                    <button type="submit" class="btn-continuer btn-lg">
-                        <i class="bi bi-arrow-right me-2"></i>Continuer vers le paiement
-                    </button>
-                </div>
-            @endif
-        </form>
-
-        <!-- Garanties -->
-        <div class="row mt-5">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 bg-light">
-                    <div class="card-body p-4 text-center">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <i class="bi bi-shield-check display-6 text-success mb-3"></i>
-                                <h6>Sécurisé</h6>
-                            </div>
-                            <div class="col-md-3">
-                                <i class="bi bi-arrow-counterclockwise display-6 text-primary mb-3"></i>
-                                <h6>30 jours</h6>
-                            </div>
-                            <div class="col-md-3">
-                                <i class="bi bi-headset display-6 text-warning mb-3"></i>
-                                <h6>Support 24/7</h6>
-                            </div>
-                            <div class="col-md-3">
-                                <i class="bi bi-award display-6 text-danger mb-3"></i>
-                                <h6>Certifié</h6>
-                            </div>
-                        </div>
+        <div class="comparison-grid">
+            <div class="benefit-card" data-aos="fade-up">
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-lightning-charge-fill text-warning fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold">Accès Immédiat</h5>
+                        <p class="text-muted mb-0">Débloquez instantanément tous les contenus premium</p>
                     </div>
+                </div>
+            </div>
+
+            <div class="benefit-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-arrow-clockwise text-primary fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold">Annulation Simple</h5>
+                        <p class="text-muted mb-0">Annulez à tout moment, sans frais cachés</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="benefit-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-headset text-success fs-1 me-3"></i>
+                    <div>
+                        <h5 class="fw-bold">Support Premium</h5>
+                        <p class="text-muted mb-0">Assistance dédiée 24h/24, 7j/7</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Panel d'action fixe -->
+<div class="action-panel">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="countdown-timer" data-aos="fade-right">
+                    <div class="small mb-2">OFFRE SPÉCIALE - FINIT DANS :</div>
+                    <div id="countdown">
+                        <span class="timer-digit" id="hours">12</span>:
+                        <span class="timer-digit" id="minutes">34</span>:
+                        <span class="timer-digit" id="seconds">56</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 text-md-end" data-aos="fade-left">
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-end">
+                    <a href="{{ route('boutique.annuler') }}" class="btn btn-outline-dark btn-lg px-4">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Retour
+                    </a>
+
+                    <form action="{{ route('boutique.paiement') }}" method="GET" class="d-inline">
+                        <input type="hidden" name="period" value="{{ $achat['period'] }}">
+                        <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>
+                            Procéder au paiement
+                        </button>
+                    </form>
+                </div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-shield-lock me-1"></i>
+                    Paiement sécurisé - Vos données sont protégées
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@php
-    function adjustColor($hex, $percent) {
-        $hex = str_replace('#', '', $hex);
-        $r = hexdec(substr($hex, 0, 2));
-        $g = hexdec(substr($hex, 2, 2));
-        $b = hexdec(substr($hex, 4, 2));
-
-        $r = max(0, min(255, $r + $percent));
-        $g = max(0, min(255, $g + $percent));
-        $b = max(0, min(255, $b + $percent));
-
-        return sprintf("#%02x%02x%02x", $r, $g, $b);
-    }
-@endphp
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion des périodes
-    const periodBtns = document.querySelectorAll('.period-btn');
-    const periodInput = document.getElementById('selectedPeriod');
+    // Initialiser AOS
+    AOS.init({
+        duration: 800,
+        once: true
+    });
 
-    // Prix par période
-    const monthlyPrices = document.querySelectorAll('.monthly-price');
-    const yearlyPrices = document.querySelectorAll('.yearly-price');
-    const lifetimePrices = document.querySelectorAll('.lifetime-price');
+    // Prix dynamique selon la période
+    const basePrice = {{ $achat['prix'] }};
+    const prices = {
+        monthly: basePrice,
+        yearly: basePrice * 10, // 10 mois pour 1 an
+        lifetime: basePrice * 50 // 50 mois pour la vie
+    };
 
-    periodBtns.forEach(btn => {
+    const periodLabels = {
+        monthly: 'Par mois',
+        yearly: 'Par an',
+        lifetime: 'Paiement unique'
+    };
+
+    const savingsInfo = {
+        monthly: '',
+        yearly: `Économisez ${(basePrice * 2).toLocaleString()} FCFA (2 mois gratuits)`,
+        lifetime: `Économisez ${(basePrice * 100).toLocaleString()} FCFA (accès à vie)`
+    };
+
+    // Gestion du sélecteur de période
+    document.querySelectorAll('.period-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Retirer active de tous
-            periodBtns.forEach(b => b.classList.remove('active'));
+            // Retirer la classe active de tous les boutons
+            document.querySelectorAll('.period-btn').forEach(b => {
+                b.classList.remove('active');
+            });
 
-            // Activer le bouton cliqué
+            // Ajouter la classe active au bouton cliqué
             this.classList.add('active');
 
+            // Récupérer la période sélectionnée
             const period = this.dataset.period;
-            periodInput.value = period;
 
-            // Afficher/Masquer les prix
-            monthlyPrices.forEach(p => p.classList.add('d-none'));
-            yearlyPrices.forEach(p => p.classList.add('d-none'));
-            lifetimePrices.forEach(p => p.classList.add('d-none'));
+            // Mettre à jour le prix
+            const priceElement = document.getElementById('dynamic-price');
+            const periodElement = document.getElementById('period-label');
+            const savingsElement = document.getElementById('savings-info');
 
-            switch(period) {
-                case 'monthly':
-                    monthlyPrices.forEach(p => p.classList.remove('d-none'));
-                    break;
-                case 'yearly':
-                    yearlyPrices.forEach(p => p.classList.remove('d-none'));
-                    break;
-                case 'lifetime':
-                    lifetimePrices.forEach(p => p.classList.remove('d-none'));
-                    break;
-            }
+            priceElement.textContent = prices[period].toLocaleString() + ' FCFA';
+            periodElement.textContent = periodLabels[period];
+            savingsElement.textContent = savingsInfo[period];
+
+            // Mettre à jour le formulaire de paiement
+            document.querySelector('input[name="period"]').value = period;
         });
     });
 
-    // Gestion de la sélection des plans
-    const planCards = document.querySelectorAll('.plan-card');
-    const planInputs = document.querySelectorAll('input[name="id_abonnement"]');
+    // Compte à rebours
+    function updateCountdown() {
+        const now = new Date();
+        const end = new Date();
+        end.setHours(23, 59, 59, 999); // Fin du jour
 
-    planInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Retirer selected de toutes les cartes
-            planCards.forEach(card => card.classList.remove('selected'));
+        const diff = end - now;
 
-            // Ajouter selected à la carte correspondante
-            const label = document.querySelector(`label[for="${this.id}"]`);
-            if (label) {
-                label.querySelector('.plan-card').classList.add('selected');
-            }
-        });
-    });
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    // Initialiser la première carte comme sélectionnée
-    const firstChecked = document.querySelector('input[name="id_abonnement"]:checked');
-    if (firstChecked) {
-        const firstLabel = document.querySelector(`label[for="${firstChecked.id}"]`);
-        if (firstLabel) {
-            firstLabel.querySelector('.plan-card').classList.add('selected');
-        }
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
     }
 
-    // Animation au survol
-    planCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            if (!this.classList.contains('selected')) {
-                this.style.transform = 'translateY(-5px)';
-            }
-        });
+    // Mettre à jour le compte à rebours toutes les secondes
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
 
-        card.addEventListener('mouseleave', function() {
-            if (!this.classList.contains('selected')) {
-                this.style.transform = 'translateY(0)';
-            }
-        });
+    // Animation au scroll
+    window.addEventListener('scroll', function() {
+        const actionPanel = document.querySelector('.action-panel');
+        const scrollTop = window.pageYOffset;
+
+        if (scrollTop > 100) {
+            actionPanel.style.transform = 'translateY(0)';
+            actionPanel.style.opacity = '1';
+        }
     });
+
+    // Confirmation avant paiement
+    const paymentForm = document.querySelector('form[action*="paiement"]');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Animation de confirmation
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Redirection vers le paiement...';
+            button.disabled = true;
+
+            // Petit délai pour l'animation
+            setTimeout(() => {
+                this.submit();
+            }, 1000);
+        });
+    }
 });
 </script>
 @endpush

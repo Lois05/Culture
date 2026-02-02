@@ -294,7 +294,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('{{ App\Helpers\CloudinaryHelper::static('pattern.png') }}');
+background: url('{{ asset('adminlte/img/pattern.png') }}');
         opacity: 0.1;
     }
 
@@ -525,7 +525,7 @@
                     </div>
                     <div class="col-md-3 col-6 mb-4">
                         <div class="stat-card-modern text-center">
-                            <div class="stat-number-modern" id="culturesCount">{{ $allLangues->count() ?? 50 }}</div>
+                                <div class="stat-number-modern" id="culturesCount">50</div>
                             <div class="stat-label-premium">Cultures</div>
                         </div>
                     </div>
@@ -619,7 +619,7 @@
                     <small class="text-muted">Tout le Bénin</small>
                 </div>
                 <div class="stat-card-modern">
-                    <div class="stat-number-modern">{{ $allLangues->count() ?? 50 }}+</div>
+                        <div class="stat-number-modern" id="culturesCount">50</div>
                     <div class="stat-label-premium">Langues locales</div>
                     <small class="text-muted">Dialectes uniques</small>
                 </div>

@@ -1,9 +1,31 @@
-<?php
-// routes/web.php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TwoFactorController;
+
+// ========== ROUTES DE TEST TEMPORAIRES ==========
+Route::get('/debug-test-1', function() {
+    return response()->json([
+        'status' => 'ok',
+        'time' => now(),
+        'session_id' => session()->getId(),
+        'app_env' => app()->environment()
+    ]);
+});
+
+Route::get('/debug-test-2', function() {
+    return "Hello World - Simple HTML";
+});
+
+Route::get('/debug-test-3', function() {
+    try {
+        $test = \App\Helpers\CloudinaryHelper::get('test.jpg');
+        return "CloudinaryHelper: OK";
+    } catch (Exception $e) {
+        return "CloudinaryHelper ERROR: " . $e->getMessage();
+    }
+});
 
 // ========== ROUTES RACINE ==========
 Route::get('/', function () {
@@ -59,19 +81,12 @@ Route::get('/cloudinary-test', function() {
     echo "<p>CLOUDINARY_URL dans .env: <strong>" . ($cloudinaryUrl ? '<span class="success">✅ CONFIGURÉ</span>' : '<span class="error">❌ NON CONFIGURÉ</span>') . "</strong></p>";
 
     if ($cloudinaryUrl) {
-        // Cacher les informations sensibles
         $maskedUrl = preg_replace('/cloudinary:\/\/[^:]+:[^@]+@/', 'cloudinary://***:***@', $cloudinaryUrl);
         echo "<p>URL masquée: <code>$maskedUrl</code></p>";
-
-        if (strpos($cloudinaryUrl, 'cloudinary://') === 0) {
-            echo "<p class='success'>✅ Format correct</p>";
-        } else {
-            echo "<p class='error'>❌ Format incorrect - doit commencer par cloudinary://</p>";
-        }
     }
     echo "</div>";
 
-    // Test 2: Images statiques via CloudinaryHelper
+    // Test 2: Images statiques
     echo "<div class='box'>";
     echo "<h2>2. Test des images statiques</h2>";
 
@@ -87,167 +102,34 @@ Route::get('/cloudinary-test', function() {
         'renaissance.webp',
         'contemporain.webp',
         'collage.png',
-        'mamaafrica.jpg',
-        'pattern.png',
-        'placeholder.jpg'
+        'mamaafrica.jpg'
     ];
 
     foreach ($testImages as $image) {
         $url = App\Helpers\CloudinaryHelper::static($image);
-
         echo "<p><strong>$image:</strong> ";
-
         if (strpos($url, 'res.cloudinary.com') !== false) {
             echo "<span class='success'>✅ Cloudinary</span>";
-            echo " - <a href='$url' target='_blank'>Voir</a>";
-            echo "<br><img src='$url' alt='$image' style='max-height: 100px;'>";
-        } elseif (strpos($url, 'via.placeholder.com') !== false) {
-            echo "<span class='warning'>⚠️ Placeholder</span>";
         } else {
             echo "<span class='error'>❌ Erreur</span>";
         }
-
         echo "</p>";
     }
     echo "</div>";
 
-    // Test 3: Vérification des médias
-    echo "<div class='box'>";
-    echo "<h2>3. Test des médias</h2>";
-    try {
-        $media = \App\Models\Media::first();
-        if ($media) {
-            echo "<p>Média ID: {$media->id_media}</p>";
-            echo "<p>Chemin: {$media->chemin}</p>";
-
-            $imageUrl = $media->image_url;
-            echo "<p>Image URL: $imageUrl</p>";
-
-            if (strpos($imageUrl, 'res.cloudinary.com') !== false) {
-                echo "<p class='success'>✅ Sur Cloudinary</p>";
-                echo "<img src='$imageUrl' alt='Média'>";
-            } elseif (strpos($imageUrl, 'storage/') !== false) {
-                echo "<p class='warning'>⚠️ En local (storage)</p>";
-                echo "<img src='$imageUrl' alt='Média'>";
-            } else {
-                echo "<p class='warning'>⚠️ Placeholder</p>";
-            }
-
-            // Vérifier si la méthode isOnCloudinary existe
-            if (method_exists($media, 'isOnCloudinary')) {
-                echo "<p>Méthode isOnCloudinary: " . ($media->isOnCloudinary() ? '✅ OUI' : '❌ NON') . "</p>";
-            }
-        } else {
-            echo "<p>Aucun média trouvé dans la base de données</p>";
-        }
-    } catch (\Exception $e) {
-        echo "<p class='error'>Erreur: " . $e->getMessage() . "</p>";
-    }
-    echo "</div>";
-
-    // Test 4: Vérification des utilisateurs
-    echo "<div class='box'>";
-    echo "<h2>4. Test des avatars</h2>";
-    try {
-        $user = \App\Models\User::first();
-        if ($user) {
-            echo "<p>Utilisateur: {$user->name}</p>";
-            echo "<p>Photo: {$user->photo}</p>";
-
-            $avatarUrl = $user->image_url;
-            echo "<p>Avatar URL: $avatarUrl</p>";
-
-            if (strpos($avatarUrl, 'res.cloudinary.com') !== false) {
-                echo "<p class='success'>✅ Sur Cloudinary</p>";
-                echo "<img src='$avatarUrl' alt='Avatar' style='border-radius: 50%; width: 150px; height: 150px;'>";
-            } elseif (strpos($avatarUrl, 'storage/') !== false) {
-                echo "<p class='warning'>⚠️ En local (storage)</p>";
-                echo "<img src='$avatarUrl' alt='Avatar' style='border-radius: 50%; width: 150px; height: 150px;'>";
-            } else {
-                echo "<p class='warning'>⚠️ Placeholder</p>";
-            }
-        } else {
-            echo "<p>Aucun utilisateur trouvé</p>";
-        }
-    } catch (\Exception $e) {
-        echo "<p class='error'>Erreur: " . $e->getMessage() . "</p>";
-    }
-    echo "</div>";
-
-    // Test 5: Structure Cloudinary
-    echo "<div class='box'>";
-    echo "<h2>5. Structure Cloudinary recommandée</h2>";
-    echo "<ul>";
-    echo "<li><strong>culture_app/static/</strong> - Images statiques (hero, timeline, etc.)</li>";
-    echo "<li><strong>culture_app/uploads/</strong> - Médias uploadés</li>";
-    echo "<li><strong>culture_app/avatars/</strong> - Avatars utilisateurs</li>";
-    echo "</ul>";
-
-    echo "<h3>Images déjà sur Cloudinary:</h3>";
-    echo "<ol>";
-    echo "<li>discoverbenin.jpg (Hero)</li>";
-    echo "<li>fresque.jpg (Hero)</li>";
-    echo "<li>routeesclave.webp (Hero)</li>";
-    echo "<li>beninwest.jpg (Hero)</li>";
-    echo "<li>mosqueeporto.jpeg (Hero)</li>";
-    echo "<li>royaumeabo.webp (Timeline)</li>";
-    echo "<li>independancegraph.jpg (Timeline)</li>";
-    echo "<li>ancientemps.jpg (Timeline)</li>";
-    echo "<li>renaissance.webp (Timeline)</li>";
-    echo "<li>contemporain.webp (Timeline)</li>";
-    echo "</ol>";
-    echo "</div>";
-
-    // Instructions
-    echo "<div class='box'>";
-    echo "<h2>6. Instructions pour Railway</h2>";
-    echo "<ol>";
-    echo "<li>Vérifiez la variable <strong>CLOUDINARY_URL</strong> dans Railway</li>";
-    echo "<li>Format: <code>cloudinary://API_KEY:API_SECRET@CLOUD_NAME</code></li>";
-    echo "<li>Les images statiques sont déjà sur Cloudinary</li>";
-    echo "<li>Les nouveaux uploads iront automatiquement sur Cloudinary</li>";
-    echo "</ol>";
-
-    echo "<h3>Vérifications à faire:</h3>";
-    echo "<ul>";
-    echo "<li>✅ Fichiers de vues modifiés (script PowerShell)</li>";
-    echo "<li>✅ CloudinaryHelper.php créé</li>";
-    echo "<li>✅ 10 images déjà sur Cloudinary</li>";
-    echo "<li>🔲 Accesseurs image_url dans les modèles</li>";
-    echo "<li>🔲 Test avec php artisan serve</li>";
-    echo "</ul>";
-    echo "</div>";
+    return "<p><a href='/'>Retour à l'accueil</a></p>";
 });
 
 // ========== ROUTE POUR TESTER L'ENVIRONNEMENT ==========
 Route::get('/env-test', function() {
     echo "<h1>Test Environnement</h1>";
-
-    echo "<h2>Variables d'environnement</h2>";
     echo "<p>APP_ENV: " . env('APP_ENV') . "</p>";
     echo "<p>APP_DEBUG: " . env('APP_DEBUG') . "</p>";
-
-    echo "<h2>Extensions PHP</h2>";
-    echo "<p>GD: " . (extension_loaded('gd') ? '✅ Installé' : '❌ Non installé') . "</p>";
-    echo "<p>Fileinfo: " . (extension_loaded('fileinfo') ? '✅ Installé' : '❌ Non installé') . "</p>";
-
-    echo "<h2>Permissions</h2>";
-    $paths = [
-        storage_path() => 'storage/',
-        public_path('storage') => 'public/storage',
-        base_path('bootstrap/cache') => 'bootstrap/cache',
-    ];
-
-    foreach ($paths as $path => $name) {
-        echo "<p>$name: ";
-        echo is_writable($path) ? '✅ Écriture OK' : '❌ Pas accessible en écriture';
-        echo "</p>";
-    }
+    return "<p><a href='/'>Retour</a></p>";
 });
 
-// === ROUTE TEMPORAIRE POUR CORRIGER LES IMAGES ===
+// ========== ROUTE TEMPORAIRE POUR CORRIGER LES IMAGES ==========
 Route::get('/admin/fix-images', function() {
-    // Protection simple
     if (request()->get('token') !== 'benin2024') {
         abort(403, 'Accès non autorisé');
     }
@@ -258,11 +140,6 @@ Route::get('/admin/fix-images', function() {
         'https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp',
         'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg',
         'https://res.cloudinary.com/drzud4wye/image/upload/v1765979195/mosqueeporto_hdaiki.jpg',
-        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980140/royaumeabo_hiduap.webp',
-        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980111/independancegraph_erzbdw.jpg',
-        'https://res.cloudinary.com/drzud4wye/image/upload/v1765978489/ancientemps_dqc9bc.jpg',
-        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980053/renaissance_js7sja.webp',
-        'https://res.cloudinary.com/drzud4wye/image/upload/v1765980083/contemporain_qces9z.webp',
     ];
 
     $medias = \App\Models\Media::all();
@@ -270,23 +147,20 @@ Route::get('/admin/fix-images', function() {
 
     foreach ($medias as $index => $media) {
         $newUrl = $images[$index % count($images)];
-
         $media->update([
             'chemin' => $newUrl,
             'cloudinary_url' => $newUrl,
         ]);
-
         $updated++;
     }
 
     return response()->json([
         'success' => true,
-        'message' => "$updated médias mis à jour avec URLs Cloudinary",
-        'action' => 'Actualisez la page /explorer pour voir les nouvelles images'
+        'message' => "$updated médias mis à jour",
     ]);
 });
 
 // ========== CHARGEMENT DES AUTRES FICHIERS ==========
 require __DIR__.'/auth.php';     // Routes d'authentification Laravel (pour BACK)
-require __DIR__.'/admin.php';    // Routes administration (BACK)
+//require __DIR__.'/admin.php';
 require __DIR__.'/front.php';    // Routes frontales (FRONT)

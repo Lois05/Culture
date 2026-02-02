@@ -1,0 +1,1 @@
+<?php /**PATH C:\wamp64\www\culture\resources\views\front\partials\nav.blade.php ENDPATH**/ ?>

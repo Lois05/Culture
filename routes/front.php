@@ -5,18 +5,23 @@ use App\Http\Controllers\FrontController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\FedapayController; // <-- AJOUTER CE CONTROLLER
+use App\Http\Controllers\FedapayController;
+use App\Http\Controllers\InteractionController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\InteractionController;
-
-// ========== ROUTES PUBLIQUES =========
+// ========== ROUTES PUBLIQUES ==========
 Route::get('/', [FrontController::class, 'index'])->name('front.home');
 Route::get('/explorer', [FrontController::class, 'explorer'])->name('front.explorer');
 Route::get('/regions', [FrontController::class, 'regions'])->name('front.regions');
 Route::get('/region/{slug}', [FrontController::class, 'region'])->name('front.region');
 Route::get('/apropos', [FrontController::class, 'apropos'])->name('front.apropos');
-Route::get('/contenu/{id}', [FrontController::class, 'contenu'])->name('front.contenu');
+
+// ========== ROUTE CONTENU PRINCIPALE ==========
+// UTILISEZ 'id' comme paramètre
+Route::get('/contenu/{id}', [FrontController::class, 'contenu'])->name('front.contenu')
+    ->where('id', '[0-9]+');
 
 // ========== AUTHENTIFICATION ==========
 Route::middleware('guest')->group(function () {
@@ -28,13 +33,8 @@ Route::middleware('guest')->group(function () {
 
 // ========== ROUTES DASHBOARD (avec auth) ==========
 Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(function () {
-    // Dashboard principal
     Route::get('/', [DashboardController::class, 'index'])->name('index');
-
-    // Contributions
     Route::get('/contributions', [DashboardController::class, 'contributions'])->name('contributions');
-
-    // Likes
     Route::get('/likes', [DashboardController::class, 'likes'])->name('likes');
 
     // Paramètres
@@ -50,55 +50,77 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::post('/contribuer', [DashboardController::class, 'storeContribution'])->name('contribuer.store');
 });
 
-// ========== ROUTES BOUTIQUE/PAIEMENT ==========
-Route::get('/boutique', [PaiementController::class, 'index'])->name('boutique.index');
+// routes/web.php
 
-// Routes protégées par auth
+
+
+   // routes/web.php
+
+// Routes boutique
+Route::prefix('boutique')->name('boutique.')->group(function () {
+    Route::get('/', [PaiementController::class, 'index'])->name('index');
+
+    // Route GET pour afficher la page de détails
+    Route::get('/choisir', [PaiementController::class, 'choisir'])->name('choisir');
+
+    // Route POST pour traiter la sélection (optionnel)
+    Route::post('/choisir', [PaiementController::class, 'processChoix'])->name('choisir.post');
+
+    Route::get('/paiement', [PaiementController::class, 'paiement'])->name('paiement');
+    Route::post('/paiement/process', [PaiementController::class, 'processPaiement'])->name('process.paiement');
+    Route::get('/success', [PaiementController::class, 'success'])->name('success');
+    Route::get('/echec', [PaiementController::class, 'echec'])->name('echec');
+    Route::get('/annuler', [PaiementController::class, 'annuler'])->name('annuler');
+    Route::get('/article/{id}/acheter', [PaiementController::class, 'acheterArticle'])->name('article.acheter');
+});
+// Routes Fedapay
+Route::prefix('fedapay')->name('fedapay.')->group(function () {
+    Route::post('/process', [FedapayController::class, 'process'])->name('process');
+    Route::get('/callback', [PaiementController::class, 'fedapayCallback'])->name('callback');
+    Route::post('/webhook', [FedapayController::class, 'webhook'])->name('webhook');
+    Route::get('/check/{reference}', [FedapayController::class, 'checkStatus'])->name('check.status');
+});
+
+// ========== INTERACTIONS ==========
 Route::middleware(['auth'])->group(function () {
-    // GET pour afficher la page de choix
-    Route::get('/boutique/choisir', [PaiementController::class, 'choisir'])->name('boutique.choisir');
+    // Likes (UTILISEZ 'id')
+    Route::post('/like/{id}/toggle', [InteractionController::class, 'toggleLike'])->name('like.toggle')
+        ->where('id', '[0-9]+');
 
-    // POST pour traiter le choix
-    Route::post('/boutique/choisir', [PaiementController::class, 'processChoix'])->name('paiement.process-choix');
+    // Favoris (UTILISEZ 'id')
+    Route::post('/favorite/{id}/toggle', [InteractionController::class, 'toggleFavorite'])->name('favorite.toggle')
+        ->where('id', '[0-9]+');
 
-    Route::get('/boutique/paiement', [PaiementController::class, 'formulaire'])->name('paiement.formulaire');
-    Route::post('/boutique/paiement', [PaiementController::class, 'processPaiement'])->name('paiement.process');
-    Route::get('/boutique/success/{reference}', [PaiementController::class, 'success'])->name('paiement.success');
+    // Follow
+    Route::post('/follow/{authorId}/toggle', [InteractionController::class, 'toggleFollow'])->name('follow.toggle')
+        ->where('authorId', '[0-9]+');
 
-    // ROUTES FEDAPAY (Nouvelles routes) <-- AJOUTER CES ROUTES
-    Route::post('/paiement/fedapay', [FedapayController::class, 'process'])->name('paiement.fedapay.process');
-    Route::get('/paiement/callback', [FedapayController::class, 'callback'])->name('paiement.fedapay.callback');
-    Route::get('/paiement/echec', [FedapayController::class, 'echec'])->name('paiement.fedapay.echec');
+    // Commentaires (UTILISEZ 'id')
+    Route::post('/comment/{id}', [InteractionController::class, 'addComment'])->name('comment.add')
+        ->where('id', '[0-9]+');
+
+    Route::delete('/comment/{id}', [InteractionController::class, 'deleteComment'])->name('comment.delete')
+        ->where('id', '[0-9]+');
 });
 
-// ========== INTERACTIONS API ==========
-Route::middleware(['auth:sanctum'])->group(function () {
-    // Likes
-    Route::post('/contenus/{contenu}/like', [InteractionController::class, 'toggleLike']);
-
-    // Favoris
-    Route::post('/contenus/{contenu}/favorite', [InteractionController::class, 'toggleFavorite']);
-
-    // Commentaires
-    Route::post('/contenus/{contenu}/comment', [InteractionController::class, 'addComment']);
-
-    // Abonnements auteurs
-    Route::post('/auteurs/{auteur}/follow', [InteractionController::class, 'toggleFollow']);
-
-    // Vérifier les interactions
-    Route::get('/contenus/{contenu}/interactions', [InteractionController::class, 'checkUserInteractions']);
-});
-
-// Commentaires publics
-Route::get('/contenus/{contenu}/comments', [InteractionController::class, 'getComments']);
-
-// Partage
-Route::post('/contenus/{contenu}/share', [InteractionController::class, 'shareContent']);
+// ========== ROUTES SUPPLÉMENTAIRES ==========
+// Preview étendu (UTILISEZ 'id')
+Route::get('/contenu/{id}/preview-etendu', [FrontController::class, 'getExtendedPreview'])
+    ->name('front.contenu.preview')
+    ->where('id', '[0-9]+');
 
 // ========== DÉCONNEXION ==========
-Route::middleware('auth')->post('/deconnexion', function () {
+Route::post('/deconnexion', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
     return redirect('/')->with('success', 'Déconnecté avec succès.');
-})->name('deconnexion');
+})->name('deconnexion')->middleware('auth');
+
+
+
+// ========== FALLBACK ==========
+Route::fallback(function () {
+    return redirect()->route('front.home')->with('error', 'Page non trouvée');
+});
+

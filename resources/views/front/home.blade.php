@@ -3,7 +3,7 @@
 @section('title', 'Accueil - Bénin Culture')
 
 @section('content')
-    <!-- Hero Section Parfaite -->
+    <!-- Hero Section -->
     <section class="hero-section">
         <!-- Carousel Hero -->
         <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
@@ -11,35 +11,35 @@
                 <!-- Slide 1 -->
                 <div class="carousel-item active">
                     <div class="hero-slide-image"
-                         style="background-image: url('https://res.cloudinary.com/drzud4wye/image/upload/v1765979252/discoverbenin_vq9mik.jpg');">
+                         style="background-image: url('{{ App\Helpers\ImageHelper::local('hero1') }}');">
                     </div>
                 </div>
 
                 <!-- Slide 2 -->
                 <div class="carousel-item">
                     <div class="hero-slide-image"
-                         style="background-image: url('https://res.cloudinary.com/drzud4wye/image/upload/v1765979182/fresque_s4pcmz.jpg');">
+                         style="background-image: url('{{ asset('adminlte/img/ouidah.jpeg') }}');">
                     </div>
                 </div>
 
                 <!-- Slide 3 -->
                 <div class="carousel-item">
                     <div class="hero-slide-image"
-                         style="background-image: url('https://res.cloudinary.com/drzud4wye/image/upload/v1765979213/routeesclave_n5fo3i.webp');">
+                         style="background-image: url('{{ App\Helpers\ImageHelper::local('hero3') }}');">
                     </div>
                 </div>
 
                 <!-- Slide 4 -->
                 <div class="carousel-item">
                     <div class="hero-slide-image"
-                         style="background-image: url('https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg');">
+                         style="background-image: url('{{ App\Helpers\ImageHelper::local('hero4') }}');">
                     </div>
                 </div>
 
                 <!-- Slide 5 -->
                 <div class="carousel-item">
                     <div class="hero-slide-image"
-                         style="background-image: url('https://res.cloudinary.com/drzud4wye/image/upload/v1765979195/mosqueeporto_hdaiki.jpg');">
+                         style="background-image: url('{{ App\Helpers\ImageHelper::local('hero5') }}');">
                     </div>
                 </div>
             </div>
@@ -64,7 +64,7 @@
             </div>
         </div>
 
-        <!-- Contenu Hero Positionné Séparément -->
+        <!-- Contenu Hero -->
         <div class="hero-content-container">
             <div class="container">
                 <div class="hero-content">
@@ -123,7 +123,7 @@
         </div>
     </section>
 
-    <!-- Histoire du Bénin - Timeline Interactive -->
+    <!-- Timeline -->
     <section id="histoire" class="timeline-section">
         <div class="container">
             <div class="timeline-header">
@@ -168,7 +168,7 @@
                             'title' => 'Royaumes pré-coloniaux',
                             'period' => 'Avant 1894',
                             'icon' => 'bi-castle',
-                            'image' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765980140/royaumeabo_hiduap.webp',
+                            'image' => 'ancientemps.jpg',
                             'color' => '#E8112D',
                             'description' => 'Les grands royaumes de Danxomè, Porto-Novo et divers royaumes Yoruba établissent les fondations de la culture béninoise moderne avec leurs systèmes politiques, artistiques et spirituels complexes.',
                             'highlights' => [
@@ -181,7 +181,7 @@
                             'title' => 'Période coloniale',
                             'period' => '1894-1960',
                             'icon' => 'bi-flag',
-                            'image' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765978489/ancientemps_dqc9bc.jpg',
+                            'image' => 'coloniale.jpeg',
                             'color' => '#FCD116',
                             'description' => 'Le Dahomey français marque une période de transformation culturelle, avec l\'introduction de nouvelles langues, systèmes éducatifs et structures administratives qui influenceront durablement la société.',
                             'highlights' => [
@@ -194,7 +194,7 @@
                             'title' => 'Indépendance',
                             'period' => '1960-1972',
                             'icon' => 'bi-star',
-                            'image' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765980111/independancegraph_erzbdw.jpg',
+                            'image' => 'independancegraph.jpg',
                             'color' => '#0DCAF0',
                             'description' => 'Le 1er août 1960, le Dahomey accède à l\'indépendance. Une période de construction nationale et de redéfinition identitaire s\'ensuit, avec la recherche d\'un équilibre entre tradition et modernité.',
                             'highlights' => [
@@ -207,7 +207,7 @@
                             'title' => 'Renaissance culturelle',
                             'period' => '1972-1990',
                             'icon' => 'bi-arrow-repeat',
-                            'image' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765980053/renaissance_js7sja.webp',
+                            'image' => 'renaissance.webp',
                             'color' => '#FD7E14',
                             'description' => 'La période révolutionnaire met l\'accent sur la valorisation des cultures locales, avec des réformes éducatives et culturelles visant à promouvoir les langues et traditions nationales.',
                             'highlights' => [
@@ -220,7 +220,7 @@
                             'title' => 'Bénin contemporain',
                             'period' => '1990 à aujourd\'hui',
                             'icon' => 'bi-globe',
-                            'image' => 'https://res.cloudinary.com/drzud4wye/image/upload/v1765980083/contemporain_qces9z.webp',
+                            'image' => 'contemporain.webp',
                             'color' => '#198754',
                             'description' => 'Le renouveau démocratique ouvre une ère de revitalisation culturelle, avec une reconnaissance internationale croissante du patrimoine béninois et un dynamisme artistique et intellectuel remarquable.',
                             'highlights' => [
@@ -239,9 +239,9 @@
                                 <!-- Image -->
                                 <div class="col-lg-6">
                                     <div class="timeline-image-container">
-                                        <img src="{{ $period['image'] }}"
+                                        <img src="{{ asset('adminlte/img/' . $period['image']) }}"
                                              alt="{{ $period['title'] }}"
-                                             onerror="this.src='https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg'">
+                                             onerror="this.src='{{ App\Helpers\ImageHelper::defaultContent() }}'">
                                         <div class="period-badge" style="background: {{ $period['color'] }};">
                                             <i class="bi {{ $period['icon'] }} me-2"></i>
                                             {{ $period['period'] }}
@@ -323,7 +323,7 @@
         </div>
     </section>
 
-    <!-- Mission Interactive -->
+    <!-- Mission -->
     <section id="mission" class="mission-section">
         <div class="container">
             <div class="row mb-5">
@@ -340,9 +340,9 @@
                 <!-- Image Mission -->
                 <div class="col-lg-6">
                     <div class="mission-image">
-                        <img src="hhttps://res.cloudinary.com/drzud4wye/image/upload/v1766156970/mamaafrica_vmmpcb.jpg"
+                        <img src="{{ asset('adminlte/img/beninwest.jpg') ?: App\Helpers\ImageHelper::defaultContent() }}"
                              alt="Mission Bénin Culture"
-                             onerror="this.src='https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg'">
+                             onerror="this.src='{{ App\Helpers\ImageHelper::defaultContent() }}'">
                         <div class="mission-image-overlay">
                             <h4>Culture Vivante</h4>
                             <p>Transmettre aux générations futures</p>
@@ -413,193 +413,432 @@
         </div>
     </section>
 
-    <!-- Contenus Populaires - Style Pinterest -->
-    <section id="populaires" class="contenus-section">
-        <div class="container">
-            <div class="row mb-5">
-                <div class="col-lg-8 mx-auto text-center">
-                    <h2 class="section-title">Contenus les plus populaires</h2>
-                    <p class="section-subtitle">Découvrez les trésors culturels les plus appréciés par la communauté</p>
-                </div>
+  <!-- Contenus Populaires - Home -->
+<section id="populaires" class="contenus-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Contenus les plus populaires</h2>
+                <p class="section-subtitle">Découvrez les trésors culturels les plus appréciés par la communauté</p>
             </div>
+        </div>
 
-            @if(isset($contenusPopulaires) && $contenusPopulaires->count() > 0)
-                <!-- Grille Pinterest -->
-                <div class="pinterest-grid">
-                    @foreach ($contenusPopulaires as $contenu)
-                        @php
-                            // 1. Récupérer l'image principale du contenu
-                            if ($contenu->medias && $contenu->medias->count() > 0) {
-                                $mainMedia = $contenu->medias->first();
-                                $imageUrl = $mainMedia->cloudinary_url ?? $mainMedia->chemin;
-                            } else {
-                                $imageUrl = 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg';
-                            }
+        @if(isset($contenusPopulaires) && $contenusPopulaires->count() > 0)
+            <!-- Grille Pinterest -->
+            <div class="pinterest-grid">
+                @foreach ($contenusPopulaires as $contenu)
+                    @php
+                        // IMAGE DU CONTENU
+                        $imageUrl = App\Helpers\ImageHelper::getContentImage($contenu);
 
-                            // 2. Récupérer les infos de l'auteur
-                            $author = $contenu->auteur ?? null;
-                            $authorName = ($author->prenom ?? '') . ' ' . ($author->name ?? 'Anonyme');
-                            $authorName = trim($authorName) ?: 'Anonyme';
-                            $authorInitials = strtoupper(substr($authorName, 0, 1));
+                        // INFOS AUTEUR
+                        $author = $contenu->auteur ?? null;
+                        $avatarInfo = App\Helpers\ImageHelper::getUserAvatarInfo($author);
 
-                            // 3. Photo de l'auteur
-                            $authorPhoto = null;
-                            if ($author) {
-                                if (!empty($author->cloudinary_url)) {
-                                    $authorPhoto = $author->cloudinary_url;
-                                } elseif (!empty($author->photo)) {
-                                    if (filter_var($author->photo, FILTER_VALIDATE_URL)) {
-                                        $authorPhoto = $author->photo;
-                                    } elseif (strpos($author->photo, 'storage/') === 0) {
-                                        $authorPhoto = asset($author->photo);
-                                    } else {
-                                        $authorPhoto = asset('storage/' . $author->photo);
-                                    }
-                                }
-                            }
+                        $authorName = $avatarInfo['name'];
+                        $authorInitials = $avatarInfo['initials'];
+                        $authorPhoto = $avatarInfo['photo_url'];
+                        $hasRealPhoto = $avatarInfo['has_photo'];
+                        $avatarColor = $avatarInfo['color'];
 
-                            // 4. Type de contenu
-                            $typeName = $contenu->typeContenu->nom_contenu ?? 'Général';
-                            $typeIcon = $contenu->typeContenu->icon ?? 'bi-star';
-                            $typeColor = $contenu->typeContenu->color ?? '#FCD116';
+                        // TYPE DE CONTENU
+                        $typeName = $contenu->typeContenu->nom_contenu ?? 'Général';
+                        $typeIcon = $contenu->typeContenu->icon ?? 'bi-star';
+                        $typeColor = $contenu->typeContenu->color ?? '#FCD116';
 
-                            // 5. Statistiques
-                            $vuesCount = $contenu->vues_count ?? rand(500, 5000);
-                            $commentairesCount = $contenu->commentaires_count ?? rand(5, 50);
-                            $likesCount = $contenu->likes_count ?? rand(10, 200);
-                            $sharesCount = rand(5, 100);
+                        // STATISTIQUES
+                        $vuesCount = $contenu->vues_count ?? rand(500, 5000);
+                        $commentairesCount = $contenu->commentaires_count ?? rand(5, 50);
+                        $likesCount = $contenu->likes_count ?? rand(10, 200);
+                        $sharesCount = rand(5, 100);
 
-                            // 6. Région
-                            $regionName = $contenu->region->nom_region ?? 'Bénin';
+                        // RÉGION
+                        $regionName = $contenu->region->nom_region ?? 'Bénin';
 
-                            // 7. Date
-                            $dateCreation = $contenu->date_creation ?? $contenu->created_at;
-                            $dateFormatted = $dateCreation ? \Carbon\Carbon::parse($dateCreation)->diffForHumans() : '';
+                        // DATE
+                        $dateCreation = $contenu->date_creation ?? $contenu->created_at;
+                        $dateFormatted = $dateCreation ? \Carbon\Carbon::parse($dateCreation)->diffForHumans() : '';
 
-                            // 8. Description tronquée
-                            $description = \Illuminate\Support\Str::limit(strip_tags($contenu->texte ?? ''), 120);
-                        @endphp
+                        // DESCRIPTION
+                        $description = \Illuminate\Support\Str::limit(strip_tags($contenu->texte ?? ''), 120);
+                    @endphp
 
-                        <!-- Carte Pinterest -->
-                        <div class="pin-card">
-                            <!-- Image -->
-                            <div class="pin-image">
-                                <img src="{{ $imageUrl }}"
-                                     alt="{{ $contenu->titre }}"
-                                     onerror="this.onerror=null; this.src='https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg'">
+                    <!-- Carte Pinterest -->
+                    <div class="pin-card">
+                        <!-- Image du contenu -->
+                        <div class="pin-image">
+                            <img src="{{ $imageUrl }}"
+                                 alt="{{ $contenu->titre }}"
+                                 onerror="this.src='{{ App\Helpers\ImageHelper::defaultContent() }}'">
 
-                                <!-- Badge type -->
-                                <div class="pin-type-badge" style="color: {{ $typeColor }};">
-                                    <i class="bi {{ $typeIcon }}"></i>
-                                    {{ $typeName }}
-                                </div>
-
-                                <!-- Actions Pinterest -->
-                                <div class="pin-actions">
-                                    <button class="pin-action-btn like-btn" title="J'aime">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
-                                    <button class="pin-action-btn save-btn" title="Sauvegarder">
-                                        <i class="bi bi-bookmark"></i>
-                                    </button>
-                                    <button class="pin-action-btn share-btn" title="Partager">
-                                        <i class="bi bi-share"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Badge région -->
-                                <div class="pin-region-badge">
-                                    <i class="bi bi-geo-alt"></i>
-                                    {{ $regionName }}
-                                </div>
+                            <!-- Badge type -->
+                            <div class="pin-type-badge" style="color: {{ $typeColor }};">
+                                <i class="bi {{ $typeIcon }}"></i>
+                                {{ $typeName }}
                             </div>
 
-                            <!-- Contenu -->
-                            <div class="pin-content">
-                                <!-- Titre -->
-                                <h4 class="pin-title">
-                                    <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}">
-                                        {{ \Illuminate\Support\Str::limit($contenu->titre, 70) }}
-                                    </a>
-                                </h4>
+                            <!-- Actions Pinterest -->
+                            <div class="pin-actions">
+                                <button class="pin-action-btn like-btn" title="J'aime">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                                <button class="pin-action-btn save-btn" title="Sauvegarder">
+                                    <i class="bi bi-bookmark"></i>
+                                </button>
+                                <button class="pin-action-btn share-btn" title="Partager">
+                                    <i class="bi bi-share"></i>
+                                </button>
+                            </div>
 
-                                <!-- Description -->
-                                <p class="pin-description">
-                                    {{ $description }}
-                                </p>
-
-                                <!-- Auteur -->
-                                <div class="pin-author">
-                                    @if($authorPhoto)
-                                        <div class="pin-author-avatar">
-                                            <img src="{{ $authorPhoto }}"
-                                                 alt="{{ $authorName }}"
-                                                 onerror="this.onerror=null; this.classList.add('d-none'); this.nextElementSibling?.classList.remove('d-none')">
-                                            <div class="author-initials d-none">
-                                                {{ $authorInitials }}
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="author-initials">
-                                            {{ $authorInitials }}
-                                        </div>
-                                    @endif
-                                    <div class="pin-author-info">
-                                        <h6>{{ $authorName }}</h6>
-                                        <p>{{ $dateFormatted }}</p>
-                                    </div>
-                                </div>
-
-                                <!-- Statistiques interactives -->
-                                <div class="pin-stats">
-                                    <div class="pin-stat like-stat">
-                                        <i class="bi bi-heart"></i>
-                                        <span class="pin-stat-count">{{ $likesCount }}</span>
-                                        <span>J'aime</span>
-                                    </div>
-                                    <div class="pin-stat comment-stat">
-                                        <i class="bi bi-chat"></i>
-                                        <span class="pin-stat-count">{{ $commentairesCount }}</span>
-                                        <span>Commentaires</span>
-                                    </div>
-                                    <div class="pin-stat share-stat">
-                                        <i class="bi bi-share"></i>
-                                        <span class="pin-stat-count">{{ $sharesCount }}</span>
-                                        <span>Partages</span>
-                                    </div>
-                                </div>
-
-                                <!-- Bouton Voir plus -->
-                                <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}" class="pin-read-btn">
-                                    <i class="bi bi-book me-2"></i>Lire l'article
-                                </a>
+                            <!-- Badge région -->
+                            <div class="pin-region-badge">
+                                <i class="bi bi-geo-alt"></i>
+                                {{ $regionName }}
                             </div>
                         </div>
-                    @endforeach
-                </div>
 
-                <!-- Bouton Voir plus de contenus -->
-                <div class="text-center mt-5">
-                    <a href="{{ route('front.explorer') }}" class="btn btn-primary btn-lg px-5 py-3">
-                        <i class="bi bi-compass me-2"></i>Explorer tous les contenus
-                    </a>
-                </div>
-            @else
-                <!-- Message quand il n'y a pas de contenus -->
-                <div class="text-center py-5">
-                    <div class="mb-4">
-                        <i class="bi bi-stars display-1 text-muted"></i>
+                        <!-- Contenu -->
+                        <div class="pin-content">
+                            <!-- Titre -->
+                            <h4 class="pin-title">
+                                <a href="{{ route('front.contenu', $contenu->id_contenu) }}"></a>
+                                    {{ \Illuminate\Support\Str::limit($contenu->titre, 70) }}
+                                </a>
+                            </h4>
+
+                            <!-- Description -->
+                            <p class="pin-description">
+                                {{ $description }}
+                            </p>
+
+                           <!-- Auteur - VERSION SIMPLIFIÉE ET FONCTIONNELLE -->
+<div class="pin-author">
+    <div class="pin-author-avatar">
+        @php
+            // Déterminer la classe de couleur basée sur la première lettre
+            $colorMap = [
+                'A' => 'avatar-initials-red',
+                'B' => 'avatar-initials-yellow',
+                'C' => 'avatar-initials-green',
+                'D' => 'avatar-initials-purple',
+                'E' => 'avatar-initials-blue',
+                'F' => 'avatar-initials-red',
+                'G' => 'avatar-initials-yellow',
+                'H' => 'avatar-initials-green',
+                'I' => 'avatar-initials-purple',
+                'J' => 'avatar-initials-blue',
+                'K' => 'avatar-initials-red',
+                'L' => 'avatar-initials-yellow',
+                'M' => 'avatar-initials-green',
+                'N' => 'avatar-initials-purple',
+                'O' => 'avatar-initials-blue',
+                'P' => 'avatar-initials-red',
+                'Q' => 'avatar-initials-yellow',
+                'R' => 'avatar-initials-green',
+                'S' => 'avatar-initials-purple',
+                'T' => 'avatar-initials-blue',
+                'U' => 'avatar-initials-red',
+                'V' => 'avatar-initials-yellow',
+                'W' => 'avatar-initials-green',
+                'X' => 'avatar-initials-purple',
+                'Y' => 'avatar-initials-blue',
+                'Z' => 'avatar-initials-red'
+            ];
+
+            $firstLetter = strtoupper(substr($authorName, 0, 1));
+            $avatarClass = $colorMap[$firstLetter] ?? 'avatar-initials-red';
+
+            // Vérifier si on a une vraie photo
+            $hasPhoto = $hasRealPhoto && !empty($authorPhoto) && filter_var($authorPhoto, FILTER_VALIDATE_URL);
+        @endphp
+
+        @if($hasPhoto)
+            <img src="{{ $authorPhoto }}"
+                 alt="{{ $authorName }}"
+                 class="author-photo"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="author-initials {{ $avatarClass }}" style="display: none !important;">
+                {{ $authorInitials }}
+            </div>
+        @else
+            <div class="author-initials {{ $avatarClass }}">
+                {{ $authorInitials }}
+            </div>
+        @endif
+    </div>
+    <div class="pin-author-info">
+        <h6>{{ $authorName }}</h6>
+        <p>{{ $dateFormatted }}</p>
+    </div>
+</div>
+
+                            <!-- Statistiques -->
+                            <div class="pin-stats">
+                                <div class="pin-stat like-stat">
+                                    <i class="bi bi-heart"></i>
+                                    <span class="pin-stat-count">{{ $likesCount }}</span>
+                                    <span>J'aime</span>
+                                </div>
+                                <div class="pin-stat comment-stat">
+                                    <i class="bi bi-chat"></i>
+                                    <span class="pin-stat-count">{{ $commentairesCount }}</span>
+                                    <span>Commentaires</span>
+                                </div>
+                                <div class="pin-stat share-stat">
+                                    <i class="bi bi-share"></i>
+                                    <span class="pin-stat-count">{{ $sharesCount }}</span>
+                                    <span>Partages</span>
+                                </div>
+                            </div>
+
+                            <!-- Bouton Voir plus -->
+                            <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}" class="pin-read-btn">
+                                <i class="bi bi-book me-2"></i>Lire l'article
+                            </a>
+                        </div>
                     </div>
-                    <h4 class="text-muted mb-3">Aucun contenu populaire pour le moment</h4>
-                    <p class="text-muted mb-4">Soyez le premier à contribuer !</p>
-                    <a href="{{ route('dashboard.contribuer') }}" class="btn btn-primary px-4 py-2">
-                        <i class="bi bi-plus-circle me-2"></i>Ajouter un contenu
-                    </a>
-                </div>
-            @endif
-        </div>
-    </section>
+                @endforeach
+            </div>
 
+            <!-- Bouton Voir plus de contenus -->
+            <div class="text-center mt-5">
+                <a href="{{ route('front.explorer') }}" class="btn btn-primary btn-lg px-5 py-3">
+                    <i class="bi bi-compass me-2"></i>Explorer tous les contenus
+                </a>
+            </div>
+        @else
+            <!-- Message quand il n'y a pas de contenus -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-stars display-1 text-muted"></i>
+                </div>
+                <h4 class="text-muted mb-3">Aucun contenu populaire pour le moment</h4>
+                <p class="text-muted mb-4">Soyez le premier à contribuer !</p>
+                <a href="{{ route('dashboard.contribuer') }}" class="btn btn-primary px-4 py-2">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter un contenu
+                </a>
+            </div>
+        @endif
+    </div>
+</section>
+
+<style>
+/* Styles spécifiques pour les avatars dans HOME */
+.pin-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pin-author-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.author-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(232, 17, 45, 0.2);
+    display: block;
+}
+
+.author-initials {
+    width: 100%;
+    height: 100%;
+    display: flex !important; /* FORCER l'affichage */
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 14px;
+    border-radius: 50%;
+    text-transform: uppercase;
+}
+
+/* Couleurs spécifiques pour les initiales */
+.avatar-initials-red { background: #E8112D; }
+.avatar-initials-yellow { background: #FCD116; color: #333 !important; }
+.avatar-initials-green { background: #008751; }
+.avatar-initials-purple { background: #8B5CF6; }
+.avatar-initials-blue { background: #6366F1; }
+
+.pin-author-info h6 {
+    font-size: 0.95rem;
+    margin-bottom: 0.1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.pin-author-info p {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0;
+}
+</style>
+
+<style>
+/* Styles CSS pour la section Pinterest */
+.pinterest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.pin-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.pin-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.pin-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.pin-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+.pin-card:hover .pin-image img {
+    transform: scale(1.05);
+}
+
+.pin-type-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pin-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.pin-card:hover .pin-actions {
+    opacity: 1;
+}
+
+.pin-action-btn {
+    background: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pin-action-btn:hover {
+    background: var(--primary, #E8112D);
+    color: white;
+}
+
+.pin-region-badge {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pin-content {
+    padding: 1.5rem;
+}
+
+.pin-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.pin-title a {
+    color: #333;
+    text-decoration: none;
+}
+
+.pin-title a:hover {
+    color: var(--primary, #E8112D);
+}
+
+.pin-description {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+}
+
+.pin-read-btn {
+    background: linear-gradient(135deg, #E8112D, #FF3366);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.pin-read-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(232, 17, 45, 0.2);
+    color: white;
+}
+
+/* Styles pour les statistiques */
+.pin-stats {
+    border-top: 1px solid #eee;
+}
+
+.pin-stat {
+    font-size: 0.9rem;
+}
+
+.pin-stat-count {
+    font-weight: 600;
+    color: #333;
+}
+</style>
     <!-- Quiz Culturel -->
     <section id="quiz" class="quiz-section">
         <div class="container">
@@ -671,23 +910,11 @@
 
 @section('scripts')
 <script>
-// Gestion des erreurs d'images
 document.addEventListener('DOMContentLoaded', function() {
-    // Fallback pour les images d'articles
+    // Gestion des erreurs d'images des contenus
     document.querySelectorAll('.pin-image img').forEach(img => {
         img.addEventListener('error', function() {
-            this.src = 'https://res.cloudinary.com/drzud4wye/image/upload/v1765979237/beninwest_rj3d0o.jpg';
-        });
-    });
-
-    // Fallback pour les photos d'auteur
-    document.querySelectorAll('.pin-author-avatar img').forEach(img => {
-        img.addEventListener('error', function() {
-            this.style.display = 'none';
-            const initials = this.nextElementSibling;
-            if (initials && initials.classList.contains('author-initials')) {
-                initials.classList.remove('d-none');
-            }
+            this.src = '{{ App\Helpers\ImageHelper::defaultContent() }}';
         });
     });
 });

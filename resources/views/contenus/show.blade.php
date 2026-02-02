@@ -66,46 +66,35 @@
                                     @if($contenu->medias && $contenu->medias->count() > 0)
                                         @php
                                             $media = $contenu->medias->first();
-                                            $isImage = $media->typeMedia && $media->typeMedia->id_type_media == 1;
-                                            $isVideo = $media->typeMedia && $media->typeMedia->id_type_media == 2;
-                                            $isAudio = $media->typeMedia && $media->typeMedia->id_type_media == 3;
-                                            $filePath = public_path('adminlte/img/' . $media->chemin);
-                                            $fileExists = file_exists($filePath);
-                                            $fileUrl = asset('adminlte/img/' . $media->chemin);
+                                            $mediaType = $media->id_type_media ?? 1;
+                                            $isImage = $mediaType == 1;
+                                            $isVideo = $mediaType == 2;
+                                            $isAudio = $mediaType == 3;
+
+                                            // UTILISER ImageHelper POUR L'URL
+                                            $fileUrl = \App\Helpers\ImageHelper::content($media->chemin);
+                                            $isExternalUrl = str_starts_with($media->chemin, 'http');
                                         @endphp
 
                                         @if($isImage)
-                                            @if($fileExists)
-                                                <div class="mb-3">
-                                                    <img src="{{ $fileUrl }}"
-                                                         class="img-fluid rounded border"
-                                                         style="max-height: 300px; object-fit: contain;"
-                                                         alt="{{ $contenu->titre }}"
-                                                         onerror="this.onerror=null; this.src='{{ App\Helpers\CloudinaryHelper::static('placeholder.jpg') }}'">
-                                                </div>
-                                                <div class="d-flex justify-content-center mb-2">
-                                                    <a href="{{ $fileUrl }}"
-                                                       target="_blank"
-                                                       class="btn btn-sm btn-outline-primary me-2">
-                                                        <i class="bi bi-arrows-fullscreen me-1"></i> Agrandir
-                                                    </a>
-                                                    <a href="{{ route('admin.medias.show', $media->id_media) }}"
-                                                       class="btn btn-sm btn-outline-info">
-                                                        <i class="bi bi-info-circle me-1"></i> Détails média
-                                                    </a>
-                                                </div>
-                                            @else
-                                                <div class="alert alert-warning">
-                                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                                    Fichier image non trouvé
-                                                </div>
-                                                <div class="bg-light rounded p-4">
-                                                    <i class="bi bi-file-image text-muted fs-1 mb-3"></i>
-                                                    <p class="text-muted mb-0">
-                                                        Chemin : {{ $media->chemin }}
-                                                    </p>
-                                                </div>
-                                            @endif
+                                            <div class="mb-3">
+                                                <img src="{{ $fileUrl }}"
+                                                     class="img-fluid rounded border"
+                                                     style="max-height: 300px; object-fit: contain;"
+                                                     alt="{{ $contenu->titre }}"
+                                                     onerror="this.onerror=null; this.src='{{ \App\Helpers\ImageHelper::defaultContent() }}'">
+                                            </div>
+                                            <div class="d-flex justify-content-center mb-2">
+                                                <a href="{{ $fileUrl }}"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-primary me-2">
+                                                    <i class="bi bi-arrows-fullscreen me-1"></i> Agrandir
+                                                </a>
+                                                <a href="{{ route('admin.medias.show', $media->id_media) }}"
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-info-circle me-1"></i> Détails média
+                                                </a>
+                                            </div>
                                         @elseif($isVideo)
                                             <div class="bg-dark rounded p-4 mb-3">
                                                 <i class="bi bi-play-circle text-white fs-1 mb-2"></i>
@@ -146,8 +135,20 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td><strong>Nom :</strong></td>
-                                                    <td><code>{{ $media->chemin }}</code></td>
+                                                    <td><strong>Source :</strong></td>
+                                                    <td>
+                                                        @if($isExternalUrl)
+                                                            <span class="badge bg-info">Externe</span>
+                                                        @else
+                                                            <span class="badge bg-success">Local</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Chemin :</strong></td>
+                                                    <td>
+                                                        <small><code>{{ Str::limit($media->chemin, 40) }}</code></small>
+                                                    </td>
                                                 </tr>
                                                 @if($media->description)
                                                 <tr>
@@ -266,13 +267,28 @@
                                     </h5>
                                 </div>
                                 <div class="card-body">
+                                    @php
+                                        $authorInfo = \App\Helpers\ImageHelper::getUserAvatarInfo($contenu->auteur);
+                                    @endphp
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                                             style="width: 50px; height: 50px; font-size: 1.2rem;">
-                                            {{ strtoupper(substr($contenu->auteur->name ?? 'A', 0, 1)) }}
-                                        </div>
+                                        @if($authorInfo['has_photo'])
+                                            <img src="{{ $authorInfo['photo_url'] }}"
+                                                 class="rounded-circle me-3"
+                                                 style="width: 50px; height: 50px; object-fit: cover;"
+                                                 alt="{{ $authorInfo['name'] }}"
+                                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 50px; height: 50px; font-size: 1.2rem; display: none;">
+                                                {{ $authorInfo['initials'] }}
+                                            </div>
+                                        @else
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                                {{ $authorInfo['initials'] }}
+                                            </div>
+                                        @endif
                                         <div>
-                                            <h5 class="mb-1">{{ $contenu->auteur->name ?? 'Anonyme' }}</h5>
+                                            <h5 class="mb-1">{{ $authorInfo['name'] }}</h5>
                                             <p class="text-muted mb-0">
                                                 <i class="bi bi-envelope me-1"></i> {{ $contenu->auteur->email ?? 'N/A' }}
                                             </p>
@@ -340,10 +356,12 @@
                                 </button>
                             @endif
 
-                            <a href="{{ route('admin.contenus.edit', $contenu->id_contenu) }}"
-                               class="btn btn-primary">
-                                <i class="bi bi-pencil me-1"></i> Modifier
-                            </a>
+                            @if($canEdit)
+                                <a href="{{ route('admin.contenus.edit', $contenu->id_contenu) }}"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-pencil me-1"></i> Modifier
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -409,4 +427,3 @@
 }
 </style>
 @endsection
-

@@ -71,4 +71,29 @@ class Contenu extends Model
     {
         return $this->hasMany(Commentaire::class, 'id_contenu', 'id_contenu');
     }
+
+    // Dans app/Models/Contenu.php
+
+/**
+ * Calculer les mots restants après le teaser
+ */
+public function getRemainingWords($previewPercentage = 40): int
+{
+    $fullText = strip_tags($this->texte);
+    $fullWords = str_word_count($fullText);
+
+    $previewWords = ceil(($previewPercentage / 100) * $fullWords);
+    $remainingWords = max(0, $fullWords - $previewWords);
+
+    return $remainingWords;
+}
+
+/**
+ * Temps de lecture restant
+ */
+public function getRemainingReadingTime($previewPercentage = 40): int
+{
+    $remainingWords = $this->getRemainingWords($previewPercentage);
+    return ceil($remainingWords / 200);
+}
 }

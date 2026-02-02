@@ -3,6 +3,10 @@
 @section('page-title', 'Gestion des Contenus')
 
 @section('content')
+@php
+use App\Helpers\ImageHelper;
+@endphp
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -19,259 +23,196 @@
                     </div>
                 </div>
 
-
-
-
-                    <div class="table-responsive">
-                        <table id="contenusTable" class="table table-hover align-middle w-100" style="font-size: 0.9rem;">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table id="contenusTable" class="table table-hover align-middle w-100" style="font-size: 0.9rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50">ID</th>
+                                <th width="70">Média</th>
+                                <th width="250">Titre</th>
+                                <th width="100">Type</th>
+                                <th width="90">Région</th>
+                                <th width="90">Langue</th>
+                                <th width="90">Statut</th>
+                                <th width="100">Auteur</th>
+                                <th width="90">Date</th>
+                                <th width="120" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($contenus as $contenu)
+                                @php
+                                    $media = $contenu->medias->first();
+                                    $mediaUrl = $media ? ImageHelper::content($media->chemin) : asset('adminlte/img/default-content.jpg');
+                                    $mediaType = $media ? ($media->typeMedia->id_type_media ?? 1) : 1;
+                                @endphp
                                 <tr>
-                                    <th width="50">ID</th>
-                                    <th width="70">Média</th>
-                                    <th width="250">Titre</th>
-                                    <th width="100">Type</th>
-                                    <th width="90">Région</th>
-                                    <th width="90">Langue</th>
-                                    <th width="90">Statut</th>
-                                    <th width="100">Auteur</th>
-                                    <th width="90">Date</th>
-                                    <th width="150" class="text-center">Actions</th>
+                                    <td>
+                                        <span class="badge bg-secondary">#{{ $contenu->id_contenu }}</span>
+                                    </td>
+                                    <td>
+                                        @if ($media)
+                                            @if ($mediaType == 2) {{-- Vidéo --}}
+                                                <div class="media-thumbnail video-thumbnail"
+                                                    onclick="window.open('{{ $mediaUrl }}', '_blank')"
+                                                    title="Voir la vidéo">
+                                                    <i class="bi bi-play-circle-fill"></i>
+                                                </div>
+                                            @elseif($mediaType == 3) {{-- Audio --}}
+                                                <div class="media-thumbnail audio-thumbnail"
+                                                    onclick="window.open('{{ $mediaUrl }}', '_blank')"
+                                                    title="Écouter l'audio">
+                                                    <i class="bi bi-music-note-beamed"></i>
+                                                </div>
+                                            @else {{-- Image --}}
+                                                <div class="media-thumbnail image-thumbnail"
+                                                    onclick="showImageModal('{{ $mediaUrl }}', '{{ addslashes($contenu->titre) }}')"
+                                                    title="Voir l'image">
+                                                    <img src="{{ $mediaUrl }}"
+                                                        alt="{{ $contenu->titre }}"
+                                                        onerror="this.onerror=null; this.src='{{ asset('adminlte/img/default-content.jpg') }}'">
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="media-thumbnail no-media" title="Aucun média">
+                                                <img src="{{ asset('adminlte/img/default-content.jpg') }}"
+                                                    alt="Pas d'image"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="contenu-info">
+                                            <a href="{{ route('admin.contenus.show', $contenu->id_contenu) }}"
+                                                class="contenu-titre"
+                                                title="{{ $contenu->titre }}">
+                                                {{ Str::limit($contenu->titre, 40) }}
+                                            </a>
+                                            @if($contenu->description)
+                                                <div class="contenu-description text-muted small mt-1">
+                                                    {{ Str::limit($contenu->description, 60) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark badge-sm">
+                                            {{ Str::limit($contenu->typeContenu->nom_contenu ?? 'Non défini', 15) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info badge-sm">
+                                            {{ Str::limit($contenu->region->nom_region ?? 'N/D', 10) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary badge-sm">
+                                            {{ Str::limit($contenu->langue->nom_langue ?? 'N/D', 10) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @switch($contenu->statut)
+                                            @case('validé')
+                                                <span class="badge bg-success badge-sm">
+                                                    <i class="bi bi-check-circle me-1"></i> Validé
+                                                </span>
+                                                @break
+                                            @case('en attente')
+                                                <span class="badge bg-warning text-dark badge-sm">
+                                                    <i class="bi bi-clock me-1"></i> Attente
+                                                </span>
+                                                @break
+                                            @case('rejeté')
+                                                <span class="badge bg-danger badge-sm">
+                                                    <i class="bi bi-x-circle me-1"></i> Rejeté
+                                                </span>
+                                                @break
+                                            @default
+                                                <span class="badge bg-secondary badge-sm">{{ $contenu->statut }}</span>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                {{ strtoupper(substr($contenu->auteur->name ?? 'A', 0, 1)) }}
+                                            </div>
+                                            <div class="small">
+                                                <div class="fw-medium">{{ Str::limit($contenu->auteur->name ?? 'Anonyme', 8) }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="small text-muted">
+                                            {{ $contenu->date_creation ? \Carbon\Carbon::parse($contenu->date_creation)->format('d/m/Y') : '—' }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- Voir -->
+                                            <a href="{{ route('admin.contenus.show', $contenu->id_contenu) }}"
+                                                class="btn btn-outline-primary rounded-circle"
+                                                title="Voir"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <!-- Modifier -->
+                                            @php
+                                                $user = Auth::user();
+                                                $userRole = $user ? optional($user->role)->nom_role : null;
+                                                $isAdminOrModerator = in_array($userRole, ['Administrateur', 'Modérateur']);
+                                                $userId = $user ? ($user->id ?? $user->getKey()) : null;
+                                                $canEdit = $user && ($userId == $contenu->id_auteur || $isAdminOrModerator);
+                                            @endphp
+
+                                            @if($canEdit)
+                                                <a href="{{ route('admin.contenus.edit', $contenu->id_contenu) }}"
+                                                    class="btn btn-outline-warning rounded-circle"
+                                                    title="Modifier"
+                                                    data-bs-toggle="tooltip">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            @else
+                                                <button class="btn btn-outline-warning rounded-circle disabled"
+                                                        title="Modification non autorisée">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            @endif
+
+                                            <!-- Ajouter média -->
+                                            <a href="{{ route('admin.medias.create') }}?contenu_id={{ $contenu->id_contenu }}"
+                                               class="btn btn-outline-info rounded-circle"
+                                               title="Ajouter média"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-image"></i>
+                                            </a>
+
+                                            <!-- Supprimer -->
+                                            @php
+                                                $canDelete = $user && ($userId == $contenu->id_auteur || $userRole === 'Administrateur');
+                                            @endphp
+
+                                            @if($canDelete)
+                                                <button type="button"
+                                                        class="btn btn-outline-danger rounded-circle btn-delete"
+                                                        data-id="{{ $contenu->id_contenu }}"
+                                                        data-name="{{ $contenu->titre }}"
+                                                        title="Supprimer"
+                                                        data-bs-toggle="tooltip">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            @else
+                                                <button class="btn btn-outline-danger rounded-circle disabled"
+                                                        title="Suppression non autorisée">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($contenus as $contenu)
-                                    <tr>
-                                        <td>
-                                            <span class="badge bg-secondary">#{{ $contenu->id_contenu }}</span>
-                                        </td>
-                                     <td>
-    @if ($contenu->medias && $contenu->medias->count() > 0)
-        @php
-            $media = $contenu->medias->first();
-            $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
-            $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
-
-            // UTILISER CLOUDINARYHELPER POUR L'URL
-            $imageUrl = $contenu->image_url ?? \App\Helpers\CloudinaryHelper::media($media);
-
-            // Fallback si pas d'URL Cloudinary
-            if (empty($imageUrl) || strpos($imageUrl, 'default-content.jpg') !== false) {
-                $imageUrl = asset('adminlte/img/' . $media->chemin);
-            }
-        @endphp
-
-        @if ($isVideo)
-            <div class="media-thumbnail video-thumbnail"
-                 onclick="window.open('{{ $imageUrl }}', '_blank')"
-                 title="Voir la vidéo">
-                <i class="bi bi-play-circle-fill"></i>
-            </div>
-        @elseif($isAudio)
-            <div class="media-thumbnail audio-thumbnail"
-                 onclick="window.open('{{ $imageUrl }}', '_blank')"
-                 title="Écouter l'audio">
-                <i class="bi bi-music-note-beamed"></i>
-            </div>
-        @else
-            <div class="media-thumbnail image-thumbnail"
-                 onclick="showImageModal('{{ $imageUrl }}', '{{ addslashes($contenu->titre) }}')"
-                 title="Voir l'image">
-                <img src="{{ $imageUrl }}"
-                     alt="{{ $contenu->titre }}"
-                     onerror="this.onerror=null; this.src='{{ \App\Helpers\CloudinaryHelper::static('default-content.jpg') }}'">
-            </div>
-        @endif
-    @else
-        <div class="media-thumbnail no-media" title="Aucun média">
-            <img src="{{ \App\Helpers\CloudinaryHelper::static('default-content.jpg') }}"
-                 alt="Pas d'image"
-                 style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-    @endif
-</td>
-                                        <td>
-                                            <div class="contenu-info">
-                                                <a href="{{ route('admin.contenus.show', $contenu->id_contenu) }}"
-                                                   class="contenu-titre"
-                                                   title="{{ $contenu->titre }}">
-                                                    {{ Str::limit($contenu->titre, 40) }}
-                                                </a>
-                                                @if($contenu->description)
-                                                    <div class="contenu-description text-muted small mt-1">
-                                                        {{ Str::limit($contenu->description, 60) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-dark badge-sm">
-                                                {{ Str::limit($contenu->typeContenu->nom_contenu ?? 'Non défini', 15) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info badge-sm">
-                                                {{ Str::limit($contenu->region->nom_region ?? 'N/D', 10) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary badge-sm">
-                                                {{ Str::limit($contenu->langue->nom_langue ?? 'N/D', 10) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @switch($contenu->statut)
-                                                @case('validé')
-                                                    <span class="badge bg-success badge-sm">
-                                                        <i class="bi bi-check-circle me-1"></i> Validé
-                                                    </span>
-                                                    @break
-                                                @case('en attente')
-                                                    <span class="badge bg-warning text-dark badge-sm">
-                                                        <i class="bi bi-clock me-1"></i> Attente
-                                                    </span>
-                                                    @break
-                                                @case('rejeté')
-                                                    <span class="badge bg-danger badge-sm">
-                                                        <i class="bi bi-x-circle me-1"></i> Rejeté
-                                                    </span>
-                                                    @break
-                                                @default
-                                                    <span class="badge bg-secondary badge-sm">{{ $contenu->statut }}</span>
-                                            @endswitch
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-sm me-2">
-                                                    {{ strtoupper(substr($contenu->auteur->name ?? 'A', 0, 1)) }}
-                                                </div>
-                                                <div class="small">
-                                                    <div class="fw-medium">{{ Str::limit($contenu->auteur->name ?? 'Anonyme', 8) }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="small text-muted">
-                                                {{ $contenu->date_creation ? \Carbon\Carbon::parse($contenu->date_creation)->format('d/m/Y') : '—' }}
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="action-buttons">
-                                                <!-- Voir -->
-                                                <a href="{{ route('admin.contenus.show', $contenu->id_contenu) }}"
-                                                   class="btn btn-sm btn-outline-primary"
-                                                   title="Voir"
-                                                   data-bs-toggle="tooltip">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-
-                                                <!-- Modifier -->
-                                                @php
-                                                    $user = Auth::user();
-                                                    $userRole = $user ? optional($user->role)->nom_role : null;
-                                                    $isAdminOrModerator = in_array($userRole, ['Administrateur', 'Modérateur']);
-                                                    $userId = $user ? ($user->id ?? $user->getKey()) : null;
-                                                    $canEdit = $user && ($userId == $contenu->id_auteur || $isAdminOrModerator);
-                                                @endphp
-
-                                                @if($canEdit)
-                                                    <a href="{{ route('admin.contenus.edit', $contenu->id_contenu) }}"
-                                                       class="btn btn-sm btn-outline-warning"
-                                                       title="Modifier"
-                                                       data-bs-toggle="tooltip">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-sm btn-outline-warning disabled"
-                                                            title="Modification non autorisée">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                @endif
-
-                                                <!-- Supprimer -->
-                                                @php
-                                                    $canDelete = $user && ($userId == $contenu->id_auteur || $userRole === 'Administrateur');
-                                                @endphp
-
-                                                @if($canDelete)
-                                                    <form action="{{ route('admin.contenus.destroy', $contenu->id_contenu) }}"
-                                                          method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-outline-danger"
-                                                                title="Supprimer"
-                                                                data-bs-toggle="tooltip"
-                                                                onclick="confirmDelete('{{ $contenu->id_contenu }}', '{{ addslashes($contenu->titre) }}')">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    <button class="btn btn-sm btn-outline-danger disabled"
-                                                            title="Suppression non autorisée">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                @endif
-
-                                                <!-- Menu dropdown pour actions supplémentaires -->
-                                                <div class="dropdown d-inline-block">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                            type="button"
-                                                            data-bs-toggle="dropdown"
-                                                            title="Plus d'actions">
-                                                        <i class="bi bi-three-dots"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                        <!-- Ajouter média -->
-                                                        <li>
-                                                            <a class="dropdown-item"
-                                                               href="{{ route('admin.medias.create') }}?contenu_id={{ $contenu->id_contenu }}">
-                                                                <i class="bi bi-image me-2"></i> Ajouter média
-                                                            </a>
-                                                        </li>
-                                                        <!-- Voir média -->
-                                                        @if($contenu->medias && $contenu->medias->count() > 0)
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="{{ route('admin.medias.show', $contenu->medias->first()->id_media) }}">
-                                                                    <i class="bi bi-eye me-2"></i> Voir média
-                                                                </a>
-                                                            </li>
-                                                        @endif
-                                                        <!-- Modération rapide -->
-                                                        @if(in_array($userRole, ['Administrateur', 'Modérateur']))
-                                                            <li><hr class="dropdown-divider"></li>
-                                                            @if($contenu->statut != 'validé')
-                                                            <li>
-                                                                <form action="{{ route('admin.contenus.valider', $contenu->id_contenu) }}"
-                                                                      method="POST" class="d-inline">
-                                                                    @csrf
-                                                                    <button type="submit" class="dropdown-item text-success">
-                                                                        <i class="bi bi-check-circle me-2"></i> Valider
-                                                                    </button>
-                                                                </form>
-                                                            </li>
-                                                            @endif
-                                                            @if($contenu->statut != 'rejeté')
-                                                            <li>
-                                                                <form action="{{ route('admin.contenus.rejeter', $contenu->id_contenu) }}"
-                                                                      method="POST" class="d-inline">
-                                                                    @csrf
-                                                                    <button type="submit" class="dropdown-item text-danger">
-                                                                        <i class="bi bi-x-circle me-2"></i> Rejeter
-                                                                    </button>
-                                                                </form>
-                                                            </li>
-                                                            @endif
-                                                        @endif
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -317,7 +258,9 @@
                 <form id="deleteFormModal" method="POST" style="display: inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Supprimer
+                    </button>
                 </form>
             </div>
         </div>
@@ -380,9 +323,6 @@ $(document).ready(function() {
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-
-            // Initialiser les dropdowns
-            $('.dropdown-toggle').dropdown();
         }
     });
 
@@ -422,6 +362,20 @@ $(document).ready(function() {
             table.column(3).search('').draw();
         }
     });
+
+    // Gestion de la suppression avec modal
+    $(document).on('click', '.btn-delete', function(e) {
+        e.preventDefault();
+
+        const contenuId = $(this).data('id');
+        const contenuName = $(this).data('name');
+
+        $('#deleteMessage').html('Êtes-vous sûr de vouloir supprimer le contenu : <strong>"' + contenuName + '"</strong> ?');
+        $('#deleteFormModal').attr('action', '/admin/contenus/' + contenuId);
+
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+    });
 });
 
 // Fonction pour afficher l'image en modal
@@ -433,15 +387,6 @@ function showImageModal(imageUrl, title) {
 
     var modal = new bootstrap.Modal(document.getElementById('imageModal'));
     modal.show();
-}
-
-// Fonction de confirmation de suppression avec modal
-function confirmDelete(id, title) {
-    $('#deleteMessage').html('Êtes-vous sûr de vouloir supprimer le contenu : <strong>"' + title + '"</strong> ?');
-    $('#deleteFormModal').attr('action', '/admin/contenus/' + id);
-
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-    deleteModal.show();
 }
 
 // Gérer la soumission du formulaire de suppression
@@ -467,20 +412,6 @@ $('#deleteFormModal').on('submit', function(e) {
 </script>
 
 <style>
-/* Styles DataTables */
-.dataTables_wrapper {
-    padding-top: 10px;
-}
-
-.dataTables_length select {
-    width: auto;
-    display: inline-block;
-}
-
-.dataTables_filter input {
-    margin-left: 10px;
-}
-
 /* Vignettes média */
 .media-thumbnail {
     width: 50px;
@@ -526,28 +457,25 @@ $('#deleteFormModal').on('submit', function(e) {
 .no-media {
     background: #f8f9fa;
     border: 2px dashed #dee2e6;
-    color: #6c757d;
 }
 
 /* Boutons d'action */
-.action-buttons {
+.btn-group-sm {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     justify-content: center;
-    flex-wrap: nowrap;
 }
 
-.action-buttons .btn {
-    width: 32px;
-    height: 32px;
+.btn-group-sm .btn {
+    width: 35px;
+    height: 35px;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
 }
 
-.action-buttons .btn i {
+.btn-group-sm .btn i {
     font-size: 0.9rem;
 }
 
@@ -555,16 +483,6 @@ $('#deleteFormModal').on('submit', function(e) {
 .btn.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-/* Dropdown dans les actions */
-.action-buttons .dropdown-toggle::after {
-    display: none;
-}
-
-.action-buttons .dropdown-menu {
-    font-size: 0.85rem;
-    min-width: 180px;
 }
 
 /* Badges */
@@ -615,16 +533,26 @@ $('#deleteFormModal').on('submit', function(e) {
         margin-bottom: 10px;
     }
 
-    .action-buttons {
+    .btn-group-sm {
         flex-direction: column;
         gap: 2px;
     }
 
-    .action-buttons .btn {
-        width: 28px;
-        height: 28px;
+    .btn-group-sm .btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .media-thumbnail {
+        width: 40px;
+        height: 40px;
+    }
+
+    .avatar-sm {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
     }
 }
 </style>
 @endsection
-

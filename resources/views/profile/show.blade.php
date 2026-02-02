@@ -263,7 +263,7 @@
                             @if($user->email_verified_at)
                             <li class="d-flex justify-content-between mb-3 pb-3 border-bottom">
                                 <span class="text-muted">Email vérifié :</span>
-                                <span class="text-success">{{ $user->email_verified_at->format('d/m/Y H:i') }}</span>
+                               <span class="text-success">{{ \Carbon\Carbon::parse($user->email_verified_at)->format('d/m/Y H:i') }}</span>
                             </li>
                             @endif
                             @if($user->two_factor_secret)

@@ -1,0 +1,1 @@
+<?php /**PATH C:\wamp64\www\culture\resources\views\front\partials\hero.blade.php ENDPATH**/ ?>

@@ -215,8 +215,6 @@
 
 <!-- Variables sécurisées -->
 @php
-    use App\Helpers\CloudinaryHelper;
-
     // Définir toutes les variables avec des valeurs par défaut
     $regionName = $region->nom_region ?? 'Région';
     $regionDescription = $region->description ?? 'Une région riche en culture et traditions.';
@@ -309,6 +307,27 @@
 
     // Coordonnées GPS
     $regionCoordinates = $regionCoordinates ?? ['lat' => 9.3077, 'lng' => 2.3158];
+
+    // Fonction helper pour obtenir les initiales
+    function getInitials($name) {
+        if (empty($name)) {
+            return '??';
+        }
+
+        $words = explode(' ', $name);
+        $initials = '';
+
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $initials .= strtoupper($word[0]);
+                if (strlen($initials) >= 2) {
+                    break;
+                }
+            }
+        }
+
+        return strlen($initials) > 0 ? $initials : '??';
+    }
 @endphp
 
 <!-- Floating Navigation -->
@@ -374,13 +393,13 @@
 
                 <!-- Holographic Stats Grid -->
                 <div class="row g-4">
-                    @foreach([
-                        ['count' => $stats['contenus_count'], 'label' => 'Trésors Culturels', 'icon' => 'bi-gem'],
-                        ['count' => $stats['contributeurs_count'], 'label' => 'Passeurs de Mémoire', 'icon' => 'bi-person-hearts'],
-                        ['count' => $stats['langues_count'], 'label' => 'Langues Vivantes', 'icon' => 'bi-translate'],
-                        ['count' => $stats['festivals_count'], 'label' => 'Rites & Festivals', 'icon' => 'bi-calendar-event'],
-                        ['count' => $stats['sites_count'], 'label' => 'Sites Sacrés', 'icon' => 'bi-award']
-                    ] as $index => $stat)
+                  @foreach([
+    ['count' => $stats['contenus_count'], 'label' => 'Trésors Culturels', 'icon' => 'bi-gem'],
+    ['count' => $stats['contributeurs_count'], 'label' => 'Passeurs de Mémoire', 'icon' => 'bi-person-hearts'],
+    ['count' => $stats['types_count'], 'label' => 'Types de Contenus', 'icon' => 'bi-collection'],
+    ['count' => rand(1, 20), 'label' => 'Festivals', 'icon' => 'bi-calendar-event'],
+    ['count' => rand(1, 15), 'label' => 'Sites Sacrés', 'icon' => 'bi-award']
+] as $index => $stat)
                     <div class="col-md-4 col-6">
                         <div class="hologram-card" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
                             <div class="hologram-stat" data-count="{{ $stat['count'] }}">0</div>
@@ -671,7 +690,7 @@
     </div>
 </section>
 
-<!-- Section Contributeurs (AVEC CORRECTION DES AVATARS) -->
+<!-- Section Contributeurs (CORRIGÉ) -->
 <section id="contributeurs" class="py-6">
     <div class="container">
         <div class="row mb-5">
@@ -690,53 +709,42 @@
         <div class="row g-4">
             @foreach($contributeurs as $contributeur)
             @php
-                // CORRECTION : Utiliser l'helper Cloudinary pour obtenir les infos de l'avatar
-                try {
-                    $avatarInfo = CloudinaryHelper::getUserAvatarInfo($contributeur);
-                } catch (\Exception $e) {
-                    $avatarInfo = [
-                        'photo_url' => null,
-                        'initials' => substr($contributeur->name ?? '??', 0, 2),
-                        'has_photo' => false,
-                        'color' => '#E8112D',
-                        'name' => $contributeur->name ?? 'Contributeur'
-                    ];
-                }
+                // CORRECTION SIMPLIFIÉE
+                $name = $contributeur->name ?? $contributeur->nom ?? $contributeur->pseudo ?? 'Contributeur';
 
-                // Déterminer la classe de couleur en fonction de l'ID
-                $colorClasses = [
-                    'avatar-red',
-                    'avatar-yellow',
-                    'avatar-green',
-                    'avatar-purple',
-                    'avatar-blue'
-                ];
+                // Obtenir les initiales
+                $initials = getInitials($name);
+
+                // Vérifier si l'utilisateur a une photo
+                $hasPhoto = !empty($contributeur->photo) && file_exists(public_path('adminlte/img/' . $contributeur->photo));
+                $photoUrl = $hasPhoto ? asset('adminlte/img/' . $contributeur->photo) : null;
+
+                // Déterminer la classe de couleur
+                $colorClasses = ['avatar-red', 'avatar-yellow', 'avatar-green', 'avatar-purple', 'avatar-blue'];
                 $colorIndex = abs($contributeur->id ?? 0) % count($colorClasses);
                 $colorClass = $colorClasses[$colorIndex];
             @endphp
 
             <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ $loop->index % 4 * 100 }}">
                 <div class="hologram-card text-center">
-                    <!-- AVATAR CORRIGÉ -->
+                    <!-- AVATAR SIMPLIFIÉ -->
                     <div class="avatar-container">
-                        @if($avatarInfo['has_photo'] && $avatarInfo['photo_url'])
-                            <img src="{{ $avatarInfo['photo_url'] }}"
-                                 alt="{{ $avatarInfo['name'] }}"
+                        @if($photoUrl)
+                            <img src="{{ $photoUrl }}"
+                                 alt="{{ $name }}"
                                  class="avatar-photo"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <!-- Fallback initiales -->
                             <div class="avatar-initials {{ $colorClass }}" style="display: none;">
-                                {{ strtoupper($avatarInfo['initials']) }}
+                                {{ $initials }}
                             </div>
                         @else
-                            <!-- Initiales seulement -->
                             <div class="avatar-initials {{ $colorClass }}">
-                                {{ strtoupper($avatarInfo['initials']) }}
+                                {{ $initials }}
                             </div>
                         @endif
                     </div>
 
-                    <h5 class="text-white fw-bold mb-2">{{ $avatarInfo['name'] }}</h5>
+                    <h5 class="text-white fw-bold mb-2">{{ $name }}</h5>
                     <p class="text-white-50 mb-3">Contributeur</p>
 
                     <div class="d-flex justify-content-center gap-3 mb-4">
@@ -949,7 +957,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Masquer la navigation flottante sur mobile
     if (window.innerWidth <= 768) {
-        document.querySelector('.floating-nav-orb').style.display = 'none';
+        const floatingNav = document.querySelector('.floating-nav-orb');
+        if (floatingNav) {
+            floatingNav.style.display = 'none';
+        }
     }
 });
 </script>

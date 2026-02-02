@@ -1792,6 +1792,14 @@
             .cta-title {
                 font-size: 2rem;
             }
+
+             /* AJOUT: Style pour l'image de profil */
+        .profile-img-nav {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
         }
     </style>
 
@@ -1841,95 +1849,146 @@
                     </li>
                 </ul>
 
-              <!-- Menu utilisateur - Version simplifiée -->
-<div class="d-flex ms-lg-3 mt-3 mt-lg-0">
-    @auth
-        @php
-            $user = Auth::user();
-            $photoUrl = null;
+                <!-- Menu utilisateur - Version modifiée -->
+                <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
+                    @auth
+                        @php
+    $user = Auth::user();
+    $avatarInfo = \App\Helpers\ImageHelper::getUserAvatarInfo($user);
+    $photoUrl = $avatarInfo['photo_url'];
+    $userInitial = $avatarInfo['initials'];
+    $showImage = $avatarInfo['has_photo'];
 
-            // Essayer différentes sources de photo dans l'ordre
-            if (!empty($user->cloudinary_url)) {
-                $photoUrl = $user->cloudinary_url;
-            } elseif (!empty($user->photo)) {
-                // Vérifier si c'est une URL
-                if (filter_var($user->photo, FILTER_VALIDATE_URL)) {
-                    $photoUrl = $user->photo;
-                } elseif (Storage::disk('public')->exists($user->photo)) {
-                    $photoUrl = asset('storage/' . $user->photo);
-                }
-            }
+    // Vérification des rôles
+    $isAdmin = false;
+    $isModerator = false;
+    $isContributor = false;
 
-            $userInitial = strtoupper(substr($user->name, 0, 1));
-            $showImage = !empty($photoUrl);
-        @endphp
+    // Charger la relation role si elle n'est pas déjà chargée
+    if ($user->relationLoaded('role')) {
+        $role = $user->role;
+    } else {
+        $role = $user->role()->first(); // Charger le rôle
+    }
 
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
-               data-bs-toggle="dropdown" aria-expanded="false">
-                @if($showImage)
-                    <img src="{{ $photoUrl }}"
-                         alt="{{ $user->name }}"
-                         class="rounded-circle me-2"
-                         style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--primary);"
-                         id="nav-profile-img"
-                         onerror="document.getElementById('nav-profile-initials').style.display='flex'; this.style.display='none';">
-                @endif
+    if ($role) {
+        $roleName = $role->nom_role;
+        $isAdmin = in_array($roleName, ['Super Admin', 'Admin', 'Administrateur']);
+        $isModerator = $roleName == 'Modérateur';
+        $isContributor = $roleName == 'Contributeur';
+    }
 
-                <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                     style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; font-weight: bold; {{ $showImage ? 'display: none !important;' : '' }}"
-                     id="nav-profile-initials">
-                    {{ $userInitial }}
+    // Déterminer la route du tableau de bord
+    $dashboardRoute = 'dashboard.index'; // Par défaut pour contributeurs
+    if ($isAdmin || $isModerator) {
+        $dashboardRoute = 'admin.tableaudebord';
+    }
+@endphp
+
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                @if($showImage)
+                                    <img src="{{ $photoUrl }}"
+                                         alt="{{ $avatarInfo['name'] }}"
+                                         class="rounded-circle profile-img-nav me-2"
+                                         id="nav-profile-img"
+                                         onerror="this.style.display='none'; document.getElementById('nav-profile-initials').style.display='flex';">
+                                @endif
+
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                                     style="width: 40px; height: 40px; background: {{ $avatarInfo['color'] }}; color: white; font-weight: bold; {{ $showImage ? 'display: none;' : 'display: flex;' }}"
+                                     id="nav-profile-initials">
+                                    {{ $userInitial }}
+                                </div>
+
+                                <span class="d-none d-lg-inline ms-1">{{ $avatarInfo['name'] }}</span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li>
+                                    <h6 class="dropdown-header">
+                                        <small>Connecté en tant que</small><br>
+                                        <strong>{{ $avatarInfo['name'] }}</strong>
+                                        <small class="d-block">{{ $user->email }}</small>
+                                    </h6>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <!-- CORRECTION ICI : Utilisation de $dashboardRoute pour la redirection -->
+                                    <a class="dropdown-item" href="{{ route($dashboardRoute) }}">
+                                        <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+                                        @if($isAdmin)
+                                            <span class="badge bg-danger ms-2">Admin</span>
+                                        @elseif($isModerator)
+                                            <span class="badge bg-warning ms-2">Modérateur</span>
+                                        @endif
+                                    </a>
+                                </li>
+                                <li>
+                                    <!-- Redirection vers les paramètres appropriés -->
+                                    @if($isAdmin || $isModerator)
+                                        <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                            <i class="bi bi-person-circle me-2"></i>Mon profil
+                                        </a>
+                                    @else
+                                        <a class="dropdown-item" href="{{ route('dashboard.settings') }}">
+                                            <i class="bi bi-person-circle me-2"></i>Mon profil
+                                        </a>
+                                    @endif
+                                </li>
+                                <li>
+                                    <!-- Sécurité selon le rôle -->
+                                    @if($isAdmin || $isModerator)
+                                        <a class="dropdown-item" href="{{ route('admin.profile.change-password') }}">
+                                            <i class="bi bi-shield-lock me-2"></i>Sécurité
+                                        </a>
+                                    @else
+                                        <a class="dropdown-item" href="{{ route('dashboard.settings') }}">
+                                            <i class="bi bi-shield-lock me-2"></i>Paramètres
+                                        </a>
+                                    @endif
+                                </li>
+
+                                <!-- Option supplémentaire pour les admins/modo -->
+                                @if($isAdmin || $isModerator)
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('admin.contenus.index') }}">
+                                        <i class="bi bi-file-earmark-text me-2"></i>Gestion des contenus
+                                    </a>
+                                </li>
+                                @endif
+
+                                @if($isAdmin)
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('admin.users.index') }}">
+                                        <i class="bi bi-people me-2"></i>Gestion des utilisateurs
+                                    </a>
+                                </li>
+                                @endif
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('deconnexion') }}" id="logout-form">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @else
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('front.connexion') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+                            </a>
+                            <a href="{{ route('front.inscription') }}" class="btn btn-primary">
+                                <i class="bi bi-person-plus me-1"></i>S'inscrire
+                            </a>
+                        </div>
+                    @endauth
                 </div>
-
-                <span class="d-none d-lg-inline ms-1">{{ $user->name }}</span>
-            </a>
-
-            <ul class="dropdown-menu dropdown-menu-end shadow">
-                <li>
-                    <h6 class="dropdown-header">
-                        <small>Connecté en tant que</small><br>
-                        <strong>{{ $user->email }}</strong>
-                    </h6>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item" href="{{ route('dashboard.index') }}">
-                        <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ route('dashboard.settings') }}">
-                        <i class="bi bi-person-circle me-2"></i>Mon profil
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ route('dashboard.settings') }}#password">
-                        <i class="bi bi-shield-lock me-2"></i>Sécurité
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <form method="POST" action="{{ route('deconnexion') }}" id="logout-form">
-                        @csrf
-                        <button type="submit" class="dropdown-item text-danger">
-                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    @else
-        <div class="d-flex gap-2">
-            <a href="{{ route('front.connexion') }}" class="btn btn-outline-primary">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
-            </a>
-            <a href="{{ route('front.inscription') }}" class="btn btn-primary">
-                <i class="bi bi-person-plus me-1"></i>S'inscrire
-            </a>
-        </div>
-    @endauth
-</div>
             </div>
         </div>
     </nav>
@@ -2062,6 +2121,17 @@
                     }
                 });
             }
+
+            // Gestion des erreurs d'image de profil
+            document.querySelectorAll('#nav-profile-img').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    const initials = document.getElementById('nav-profile-initials');
+                    if (initials) {
+                        initials.style.display = 'flex';
+                    }
+                });
+            });
 
             // Smooth scroll pour ancres
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -2651,5 +2721,5 @@
     </script>
 
     @stack('scripts')
-</body>
+   </body>
 </html>

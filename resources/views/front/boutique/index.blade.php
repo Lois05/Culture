@@ -520,6 +520,72 @@
         </div>
     </div>
 </section>
+@php
+    $upsellContent = null;
+    if(request()->has('content_id')) {
+        $upsellContent = \App\Models\Contenu::find(request('content_id'));
+    }
+@endphp
+
+@if(request()->has('upsell') && $upsellContent)
+<section class="contextual-upsell py-5" style="background: linear-gradient(135deg, #fff9e6, #fff);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center mb-4 mb-md-0">
+                <div class="icon-circle bg-warning rounded-circle p-3 shadow d-inline-flex align-items-center justify-content-center">
+                    <i class="bi bi-unlock-fill text-dark fs-1"></i>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <h3 class="fw-bold mb-2">
+                    <i class="bi bi-book text-primary me-2"></i>
+                    Vous souhaitez lire :
+                    <span class="text-primary">"{{ Str::limit($upsellContent->titre, 60) }}"</span>
+                </h3>
+                <p class="text-muted mb-2">
+                    Cet article premium nécessite un abonnement. Choisissez une offre pour le débloquer
+                    et accéder à toute notre bibliothèque.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-clock me-1"></i> {{ $upsellContent->reading_time }}
+                    </span>
+                    @if($upsellContent->region)
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-geo-alt me-1"></i> {{ $upsellContent->region->nom }}
+                    </span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="col-md-3 text-md-end">
+                <a href="#abonnements" class="btn btn-warning btn-lg px-4">
+                    <i class="bi bi-stars me-2"></i>
+                    Voir les offres
+                </a>
+                <div class="mt-2">
+                    <a href="{{ route('front.contenu', $upsellContent->id_contenu) }}"
+                       class="text-muted small">
+                        <i class="bi bi-arrow-left me-1"></i> Retour à l'article
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.contextual-upsell {
+    border-bottom: 3px solid #FCD116;
+    box-shadow: 0 5px 25px rgba(252, 209, 22, 0.1);
+}
+.icon-circle {
+    width: 70px;
+    height: 70px;
+}
+</style>
+@endif
 
 <!-- Premium Abonnements -->
 <section id="abonnements" class="py-6 bg-dark">
@@ -576,35 +642,30 @@
                             @endforeach
                         </div>
 
-                        <!-- CTA Button -->
-                        <div class="text-center">
-                            @auth
-                            <form action="{{ route('paiement.process-choix') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="id_abonnement" value="{{ $abonnement['id'] }}">
-                                <input type="hidden" name="period" value="monthly">
+<!-- Dans la partie CTA Button de chaque carte, remplacez le formulaire par : -->
+<div class="text-center">
+    @auth
+    <a href="{{ route('boutique.choisir', ['id' => $abonnement['id'], 'period' => 'monthly']) }}"
+       class="btn w-100 py-3 fw-bold rounded-pill
+            {{ $abonnement['nom'] == 'Passionné' ? 'btn-warning' : '' }}
+            {{ $abonnement['nom'] == 'Professionnel' ? 'btn-primary' : '' }}
+            {{ $abonnement['nom'] == 'Découverte' ? 'btn-dark' : '' }}"
+       style="{{ $abonnement['nom'] == 'Passionné' ? 'background: var(--gradient-premium); color: white;' : '' }}">
 
-                                <button type="submit" class="btn w-100 py-3 fw-bold rounded-pill
-                                    {{ $abonnement['nom'] == 'Passionné' ? 'btn-warning' : '' }}
-                                    {{ $abonnement['nom'] == 'Professionnel' ? 'btn-primary' : '' }}
-                                    {{ $abonnement['nom'] == 'Découverte' ? 'btn-dark' : '' }}"
-                                    style="{{ $abonnement['nom'] == 'Passionné' ? 'background: var(--gradient-premium); color: white;' : '' }}">
-
-                                    @if($abonnement['nom'] == 'Passionné')
-                                        <i class="bi bi-star-fill me-2"></i>Sélectionner cette offre
-                                    @elseif($abonnement['nom'] == 'Professionnel')
-                                        <i class="bi bi-award-fill me-2"></i>Devenir Expert
-                                    @else
-                                        <i class="bi bi-rocket-takeoff me-2"></i>Commencer l'aventure
-                                    @endif
-                                </button>
-                            </form>
-                            @else
-                            <a href="{{ route('front.connexion') }}" class="btn btn-outline-dark w-100 py-3 rounded-pill">
-                                <i class="bi bi-person-fill me-2"></i>Se connecter pour souscrire
-                            </a>
-                            @endauth
-                        </div>
+        @if($abonnement['nom'] == 'Passionné')
+            <i class="bi bi-star-fill me-2"></i>Sélectionner cette offre
+        @elseif($abonnement['nom'] == 'Professionnel')
+            <i class="bi bi-award-fill me-2"></i>Devenir Expert
+        @else
+            <i class="bi bi-rocket-takeoff me-2"></i>Commencer l'aventure
+        @endif
+    </a>
+    @else
+    <a href="{{ route('front.connexion') }}" class="btn btn-outline-dark w-100 py-3 rounded-pill">
+        <i class="bi bi-person-fill me-2"></i>Se connecter pour souscrire
+    </a>
+    @endauth
+</div>
                     </div>
                 </div>
             </div>

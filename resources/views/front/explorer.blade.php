@@ -35,7 +35,7 @@
             align-items: center;
             overflow: hidden;
             background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
-                        url('{{ \App\Helpers\CloudinaryHelper::static("fresque.jpg") }}') center/cover;
+                        url('{{ asset("adminlte/img/fresque.jpg") }}') center/cover;
         }
 
         .hero-content {
@@ -108,30 +108,6 @@
 
         .search-btn:hover {
             transform: scale(1.05);
-        }
-
-        .search-hints {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-
-        .search-hint {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 0.4rem 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .search-hint:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
         }
 
         /* ============ STATS ============ */
@@ -239,20 +215,18 @@
             font-size: 0.8rem;
         }
 
-        /* ============ PINTEREST-STYLE GRID ============ */
+        /* ============ PINTEREST GRID (MÊME QUE HOME) ============ */
         .contents-section {
-            padding: 2rem 0;
+            padding: 3rem 0;
         }
 
-        .contents-grid {
+        .pinterest-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: var(--grid-gap);
-            grid-auto-flow: dense;
         }
 
-        /* Style Pinterest avec hauteurs variables */
-        .content-card {
+        .pin-card {
             background: white;
             border-radius: var(--card-radius);
             overflow: hidden;
@@ -263,77 +237,63 @@
             margin-bottom: var(--grid-gap);
         }
 
-        .content-card:hover {
+        .pin-card:hover {
             transform: translateY(-8px);
             box-shadow: var(--card-shadow-hover);
         }
 
-        /* Images de différentes hauteurs pour l'effet Pinterest */
-        .content-card:nth-child(3n+1) .card-image {
-            height: 280px;
-        }
-
-        .content-card:nth-child(3n+2) .card-image {
-            height: 320px;
-        }
-
-        .content-card:nth-child(3n+3) .card-image {
-            height: 250px;
-        }
-
-        .card-image-container {
+        .pin-image {
             position: relative;
-            width: 100%;
+            height: 250px;
             overflow: hidden;
         }
 
-        .card-image {
+        .pin-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.7s ease;
         }
 
-        .content-card:hover .card-image {
+        .pin-card:hover .pin-image img {
             transform: scale(1.05);
         }
 
-        .image-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .content-card:hover .image-overlay {
-            opacity: 1;
-        }
-
-        .card-badge {
+        .pin-type-badge {
             position: absolute;
             top: 15px;
             left: 15px;
-            background: var(--primary);
-            color: white;
+            background: rgba(255, 255, 255, 0.9);
             padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             z-index: 2;
         }
 
-        .favorite-btn {
+        .pin-actions {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+        }
+
+        .pin-card:hover .pin-actions {
+            opacity: 1;
+        }
+
+        .pin-action-btn {
+            background: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -341,41 +301,50 @@
             color: #666;
             cursor: pointer;
             transition: all 0.3s ease;
-            z-index: 2;
         }
 
-        .favorite-btn:hover {
-            background: white;
-            color: var(--primary);
-        }
-
-        .favorite-btn.active {
+        .pin-action-btn:hover {
             background: var(--primary);
             color: white;
         }
 
-        .card-content {
+        .pin-region-badge {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 2;
+        }
+
+        .pin-content {
             padding: 1.5rem;
         }
 
-        .card-title {
-            font-size: 1.3rem;
+        .pin-title {
+            font-size: 1.2rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
             line-height: 1.4;
         }
 
-        .card-title a {
-            color: inherit;
+        .pin-title a {
+            color: #333;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
-        .card-title a:hover {
+        .pin-title a:hover {
             color: var(--primary);
         }
 
-        .card-excerpt {
+        .pin-description {
             color: #666;
             font-size: 0.95rem;
             line-height: 1.5;
@@ -386,99 +355,75 @@
             overflow: hidden;
         }
 
-        /* ============ AVATAR AUTEUR (STYLES CSS) ============ */
-        .author-section {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
+        /* ============ AVATAR AUTEUR (MÊME QUE HOME) ============ */
 
-        .author-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            flex-shrink: 0;
-            border: 2px solid rgba(232, 17, 45, 0.2);
-        }
+.pin-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
 
-        .author-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.pin-author-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
 
-        .avatar-initials {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 14px;
-        }
+.author-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(232, 17, 45, 0.2);
+    display: block;
+}
 
-        /* Couleurs dynamiques pour les initiales */
-        .avatar-color-red { background: #E8112D; }
-        .avatar-color-yellow { background: #FCD116; }
-        .avatar-color-green { background: #008751; }
-        .avatar-color-purple { background: #8B5CF6; }
-        .avatar-color-blue { background: #6366F1; }
+.author-initials {
+    width: 100%;
+    height: 100%;
+    display: flex !important; /* FORCER l'affichage */
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 14px;
+    border-radius: 50%;
+    text-transform: uppercase;
+}
 
-        .author-info {
-            flex: 1;
-            min-width: 0;
-        }
+/* Couleurs spécifiques pour les initiales */
+.avatar-initials-red { background: #E8112D; }
+.avatar-initials-yellow { background: #FCD116; color: #333 !important; }
+.avatar-initials-green { background: #008751; }
+.avatar-initials-purple { background: #8B5CF6; }
+.avatar-initials-blue { background: #6366F1; }
 
-        .author-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.pin-author-info h6 {
+    font-size: 0.95rem;
+    margin-bottom: 0.1rem;
+    color: #333;
+    font-weight: 600;
+}
 
-        .author-date {
-            font-size: 0.8rem;
-            color: #888;
-        }
+.pin-author-info p {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0;
+}
 
-        /* ============ TAGS ============ */
-        .card-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.25rem;
-        }
 
-        .tag {
-            background: #f0f2f5;
-            color: #666;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .tag:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* ============ CARD STATS ============ */
-        .card-stats {
+        /* ============ STATISTIQUES ============ */
+        .pin-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding-top: 1rem;
             border-top: 1px solid #eee;
+            margin-bottom: 1rem;
         }
 
-        .stat-item {
+        .pin-stat {
             display: flex;
             align-items: center;
             gap: 0.4rem;
@@ -486,11 +431,15 @@
             font-size: 0.9rem;
         }
 
-        .stat-item i {
+        .pin-stat i {
             font-size: 1rem;
         }
 
-        .read-btn {
+        .pin-stat-count {
+            font-weight: 600;
+        }
+
+        .pin-read-btn {
             background: var(--primary-gradient);
             color: white;
             border: none;
@@ -500,12 +449,15 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             transition: all 0.3s ease;
             font-size: 0.9rem;
+            width: 100%;
+            text-align: center;
         }
 
-        .read-btn:hover {
+        .pin-read-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(232, 17, 45, 0.2);
         }
@@ -552,49 +504,9 @@
             cursor: not-allowed;
         }
 
-        /* ============ LOADING ============ */
-        .loading-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: var(--grid-gap);
-        }
-
-        .card-skeleton {
-            background: white;
-            border-radius: var(--card-radius);
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .skeleton-image {
-            height: 250px;
-            background: #f0f2f5;
-        }
-
-        .skeleton-content {
-            padding: 1.5rem;
-        }
-
-        .skeleton-line {
-            height: 12px;
-            background: #f0f2f5;
-            border-radius: 6px;
-            margin-bottom: 0.75rem;
-        }
-
-        .skeleton-line.short {
-            width: 60%;
-        }
-
         /* ============ RESPONSIVE ============ */
         @media (max-width: 1200px) {
-            .contents-grid {
+            .pinterest-grid {
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             }
         }
@@ -622,7 +534,7 @@
                 font-size: 1.1rem;
             }
 
-            .contents-grid {
+            .pinterest-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
         }
@@ -632,7 +544,7 @@
                 font-size: 1.8rem;
             }
 
-            .contents-grid {
+            .pinterest-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -650,7 +562,6 @@
 
 @section('content')
     @php
-        // Statistiques
         $totalContents = $contenus->total();
         $totalContributors = 150;
     @endphp
@@ -769,11 +680,11 @@
         </div>
     </section>
 
-    <!-- Contenus Section -->
+    <!-- Contenus Section - MÊME ARCHITECTURE PINTEREST QUE HOME -->
     <section class="contents-section">
         <div class="container">
             @if($contenus->count() > 0)
-                <div class="contents-grid">
+                <div class="pinterest-grid">
                     @foreach($contenus as $contenu)
                         @php
                             // Données de base
@@ -783,31 +694,22 @@
                             $regionNom = $contenu->region->nom_region ?? 'Bénin';
                             $langueNom = $contenu->langue->nom_langue ?? 'Français';
 
-                            // Image
-                            $imageUrl = \App\Helpers\CloudinaryHelper::getContentImage($contenu);
+                            // IMAGE DU CONTENU
+                            $imageUrl = App\Helpers\ImageHelper::getContentImage($contenu);
 
-                            // Auteur - TOUJOURS utiliser l'helper amélioré
+                            // INFOS AUTEUR
                             $author = $contenu->auteur ?? null;
+                            $avatarInfo = App\Helpers\ImageHelper::getUserAvatarInfo($author);
 
-                            // Utiliser la méthode getAvatarInfo() qui retourne TOUT
-                            $avatarInfo = \App\Helpers\CloudinaryHelper::getUserAvatarInfo($author);
-
-                            // Vérifier si on a une vraie photo
-                            $hasRealPhoto = $avatarInfo['has_photo'];
-                            $authorPhotoUrl = $avatarInfo['photo_url'];
                             $authorName = $avatarInfo['name'];
-                            $initials = $avatarInfo['initials'];
+                            $authorInitials = $avatarInfo['initials'];
+                            $authorPhoto = $avatarInfo['photo_url'];
+                            $hasRealPhoto = $avatarInfo['has_photo'];
                             $avatarColor = $avatarInfo['color'];
 
-                            // Mapper la couleur au nom de classe CSS
-                            $colorClasses = [
-                                '#E8112D' => 'avatar-color-red',
-                                '#FCD116' => 'avatar-color-yellow',
-                                '#008751' => 'avatar-color-green',
-                                '#8B5CF6' => 'avatar-color-purple',
-                                '#6366F1' => 'avatar-color-blue',
-                            ];
-                            $avatarColorClass = $colorClasses[$avatarColor] ?? 'avatar-color-red';
+                            // TYPE DE CONTENU
+                            $typeIcon = $contenu->typeContenu->icon ?? 'bi-star';
+                            $typeColor = $contenu->typeContenu->color ?? '#FCD116';
 
                             // Date
                             $dateFormatted = 'Il y a quelque temps';
@@ -821,63 +723,114 @@
                             $commentsCount = $contenu->commentaires_count ?? rand(0, 100);
                         @endphp
 
-                        <div class="content-card">
-                            <div class="card-image-container">
+                        <!-- Carte Pinterest -->
+                        <div class="pin-card">
+                            <!-- Image du contenu -->
+                            <div class="pin-image">
                                 <img src="{{ $imageUrl }}"
                                      alt="{{ $titre }}"
                                      class="card-image"
                                      loading="lazy"
-                                     onerror="this.onerror=null; this.src='{{ \App\Helpers\CloudinaryHelper::static('default-content.jpg') }}'">
-                                <div class="image-overlay"></div>
+                                     onerror="this.src='{{ App\Helpers\ImageHelper::defaultContent() }}'">
 
-                                <div class="card-badge">
+                                <div class="pin-type-badge" style="color: {{ $typeColor }};">
+                                    <i class="bi {{ $typeIcon }}"></i>
                                     {{ $typeNom }}
                                 </div>
 
-                                <button class="favorite-btn" onclick="toggleFavorite({{ $contenu->id_contenu }}, this)">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-
-                            <div class="card-content">
-                                <!-- Auteur - VERSION GARANTIE -->
-                                <div class="author-section">
-                                    <div class="author-avatar">
-                                        @if($hasRealPhoto && $authorPhotoUrl)
-                                            <!-- Photo réelle -->
-                                            <img src="{{ $authorPhotoUrl }}"
-                                                 alt="{{ $authorName }}"
-                                                 class="author-photo"
-                                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                            <!-- Fallback initiales -->
-                                            <div class="avatar-initials {{ $avatarColorClass }}" style="display: none;">
-                                                {{ $initials }}
-                                            </div>
-                                        @else
-                                            <!-- Initiales seulement -->
-                                            <div class="avatar-initials {{ $avatarColorClass }}">
-                                                {{ $initials }}
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <div class="author-info">
-                                        <div class="author-name">{{ $authorName }}</div>
-                                        <div class="author-date">{{ $dateFormatted }}</div>
-                                    </div>
+                                <!-- Actions Pinterest -->
+                                <div class="pin-actions">
+                                    <button class="pin-action-btn like-btn" title="J'aime">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                    <button class="pin-action-btn save-btn" title="Sauvegarder">
+                                        <i class="bi bi-bookmark"></i>
+                                    </button>
+                                    <button class="pin-action-btn share-btn" title="Partager">
+                                        <i class="bi bi-share"></i>
+                                    </button>
                                 </div>
 
-                                <h3 class="card-title">
-                                    <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}">
+                                <!-- Badge région -->
+                                <div class="pin-region-badge">
+                                    <i class="bi bi-geo-alt"></i>
+                                    {{ $regionNom }}
+                                </div>
+                            </div>
+
+                            <div class="pin-content">
+                             <!-- Auteur - MÊME STRUCTURE QUE HOME -->
+<div class="pin-author">
+    <div class="pin-author-avatar">
+        @php
+            // Même logique de couleur que Home
+            $colorMap = [
+                'A' => 'avatar-initials-red',
+                'B' => 'avatar-initials-yellow',
+                'C' => 'avatar-initials-green',
+                'D' => 'avatar-initials-purple',
+                'E' => 'avatar-initials-blue',
+                'F' => 'avatar-initials-red',
+                'G' => 'avatar-initials-yellow',
+                'H' => 'avatar-initials-green',
+                'I' => 'avatar-initials-purple',
+                'J' => 'avatar-initials-blue',
+                'K' => 'avatar-initials-red',
+                'L' => 'avatar-initials-yellow',
+                'M' => 'avatar-initials-green',
+                'N' => 'avatar-initials-purple',
+                'O' => 'avatar-initials-blue',
+                'P' => 'avatar-initials-red',
+                'Q' => 'avatar-initials-yellow',
+                'R' => 'avatar-initials-green',
+                'S' => 'avatar-initials-purple',
+                'T' => 'avatar-initials-blue',
+                'U' => 'avatar-initials-red',
+                'V' => 'avatar-initials-yellow',
+                'W' => 'avatar-initials-green',
+                'X' => 'avatar-initials-purple',
+                'Y' => 'avatar-initials-blue',
+                'Z' => 'avatar-initials-red'
+            ];
+
+            $firstLetter = strtoupper(substr($authorName, 0, 1));
+            $avatarClass = $colorMap[$firstLetter] ?? 'avatar-initials-red';
+
+            $hasPhoto = $hasRealPhoto && !empty($authorPhoto) && filter_var($authorPhoto, FILTER_VALIDATE_URL);
+        @endphp
+
+        @if($hasPhoto)
+            <img src="{{ $authorPhoto }}"
+                 alt="{{ $authorName }}"
+                 class="author-photo"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="author-initials {{ $avatarClass }}" style="display: none !important;">
+                {{ $authorInitials }}
+            </div>
+        @else
+            <div class="author-initials {{ $avatarClass }}">
+                {{ $authorInitials }}
+            </div>
+        @endif
+    </div>
+    <div class="pin-author-info">
+        <h6>{{ $authorName }}</h6>
+        <p>{{ $dateFormatted }}</p>
+    </div>
+</div>
+
+                                <h3 class="pin-title">
+                                   <a href="{{ route('front.contenu', $contenu->id_contenu) }}"></a>
                                         {{ \Illuminate\Support\Str::limit($titre, 70) }}
                                     </a>
                                 </h3>
 
-                                <p class="card-excerpt">
+                                <p class="pin-description">
                                     {{ \Illuminate\Support\Str::limit($description, 150) }}
                                 </p>
 
-                                <div class="card-tags">
+                                <!-- Tags -->
+                                <div class="card-tags mb-3">
                                     <span class="tag">
                                         <i class="fas fa-map-marker-alt me-1"></i>{{ $regionNom }}
                                     </span>
@@ -886,27 +839,27 @@
                                     </span>
                                 </div>
 
-                                <div class="card-stats">
-                                    <div class="d-flex gap-3">
-                                        <div class="stat-item" title="Vues">
-                                            <i class="fas fa-eye"></i>
-                                            <span>{{ number_format($vuesCount) }}</span>
-                                        </div>
-                                        <div class="stat-item" title="Likes">
-                                            <i class="fas fa-heart"></i>
-                                            <span>{{ $likesCount }}</span>
-                                        </div>
-                                        <div class="stat-item" title="Commentaires">
-                                            <i class="fas fa-comment"></i>
-                                            <span>{{ $commentsCount }}</span>
-                                        </div>
+                                <!-- Statistiques -->
+                                <div class="pin-stats">
+                                    <div class="pin-stat" title="Vues">
+                                        <i class="fas fa-eye"></i>
+                                        <span class="pin-stat-count">{{ number_format($vuesCount) }}</span>
                                     </div>
-
-                                    <a href="{{ route('front.contenu', ['id' => $contenu->id_contenu]) }}"
-                                       class="read-btn">
-                                        Lire
-                                    </a>
+                                    <div class="pin-stat" title="Likes">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="pin-stat-count">{{ $likesCount }}</span>
+                                    </div>
+                                    <div class="pin-stat" title="Commentaires">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="pin-stat-count">{{ $commentsCount }}</span>
+                                    </div>
                                 </div>
+
+                                <!-- Bouton Lire -->
+                            <a href="{{ route('front.contenu', $contenu->id_contenu) }}" class="pin-read-btn mt-3">
+                                  
+                                    <i class="bi bi-book me-2"></i>Lire l'article
+                                </a>
                             </div>
                         </div>
                     @endforeach
@@ -1029,68 +982,19 @@
                 offset: 100
             });
 
-            // Infinite scroll pour l'effet Pinterest
-            let isLoading = false;
-            let nextPageUrl = '{{ $contenus->nextPageUrl() }}';
-
-            window.addEventListener('scroll', function() {
-                if (isLoading || !nextPageUrl) return;
-
-                const scrollPosition = window.innerHeight + window.scrollY;
-                const pageHeight = document.documentElement.scrollHeight - 200;
-
-                if (scrollPosition >= pageHeight) {
-                    loadMoreContent();
-                }
+            // Gestion des erreurs d'images
+            document.querySelectorAll('.pin-image img').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.src = '{{ App\Helpers\ImageHelper::defaultContent() }}';
+                });
             });
 
-            async function loadMoreContent() {
-                isLoading = true;
-
-                try {
-                    const response = await fetch(nextPageUrl);
-                    const html = await response.text();
-
-                    // Extraire le HTML des cartes et la pagination
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newCards = doc.querySelector('.contents-grid')?.innerHTML;
-                    const newPagination = doc.querySelector('.pagination-section')?.innerHTML;
-                    const newNextPage = doc.querySelector('link[rel="next"]')?.href;
-
-                    // Ajouter les nouvelles cartes
-                    if (newCards) {
-                        const grid = document.querySelector('.contents-grid');
-                        const temp = document.createElement('div');
-                        temp.innerHTML = newCards;
-
-                        temp.querySelectorAll('.content-card').forEach(card => {
-                            grid.appendChild(card);
-                        });
-                    }
-
-                    // Mettre à jour la pagination
-                    if (newPagination && document.querySelector('.pagination-section')) {
-                        document.querySelector('.pagination-section').innerHTML = newPagination;
-                    }
-
-                    // Mettre à jour l'URL de la page suivante
-                    nextPageUrl = newNextPage || null;
-
-                } catch (error) {
-                    console.error('Erreur lors du chargement:', error);
-                } finally {
-                    isLoading = false;
-                    AOS.refresh(); // Rafraîchir AOS pour les nouvelles cartes
-                }
-            }
-
-            // Gestion des erreurs d'images d'avatar
+            // Gestion des erreurs d'avatar
             document.querySelectorAll('.author-photo').forEach(img => {
                 img.addEventListener('error', function() {
                     this.style.display = 'none';
                     const initialsDiv = this.nextElementSibling;
-                    if (initialsDiv && initialsDiv.classList.contains('avatar-initials')) {
+                    if (initialsDiv && initialsDiv.classList.contains('author-initials')) {
                         initialsDiv.style.display = 'flex';
                     }
                 });
@@ -1115,141 +1019,8 @@
                 url.searchParams.set(type, value);
             }
 
-            // Réinitialiser la pagination
             url.searchParams.delete('page');
-
             window.location.href = url.toString();
         };
-
-        window.toggleFavorite = function(contentId, button) {
-            const icon = button.querySelector('i');
-
-            if (icon.classList.contains('far')) {
-                // AJAX call pour ajouter aux favoris
-                fetch(`/api/favorites/${contentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        button.classList.add('active');
-                        showToast('Ajouté aux favoris ❤️', 'success');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    showToast('Erreur lors de l\'ajout', 'error');
-                });
-            } else {
-                // AJAX call pour retirer des favoris
-                fetch(`/api/favorites/${contentId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                        button.classList.remove('active');
-                        showToast('Retiré des favoris', 'info');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    showToast('Erreur lors du retrait', 'error');
-                });
-            }
-        };
-
-        window.shareContent = function(contentId, title) {
-            const shareUrl = `${window.location.origin}/contenu/${contentId}`;
-
-            if (navigator.share) {
-                navigator.share({
-                    title: title,
-                    text: 'Découvrez ce contenu sur Bénin Culture',
-                    url: shareUrl,
-                })
-                .then(() => showToast('Partagé avec succès !', 'success'))
-                .catch(() => copyToClipboard(shareUrl));
-            } else {
-                copyToClipboard(shareUrl);
-            }
-        };
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Lien copié dans le presse-papier 📋', 'success');
-            });
-        }
-
-        function showToast(message, type = 'info') {
-            // Créer le toast
-            const toast = document.createElement('div');
-            toast.className = `toast-notification toast-${type}`;
-            toast.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
-                    <div>${message}</div>
-                </div>
-            `;
-
-            // Style du toast
-            Object.assign(toast.style, {
-                position: 'fixed',
-                top: '20px',
-                right: '20px',
-                background: type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8',
-                color: 'white',
-                padding: '15px 20px',
-                borderRadius: '10px',
-                boxShadow: '0 5px 20px rgba(0,0,0,0.2)',
-                transform: 'translateX(150%)',
-                transition: 'transform 0.3s ease',
-                zIndex: '9999',
-                maxWidth: '350px'
-            });
-
-            document.body.appendChild(toast);
-
-            // Animation d'entrée
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 10);
-
-            // Animation de sortie après 3 secondes
-            setTimeout(() => {
-                toast.style.transform = 'translateX(150%)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Effet de compteur sur les stats
-        const statNumbers = document.querySelectorAll('.stat-number');
-        statNumbers.forEach(stat => {
-            const target = parseInt(stat.textContent.replace(/\s/g, ''));
-            const duration = 1500;
-            const increment = target / (duration / 16);
-            let current = 0;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                stat.textContent = Math.floor(current).toLocaleString();
-            }, 16);
-        });
     </script>
 @endpush

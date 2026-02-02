@@ -376,9 +376,9 @@
                                     $media = $content->medias->first();
 
                                     // Priorité 1: Cloudinary
-                                    if (!empty($media->cloudinary_url)) {
+                                    if (!empty($media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))) {
                                         $hasMedia = true;
-                                        $mediaUrl = $media->cloudinary_url;
+                                        $mediaUrl = $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg');
                                     }
                                     // Priorité 2: URL complète
                                     elseif (!empty($media->chemin) && filter_var($media->chemin, FILTER_VALIDATE_URL)) {
@@ -500,28 +500,15 @@
     <div class="row align-items-center">
         <div class="col-md-3 text-center mb-4 mb-md-0">
             @php
-                use App\Helpers\CloudinaryHelper;
-                $user = Auth::user();
+    use App\Helpers\ImageHelper;
+    $user = Auth::user();
 
-                // Utiliser l'helper Cloudinary pour obtenir l'URL de l'avatar
-                $avatarInfo = CloudinaryHelper::getUserAvatarInfo($user);
-
-                $hasPhoto = $avatarInfo['has_photo'];
-                $photoUrl = $avatarInfo['photo_url'];
-                $initials = $avatarInfo['initials'];
-
-                // Si pas de photo, vérifier si l'utilisateur a uploadé une photo
-                if (!$hasPhoto && $user->photo) {
-                    if (str_contains($user->photo, 'cloudinary.com')) {
-                        $hasPhoto = true;
-                        $photoUrl = $user->photo;
-                    } elseif (Storage::disk('public')->exists($user->photo)) {
-                        $hasPhoto = true;
-                        $photoUrl = asset('storage/' . $user->photo);
-                    }
-                }
-            @endphp
-
+    // Utiliser l'helper ImageHelper pour obtenir l'URL de l'avatar
+    $avatarInfo = ImageHelper::getUserAvatarInfo($user);
+    $hasPhoto = $avatarInfo['has_photo'];
+    $photoUrl = $avatarInfo['photo_url'];
+    $initials = $avatarInfo['initials'];
+@endphp
             <div class="avatar-container">
                 @if($hasPhoto && $photoUrl)
                     <img src="{{ $photoUrl }}"
@@ -831,3 +818,4 @@ notificationStyle.textContent = `
 document.head.appendChild(notificationStyle);
 </script>
 @endpush
+

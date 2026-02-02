@@ -10,7 +10,6 @@ use App\Models\Langue;
 use App\Models\Region;
 use App\Models\Contenu;
 use App\Models\Commentaire;
-use App\Helpers\CloudinaryHelper; // IMPORTANT : Ajoute cette ligne
 
 class HomeController extends Controller
 {
@@ -20,7 +19,7 @@ class HomeController extends Controller
 
         // Vérifier que l'utilisateur est authentifié et a un rôle
         if (!$user || !$user->role) {
-            return redirect()->route('login')
+            return redirect()->route('front.connexion')
                 ->with('error', 'Veuillez vous connecter pour accéder à l\'administration.');
         }
 
@@ -40,6 +39,45 @@ class HomeController extends Controller
         $contenusValides = $contenusEnAttente = $contenusRejects = 0;
         $nbAdmins = $nbModerateurs = $nbContributeurs = $nbLecteurs = 0;
 
+        // Fonction helper pour récupérer l'image
+        $getImageUrl = function($path) {
+            if (!$path || trim($path) === '') {
+                return asset('adminlte/img/collage.png');
+            }
+
+            // Si c'est déjà une URL complète
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                return $path;
+            }
+
+            // Extraire juste le nom du fichier
+            $filename = basename($path);
+
+            // Vérifier si le fichier existe dans public/adminlte/img/
+            $imagePath = 'adminlte/img/' . $filename;
+
+            if (file_exists(public_path($imagePath))) {
+                return asset($imagePath);
+            }
+
+            // Si non trouvé, essayer d'autres chemins
+            $possiblePaths = [
+                'adminlte/img/' . $filename,
+                $filename,
+                'uploads/' . $filename,
+                'storage/' . $filename,
+            ];
+
+            foreach ($possiblePaths as $possiblePath) {
+                if (file_exists(public_path($possiblePath))) {
+                    return asset($possiblePath);
+                }
+            }
+
+            // Fallback
+            return asset('adminlte/img/collage.png');
+        };
+
         // ADMINISTRATEUR → accès global
         if ($role === 'Administrateur') {
             $totalUsers        = User::count();
@@ -49,7 +87,7 @@ class HomeController extends Controller
             $totalContenus     = Contenu::count();
             $totalCommentaires = Commentaire::count();
 
-            // CORRECTION : Charger les médias avec les contenus
+            // Récupérer les derniers contenus AVEC images
             $dernierContenus = Contenu::with(['medias' => function($query) {
                 $query->take(1); // Prendre seulement le premier média
             }])
@@ -76,7 +114,7 @@ class HomeController extends Controller
             $totalContenus     = Contenu::count();
             $totalCommentaires = Commentaire::count();
 
-            // CORRECTION ICI aussi
+            // Récupérer les derniers contenus
             $dernierContenus = Contenu::with(['medias' => function($query) {
                 $query->take(1);
             }])
@@ -85,17 +123,15 @@ class HomeController extends Controller
             ->get();
         }
 
-        // === CORRECTION AJOUTÉE ICI ===
-        // Ajouter l'URL d'image à chaque contenu
+        // === CORRECTION : Ajouter l'URL d'image à chaque contenu SANS Cloudinary ===
         foreach ($dernierContenus as $contenu) {
-            $contenu->image_url = CloudinaryHelper::getContentImage($contenu);
-
-            // DEBUG: Vérifier ce qui se passe
-            // \Log::info("Contenu {$contenu->id_contenu} - Titre: {$contenu->titre}", [
-            //     'medias_count' => $contenu->medias->count(),
-            //     'image_url' => $contenu->image_url,
-            //     'first_media' => $contenu->medias->first()
-            // ]);
+            // Récupérer la première image du média s'il existe
+            if ($contenu->medias && $contenu->medias->count() > 0) {
+                $firstMedia = $contenu->medias->first();
+                $contenu->image_url = $getImageUrl($firstMedia->chemin);
+            } else {
+                $contenu->image_url = asset('adminlte/img/collage.png');
+            }
         }
 
         return view('tableaudebord', compact(

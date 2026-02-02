@@ -141,8 +141,7 @@
                                        class="form-control @error('date_naissance') is-invalid @enderror"
                                        id="date_naissance"
                                        name="date_naissance"
-                                       value="{{ old('date_naissance', $user->date_naissance ? $user->date_naissance->format('Y-m-d') : '') }}"
-                                       required>
+                                      value="{{ old('date_naissance', $user->date_naissance ? (\Carbon\Carbon::parse($user->date_naissance)->format('Y-m-d')) : '') }}"
                                 @error('date_naissance')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

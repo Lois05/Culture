@@ -3,78 +3,128 @@
 @section('page-title', 'Tableau de bord')
 
 @section('content')
+@php
+    // Déclarer les fonctions UTILES AVANT la boucle
+    function getAvatarUrl($user) {
+        if (!$user || !$user->photo || trim($user->photo) === '') {
+            return null;
+        }
+
+        $filename = basename($user->photo);
+        $imagePath = 'adminlte/img/' . $filename;
+
+        if (file_exists(public_path($imagePath))) {
+            return asset($imagePath);
+        }
+
+        // Essayer d'autres chemins
+        $possiblePaths = [
+            'adminlte/img/' . $filename,
+            $filename,
+            'uploads/' . $filename,
+            'storage/' . $filename,
+        ];
+
+        foreach ($possiblePaths as $possiblePath) {
+            if (file_exists(public_path($possiblePath))) {
+                return asset($possiblePath);
+            }
+        }
+
+        return null;
+    }
+
+    function getInitials($name) {
+        if (empty($name)) {
+            return '??';
+        }
+
+        $words = explode(' ', $name);
+        $initials = '';
+
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $initials .= strtoupper($word[0]);
+                if (strlen($initials) >= 2) {
+                    break;
+                }
+            }
+        }
+
+        return strlen($initials) > 0 ? $initials : '??';
+    }
+
+    $cards = [];
+    $roleName = '';
+    $user = Auth::user();
+
+    // Récupérer le nom du rôle
+    if ($user && $user->role) {
+        $roleName = $user->role->nom_role;
+    }
+
+    // Compter les contenus en attente (pour admin et moderateur)
+    $contenusEnAttenteCount = 0;
+    if (in_array($roleName, ['Administrateur', 'Modérateur'])) {
+        $contenusEnAttenteCount = \App\Models\Contenu::where('statut', 'en_attente')->count();
+    }
+
+    // Définir les cartes selon le rôle
+    switch ($roleName) {
+        case 'Administrateur':
+            $cards = [
+                ['color' => 'primary', 'title'=>'Langues','total'=>$totalLangues ?? 0,'icon'=>'bi-translate', 'route' => 'admin.langues.index'],
+                ['color' => 'success', 'title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
+                ['color' => 'warning', 'title'=>'Utilisateurs','total'=>$totalUsers ?? 0,'icon'=>'bi-people', 'route' => 'admin.users.index'],
+                ['color' => 'danger', 'title'=>'Régions','total'=>$totalRegions ?? 0,'icon'=>'bi-geo-alt', 'route' => 'admin.regions.index'],
+            ];
+            // Ajouter carte modération si des contenus en attente
+            if ($contenusEnAttenteCount > 0) {
+                array_unshift($cards, [
+                    'color' => 'danger',
+                    'title' => 'À modérer',
+                    'total' => $contenusEnAttenteCount,
+                    'icon' => 'bi-clipboard-check',
+                    'route' => 'admin.moderateur.index',
+                    'badge' => 'badge-danger'
+                ]);
+            }
+            break;
+
+        case 'Modérateur':
+            $cards = [
+                ['color' => 'success','title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
+                ['color' => 'info','title'=>'Commentaires','total'=>$totalCommentaires ?? 0,'icon'=>'bi-chat-left-text', 'route' => 'admin.commentaires.index'],
+            ];
+            // Ajouter carte modération si des contenus en attente
+            if ($contenusEnAttenteCount > 0) {
+                array_unshift($cards, [
+                    'color' => 'warning',
+                    'title' => 'À modérer',
+                    'total' => $contenusEnAttenteCount,
+                    'icon' => 'bi-clipboard-check',
+                    'route' => 'admin.moderateur.index',
+                    'badge' => 'badge-warning animate-pulse'
+                ]);
+            }
+            break;
+
+        case 'Contributeur':
+            $cards = [
+                ['color'=>'primary','title'=>'Langues','total'=>$totalLangues ?? 0,'icon'=>'bi-translate', 'route' => 'admin.langues.index'],
+                ['color'=>'success','title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
+            ];
+            break;
+
+        case 'Lecteur':
+            $cards = [
+                ['color'=>'success','title'=>'Contenus disponibles','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text'],
+            ];
+            break;
+    }
+@endphp
+
 <div class="row g-4">
-    @php
-        $cards = [];
-        $roleName = '';
-        $user = Auth::user();
-
-        // Récupérer le nom du rôle
-        if ($user && $user->role) {
-            $roleName = $user->role->nom_role;
-        }
-
-        // Compter les contenus en attente (pour admin et moderateur)
-        $contenusEnAttenteCount = 0;
-        if (in_array($roleName, ['Administrateur', 'Modérateur'])) {
-            $contenusEnAttenteCount = \App\Models\Contenu::where('statut', 'en_attente')->count();
-        }
-
-        // Définir les cartes selon le rôle
-        switch ($roleName) {
-            case 'Administrateur':
-                $cards = [
-                    ['color' => 'primary', 'title'=>'Langues','total'=>$totalLangues ?? 0,'icon'=>'bi-translate', 'route' => 'admin.langues.index'],
-                    ['color' => 'success', 'title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
-                    ['color' => 'warning', 'title'=>'Utilisateurs','total'=>$totalUsers ?? 0,'icon'=>'bi-people', 'route' => 'admin.users.index'],
-                    ['color' => 'danger', 'title'=>'Régions','total'=>$totalRegions ?? 0,'icon'=>'bi-geo-alt', 'route' => 'admin.regions.index'],
-                ];
-                // Ajouter carte modération si des contenus en attente
-                if ($contenusEnAttenteCount > 0) {
-                    array_unshift($cards, [
-                        'color' => 'danger',
-                        'title' => 'À modérer',
-                        'total' => $contenusEnAttenteCount,
-                        'icon' => 'bi-clipboard-check',
-                        'route' => 'admin.moderateur.index',
-                        'badge' => 'badge-danger'
-                    ]);
-                }
-                break;
-
-            case 'Modérateur':
-                $cards = [
-                    ['color' => 'success','title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
-                    ['color' => 'info','title'=>'Commentaires','total'=>$totalCommentaires ?? 0,'icon'=>'bi-chat-left-text', 'route' => 'admin.commentaires.index'],
-                ];
-                // Ajouter carte modération si des contenus en attente
-                if ($contenusEnAttenteCount > 0) {
-                    array_unshift($cards, [
-                        'color' => 'warning',
-                        'title' => 'À modérer',
-                        'total' => $contenusEnAttenteCount,
-                        'icon' => 'bi-clipboard-check',
-                        'route' => 'admin.moderateur.index',
-                        'badge' => 'badge-warning animate-pulse'
-                    ]);
-                }
-                break;
-
-            case 'Contributeur':
-                $cards = [
-                    ['color'=>'primary','title'=>'Langues','total'=>$totalLangues ?? 0,'icon'=>'bi-translate', 'route' => 'admin.langues.index'],
-                    ['color'=>'success','title'=>'Contenus','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text', 'route' => 'admin.contenus.index'],
-                ];
-                break;
-
-            case 'Lecteur':
-                $cards = [
-                    ['color'=>'success','title'=>'Contenus disponibles','total'=>$totalContenus ?? 0,'icon'=>'bi-journal-text'],
-                ];
-                break;
-        }
-    @endphp
-
     {{-- Cards avec liens --}}
     @foreach($cards as $card)
     <div class="col-lg-3 col-md-6">
@@ -296,10 +346,9 @@
                                 <div class="d-flex align-items-center">
                                     <div class="me-3">
                                         @php
-                                            // UTILISEZ CLOUDINARYHELPER POUR LA PHOTO DE PROFIL
-                                            $userPhoto = \App\Helpers\CloudinaryHelper::user($user);
+                                            $userPhoto = getAvatarUrl($user);
                                             $userName = ($user->prenom ?? '') . ' ' . ($user->name ?? '');
-                                            $userInitials = \App\Helpers\CloudinaryHelper::getInitials($userName);
+                                            $userInitials = getInitials($userName);
                                         @endphp
 
                                         @if($userPhoto)

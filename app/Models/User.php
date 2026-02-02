@@ -5,245 +5,199 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Crypt;
-use App\HasCloudinaryImage;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasCloudinaryImage;
+    use HasFactory, Notifiable;
 
-    protected $table = 'users';
-    protected $primaryKey = 'id';
-
-    // Champs remplissables
     protected $fillable = [
-        'name',
-        'prenom',
-        'email',
-        'password',
-        'sexe',
-        'date_naissance',
-        'photo',
-        'id_role',
-        'id_langue',
-        'statut',
-        'date_inscription',
-        'id_abonnement',
-        'date_debut_abonnement',
-        'date_fin_abonnement',
-        'statut_abonnement',
-        // Champs Cloudinary
-        'cloudinary_url',
-        'cloudinary_public_id',
-        'has_cloudinary',
-        'image_thumbnail'
+        'name', 'prenom', 'email', 'password', 'photo', 'sexe',
+        'date_naissance', 'id_langue', 'id_role', 'statut'
     ];
 
-    // Accessors disponibles
-    protected $appends = ['image_url', 'thumbnail_url', 'nom_complet', 'photo_url'];
-
-    // Champs cachés
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    // Casts
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'date_naissance' => 'date',
-        'date_inscription' => 'datetime',
-    ];
+    'date_naissance' => 'date',
+    'date_inscription' => 'datetime',
+];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    // ==================== RELATIONS ====================
 
     /**
-     * Relation avec le rôle
+     * Relation avec le modèle Role
      */
     public function role()
     {
-        return $this->belongsTo(Role::class, 'id_role', 'id');
+        return $this->belongsTo(Role::class, 'id_role');
     }
 
     /**
-     * Relation avec la langue
+     * Relation avec le modèle Langue
      */
     public function langue()
     {
-        return $this->belongsTo(Langue::class, 'id_langue', 'id_langue');
+        return $this->belongsTo(Langue::class, 'id_langue');
     }
 
     /**
-     * Relation avec les contenus (en tant qu'auteur)
+     * Relation avec les contenus (si l'utilisateur en a créé)
      */
     public function contenus()
     {
-        return $this->hasMany(Contenu::class, 'id_auteur', 'id');
+        return $this->hasMany(Contenu::class, 'id_auteur');
     }
 
     /**
-     * Nom complet
+     * Relation avec les commentaires
      */
-    public function getNomCompletAttribute()
+      public function commentaires()
     {
-        return ($this->prenom ? $this->prenom . ' ' : '') . $this->name;
+        // Utilisez 'id_utilisateur' comme clé étrangère
+        return $this->hasMany(Commentaire::class, 'id_utilisateur');
     }
 
     /**
-     * URL de la photo (alias pour image_url)
+     * Relation avec les likes
      */
-    public function getPhotoUrlAttribute()
+    public function likes()
     {
-        return $this->image_url;
+        return $this->hasMany(Like::class, 'id_utilisateur');
     }
 
     /**
-     * Âge
+     * Relation avec les favoris/bookmarks
      */
-    public function getAgeAttribute()
+    public function favoris()
     {
-        if (!$this->date_naissance) {
-            return null;
+        return $this->hasMany(Favori::class, 'id_utilisateur');
+    }
+
+    /**
+     * Relation avec les abonnements (utilisateurs suivis)
+     */
+    public function abonnements()
+    {
+        return $this->hasMany(Abonnement::class, 'id_utilisateur');
+    }
+
+    /**
+     * Relation avec les abonnés
+     */
+    public function abonnes()
+    {
+        return $this->hasMany(Abonnement::class, 'id_auteur');
+    }
+
+    // ==================== MÉTHODES D'ACCÈS ====================
+
+    /**
+     * Vérifier si l'utilisateur peut accéder à un contenu premium
+     */
+    public function canAccessContent($contenu): bool
+    {
+        // Si le contenu n'est pas premium, accès libre
+        if (!$contenu->is_premium) {
+            return true;
         }
-        return $this->date_naissance->age;
-    }
 
-    /**
-     * Vérifie si admin
-     */
-    public function isAdmin()
-    {
-        return $this->role && $this->role->nom_role === 'Administrateur';
-    }
-
-    /**
-     * Vérifie si actif
-     */
-    public function isActive()
-    {
-        return $this->statut === 'actif';
-    }
-
-    /**
-     * Upload une photo de profil
-     */
-    public function uploadPhoto($file)
-    {
-        // Garde l'ancien nom
-        $this->photo = $file->getClientOriginalName();
-
-        // Upload vers Cloudinary
-        if ($this->uploadToCloudinary($file, [
-            'folder' => 'culture_app/users',
-            'public_id' => 'user_' . $this->id . '_' . time()
-        ])) {
-            $this->save();
+        // Vérifier l'abonnement actif
+        if ($this->hasActiveSubscription()) {
             return true;
         }
 
         return false;
     }
 
-     public function setGoogle2faSecretAttribute($value)
-    {
-        $this->attributes['google2fa_secret'] = Crypt::encrypt($value);
-    }
-
-    public function getGoogle2faSecretAttribute($value)
-    {
-        return $value ? Crypt::decrypt($value) : null;
-    }
-
-    public function setBackupCodesAttribute($value)
-    {
-        if ($value) {
-            $this->attributes['backup_codes'] = Crypt::encrypt(json_encode($value));
-        } else {
-            $this->attributes['backup_codes'] = null;
-        }
-    }
-
-    public function getBackupCodesAttribute($value)
-    {
-        if (!$value) {
-            return [];
-        }
-        try {
-            return json_decode(Crypt::decrypt($value), true);
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
-
-      /**
-     * Relation avec les transactions.
-     */
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class);
-    }
-
     /**
-     * Relation avec les abonnements.
-     */
-    public function subscriptions()
-    {
-        return $this->hasMany(UserSubscription::class);
-    }
-
-    /**
-     * Récupérer l'abonnement actif.
-     */
-    public function activeSubscription()
-    {
-        return $this->hasOne(UserSubscription::class)
-            ->where('statut', 'actif')
-            ->where('date_fin', '>', now())
-            ->latest();
-    }
-
-    /**
-     * Vérifier si l'utilisateur a un abonnement actif.
+     * Vérifier si l'utilisateur a un abonnement actif
      */
     public function hasActiveSubscription(): bool
     {
-        return UserSubscription::userHasActiveSubscription($this->id);
+        // Vérifier si l'utilisateur est premium
+        if ($this->est_premium && $this->premium_jusque > now()) {
+            return true;
+        }
+
+        // Vérifier les abonnements en base si existent
+        if (class_exists(\App\Models\UserSubscription::class)) {
+            return \App\Models\UserSubscription::where('user_id', $this->id)
+                ->where('statut', 'actif')
+                ->where('date_fin', '>', now())
+                ->exists();
+        }
+
+        return false;
     }
 
     /**
-     * Récupérer le type d'abonnement actif.
+     * Vérifier si l'utilisateur est admin
      */
-    public function getSubscriptionTypeAttribute()
+    public function isAdmin(): bool
     {
-        $subscription = $this->activeSubscription;
-        return $subscription ? $subscription->type : null;
+        // Méthode 1: Via la relation
+        if ($this->role) {
+            return in_array($this->role->nom_role ?? '', ['Super Admin', 'Admin']);
+        }
+
+        // Méthode 2: Via id_role (fallback)
+        return in_array($this->id_role, [1, 2]); // 1 = Super Admin, 2 = Admin
     }
 
     /**
-     * Récupérer le niveau d'abonnement.
+     * Vérifier si l'utilisateur est actif
      */
-    public function getSubscriptionLevelAttribute()
+    public function isActive(): bool
     {
-        $subscription = $this->activeSubscription;
-        return $subscription ? $subscription->abonnement_id : 0;
+        return $this->statut === 'actif';
     }
 
     /**
-     * Récupérer les transactions récentes.
+     * Récupérer le nom complet
      */
-    public function recentTransactions($limit = 5)
+    public function getFullNameAttribute(): string
     {
-        return $this->transactions()
-            ->latest()
-            ->take($limit)
-            ->get();
+        return ($this->prenom ? $this->prenom . ' ' : '') . $this->name;
     }
 
     /**
-     * Ajouter une transaction.
+     * Récupérer l'URL de la photo
      */
-    public function addTransaction($data)
+    public function getPhotoUrlAttribute()
     {
-        return $this->transactions()->create($data);
+        if ($this->photo && file_exists(public_path($this->photo))) {
+            return asset($this->photo);
+        }
+        return asset('adminlte/img/default-avatar.jpg');
+    }
+
+    /**
+     * Récupérer le nom du rôle
+     */
+    public function getRoleNameAttribute()
+    {
+        return $this->role ? $this->role->nom_role : 'Utilisateur';
+    }
+
+    /**
+     * Récupérer la langue préférée
+     */
+    public function getPreferredLangueAttribute()
+    {
+        return $this->langue ? $this->langue->nom_langue : 'Français';
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut modifier un contenu
+     */
+    public function canEditContent($contenu): bool
+    {
+        // L'admin peut tout modifier
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        // L'auteur peut modifier son propre contenu
+        return $this->id === $contenu->id_auteur;
     }
 }
-

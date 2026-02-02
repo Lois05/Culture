@@ -1,5 +1,4 @@
 <?php
-// app/Http\Controllers/ContenuController.php
 
 namespace App\Http\Controllers;
 
@@ -19,121 +18,119 @@ class ContenuController extends Controller
     /**
      * Liste des contenus
      */
-public function index()
-{
-    $user = Auth::user();
-    $userRole = $user ? optional($user->role)->nom_role : null;
+    public function index()
+    {
+        $user = Auth::user();
+        $userRole = $user ? optional($user->role)->nom_role : null;
 
-    if (!in_array($userRole, ['Administrateur', 'Modérateur', 'Contributeur'])) {
-        return redirect()->route('admin.tableaudebord')
-            ->with('error', 'Accès non autorisé');
-    }
-
-    $query = Contenu::with([
-        'medias' => function($q) {
-            $q->select('id_media', 'chemin', 'cloudinary_url', 'id_contenu', 'id_type_media'); // AJOUTER cloudinary_url
-        },
-        'medias.typeMedia',
-        'region' => function($q) {
-            $q->select('id_region', 'nom_region');
-        },
-        'langue' => function($q) {
-            $q->select('id_langue', 'nom_langue');
-        },
-        'typeContenu' => function($q) {
-            $q->select('id_type_contenu', 'nom_contenu');
-        },
-        'auteur' => function($q) {
-            $q->select('id', 'name', 'email');
+        if (!in_array($userRole, ['Administrateur', 'Modérateur', 'Contributeur'])) {
+            return redirect()->route('admin.tableaudebord')
+                ->with('error', 'Accès non autorisé');
         }
-    ]);
 
-    if ($userRole === 'Contributeur') {
-        $query->where('id_auteur', $user->id);
+        $query = Contenu::with([
+            'medias' => function($q) {
+                $q->select('id_media', 'chemin', 'id_contenu', 'id_type_media'); // RETIRÉ cloudinary_url
+            },
+            'medias.typeMedia',
+            'region' => function($q) {
+                $q->select('id_region', 'nom_region');
+            },
+            'langue' => function($q) {
+                $q->select('id_langue', 'nom_langue');
+            },
+            'typeContenu' => function($q) {
+                $q->select('id_type_contenu', 'nom_contenu');
+            },
+            'auteur' => function($q) {
+                $q->select('id', 'name', 'email');
+            }
+        ]);
+
+        if ($userRole === 'Contributeur') {
+            $query->where('id_auteur', $user->id);
+        }
+
+        $contenus = $query->latest('date_creation')->get();
+
+        // SUPPRIMÉ: Le code Cloudinary
+        // foreach ($contenus as $contenu) {
+        //     $contenu->image_url = \App\Helpers\CloudinaryHelper::getContentImage($contenu);
+        // }
+
+        $typesContenu = TypeContenu::all();
+
+        return view('contenus.index', compact('contenus', 'typesContenu'));
     }
-
-    $contenus = $query->latest('date_creation')->get();
-
-    // ========== AJOUTER CETTE LIGNE ==========
-    // Ajouter l'URL Cloudinary à chaque contenu
-    foreach ($contenus as $contenu) {
-        $contenu->image_url = \App\Helpers\CloudinaryHelper::getContentImage($contenu);
-    }
-    // ========================================
-
-    $typesContenu = TypeContenu::all();
-
-    return view('contenus.index', compact('contenus', 'typesContenu'));
-}
 
     /**
      * Gérer la requête DataTables AJAX
      */
     private function handleDatatableRequest(Request $request, $user, $userRole)
-{
-    $query = $this->getContenusQuery($userRole, $user->id);
+    {
+        $query = $this->getContenusQuery($userRole, $user->id);
 
-    // Total sans filtres
-    $total = $query->count();
+        // Total sans filtres
+        $total = $query->count();
 
-    // Recherche
-    if ($request->has('search') && $request->search['value']) {
-        $search = $request->search['value'];
-        $query->where(function($q) use ($search) {
-            $q->where('titre', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%")
-              ->orWhere('statut', 'like', "%{$search}%");
-        });
-    }
-
-    // Tri
-    if ($request->has('order')) {
-        $columnIndex = $request->order[0]['column'];
-        $columnDir = $request->order[0]['dir'];
-
-        $columns = ['id_contenu', 'titre', 'id_type_contenu', 'id_region',
-                   'id_langue', 'statut', 'id_auteur', 'date_creation'];
-
-        if (isset($columns[$columnIndex])) {
-            $query->orderBy($columns[$columnIndex], $columnDir);
-        } else {
-            $query->orderBy('date_creation', 'desc');
+        // Recherche
+        if ($request->has('search') && $request->search['value']) {
+            $search = $request->search['value'];
+            $query->where(function($q) use ($search) {
+                $q->where('titre', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('statut', 'like', "%{$search}%");
+            });
         }
+
+        // Tri
+        if ($request->has('order')) {
+            $columnIndex = $request->order[0]['column'];
+            $columnDir = $request->order[0]['dir'];
+
+            $columns = ['id_contenu', 'titre', 'id_type_contenu', 'id_region',
+                       'id_langue', 'statut', 'id_auteur', 'date_creation'];
+
+            if (isset($columns[$columnIndex])) {
+                $query->orderBy($columns[$columnIndex], $columnDir);
+            } else {
+                $query->orderBy('date_creation', 'desc');
+            }
+        }
+
+        // Total filtré
+        $filteredTotal = $query->count();
+
+        // Pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $contenus = $query->skip($start)->take($length)->get();
+
+        // Préparer les données
+        $data = [];
+        foreach ($contenus as $contenu) {
+            $data[] = [
+                'DT_RowId' => 'row_' . $contenu->id_contenu,
+                'id' => $contenu->id_contenu,
+                'media' => $this->formatMedia($contenu),
+                'titre' => $this->formatTitre($contenu),
+                'type' => $this->formatType($contenu),
+                'region' => $this->formatRegion($contenu),
+                'langue' => $this->formatLangue($contenu),
+                'statut' => $this->formatStatut($contenu),
+                'auteur' => $this->formatAuteur($contenu),
+                'date' => $this->formatDate($contenu),
+                'actions' => $this->formatActions($contenu, $user, $userRole)
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $filteredTotal,
+            'data' => $data
+        ]);
     }
-
-    // Total filtré
-    $filteredTotal = $query->count();
-
-    // Pagination
-    $start = $request->input('start', 0);
-    $length = $request->input('length', 10);
-    $contenus = $query->skip($start)->take($length)->get();
-
-    // Préparer les données
-    $data = [];
-    foreach ($contenus as $contenu) {
-        $data[] = [
-            'DT_RowId' => 'row_' . $contenu->id_contenu,
-            'id' => $contenu->id_contenu,
-            'media' => $this->formatMedia($contenu),
-            'titre' => $this->formatTitre($contenu),
-            'type' => $this->formatType($contenu),
-            'region' => $this->formatRegion($contenu),
-            'langue' => $this->formatLangue($contenu),
-            'statut' => $this->formatStatut($contenu),
-            'auteur' => $this->formatAuteur($contenu),
-            'date' => $this->formatDate($contenu),
-            'actions' => $this->formatActions($contenu, $user, $userRole) // Passer user et userRole
-        ];
-    }
-
-    return response()->json([
-        'draw' => intval($request->input('draw')),
-        'recordsTotal' => $total,
-        'recordsFiltered' => $filteredTotal,
-        'data' => $data
-    ]);
-}
 
     /**
      * Obtenir la requête de base selon le rôle
@@ -167,57 +164,42 @@ public function index()
     }
 
     /**
-     * Formater le média pour DataTables
+     * Formater le média pour DataTables - SANS CLOUDINARY
      */
-   private function formatMedia($contenu)
-{
-    // Utiliser l'URL Cloudinary stockée dans $contenu->image_url
-    $imageUrl = $contenu->image_url ?? '';
+    private function formatMedia($contenu)
+    {
+        if ($contenu->medias && $contenu->medias->count() > 0) {
+            $media = $contenu->medias->first();
+            $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
+            $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
 
-    if ($contenu->medias && $contenu->medias->count() > 0) {
-        $media = $contenu->medias->first();
-        $isVideo = isset($media->typeMedia) && $media->typeMedia->id_type_media == 2;
-        $isAudio = isset($media->typeMedia) && $media->typeMedia->id_type_media == 3;
-
-        // Utiliser CloudinaryHelper pour obtenir l'URL
-        $cloudinaryUrl = $imageUrl ?: \App\Helpers\CloudinaryHelper::media($media);
-
-        // Si pas d'URL Cloudinary, essayer le chemin local
-        $localUrl = $cloudinaryUrl;
-        if (empty($cloudinaryUrl) || strpos($cloudinaryUrl, 'default-content.jpg') !== false) {
+            // URL locale simple
             $localUrl = asset('adminlte/img/' . $media->chemin);
-        }
 
-        if ($isVideo) {
-            return '<div class="media-thumbnail video-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Voir la vidéo">
-                        <i class="bi bi-play-circle-fill"></i>
-                    </div>';
-        } elseif ($isAudio) {
-            return '<div class="media-thumbnail audio-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Écouter l\'audio">
-                        <i class="bi bi-music-note-beamed"></i>
-                    </div>';
-        } else {
-            // Utiliser l'URL Cloudinary si disponible, sinon local
-            $displayUrl = $cloudinaryUrl;
-            if (empty($cloudinaryUrl) || strpos($cloudinaryUrl, 'default-content.jpg') !== false) {
-                $displayUrl = asset('adminlte/img/' . $media->chemin);
+            if ($isVideo) {
+                return '<div class="media-thumbnail video-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Voir la vidéo">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>';
+            } elseif ($isAudio) {
+                return '<div class="media-thumbnail audio-thumbnail" onclick="window.open(\'' . $localUrl . '\', \'_blank\')" title="Écouter l\'audio">
+                            <i class="bi bi-music-note-beamed"></i>
+                        </div>';
+            } else {
+                return '<div class="media-thumbnail image-thumbnail" onclick="showImageModal(\'' . htmlspecialchars($localUrl) . '\', \'' . addslashes($contenu->titre) . '\')" title="Voir l\'image">
+                            <img src="' . htmlspecialchars($localUrl) . '"
+                                 alt="' . htmlspecialchars($contenu->titre) . '"
+                                 onerror="this.onerror=null; this.src=\'' . asset('adminlte/img/default-content.jpg') . '\'">
+                        </div>';
             }
-
-            return '<div class="media-thumbnail image-thumbnail" onclick="showImageModal(\'' . htmlspecialchars($displayUrl) . '\', \'' . addslashes($contenu->titre) . '\')" title="Voir l\'image">
-                        <img src="' . htmlspecialchars($displayUrl) . '"
-                             alt="' . htmlspecialchars($contenu->titre) . '"
-                             onerror="this.onerror=null; this.src=\'' . \App\Helpers\CloudinaryHelper::static('default-content.jpg') . '\'">
-                    </div>';
         }
-    }
 
-    // Aucun média - utiliser une image par défaut de Cloudinary
-    return '<div class="media-thumbnail no-media" title="Aucun média">
-                <img src="' . \App\Helpers\CloudinaryHelper::static('default-content.jpg') . '"
-                     alt="Pas d\'image"
-                     style="width: 100%; height: 100%; object-fit: cover;">
-            </div>';
-}
+        // Aucun média - image par défaut locale
+        return '<div class="media-thumbnail no-media" title="Aucun média">
+                    <img src="' . asset('adminlte/img/default-content.jpg') . '"
+                         alt="Pas d\'image"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                </div>';
+    }
 
     /**
      * Formater le titre pour DataTables
@@ -323,121 +305,118 @@ public function index()
     /**
      * Formater les actions pour DataTables
      */
-    /**
- * Formater les actions pour DataTables
- */
-private function formatActions($contenu, $user, $userRole)
-{
-    $isAdminOrModerator = in_array($userRole, ['Administrateur', 'Modérateur']);
-    $userId = $user ? ($user->id ?? $user->getKey()) : null;
-    $canEdit = $user && ($userId == $contenu->id_auteur || $isAdminOrModerator);
-    $canDelete = $user && ($userId == $contenu->id_auteur || $userRole === 'Administrateur');
+    private function formatActions($contenu, $user, $userRole)
+    {
+        $isAdminOrModerator = in_array($userRole, ['Administrateur', 'Modérateur']);
+        $userId = $user ? ($user->id ?? $user->getKey()) : null;
+        $canEdit = $user && ($userId == $contenu->id_auteur || $isAdminOrModerator);
+        $canDelete = $user && ($userId == $contenu->id_auteur || $userRole === 'Administrateur');
 
-    $actions = '<div class="action-buttons">';
+        $actions = '<div class="action-buttons">';
 
-    // Voir
-    $actions .= '<a href="' . route('admin.contenus.show', $contenu->id_contenu) . '"
-                   class="btn btn-sm btn-outline-primary"
-                   title="Voir"
-                   data-bs-toggle="tooltip">
-                    <i class="bi bi-eye"></i>
-                </a>';
-
-    // Modifier
-    if ($canEdit) {
-        $actions .= '<a href="' . route('admin.contenus.edit', $contenu->id_contenu) . '"
-                       class="btn btn-sm btn-outline-warning"
-                       title="Modifier"
+        // Voir
+        $actions .= '<a href="' . route('admin.contenus.show', $contenu->id_contenu) . '"
+                       class="btn btn-sm btn-outline-primary"
+                       title="Voir"
                        data-bs-toggle="tooltip">
-                        <i class="bi bi-pencil"></i>
+                        <i class="bi bi-eye"></i>
                     </a>';
-    } else {
-        $actions .= '<a href="#" class="btn btn-sm btn-outline-warning disabled" title="Modification non autorisée">
-                        <i class="bi bi-pencil"></i>
-                    </a>';
-    }
 
-    // Supprimer
-    if ($canDelete) {
-        $actions .= '<form action="' . route('admin.contenus.destroy', $contenu->id_contenu) . '"
-                          method="POST" class="d-inline">
-                        ' . csrf_field() . '
-                        ' . method_field('DELETE') . '
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger"
-                                title="Supprimer"
-                                data-bs-toggle="tooltip"
-                                onclick="confirmDelete(' . $contenu->id_contenu . ', \'' . addslashes($contenu->titre) . '\')">
+        // Modifier
+        if ($canEdit) {
+            $actions .= '<a href="' . route('admin.contenus.edit', $contenu->id_contenu) . '"
+                           class="btn btn-sm btn-outline-warning"
+                           title="Modifier"
+                           data-bs-toggle="tooltip">
+                            <i class="bi bi-pencil"></i>
+                        </a>';
+        } else {
+            $actions .= '<a href="#" class="btn btn-sm btn-outline-warning disabled" title="Modification non autorisée">
+                            <i class="bi bi-pencil"></i>
+                        </a>';
+        }
+
+        // Supprimer
+        if ($canDelete) {
+            $actions .= '<form action="' . route('admin.contenus.destroy', $contenu->id_contenu) . '"
+                              method="POST" class="d-inline">
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Supprimer"
+                                    data-bs-toggle="tooltip"
+                                    onclick="confirmDelete(' . $contenu->id_contenu . ', \'' . addslashes($contenu->titre) . '\')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>';
+        } else {
+            $actions .= '<button class="btn btn-sm btn-outline-danger disabled" title="Suppression non autorisée">
                             <i class="bi bi-trash"></i>
+                        </button>';
+        }
+
+        // Menu dropdown pour actions supplémentaires
+        $actions .= '<div class="dropdown d-inline-block">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                title="Plus d\'actions">
+                            <i class="bi bi-three-dots"></i>
                         </button>
-                    </form>';
-    } else {
-        $actions .= '<button class="btn btn-sm btn-outline-danger disabled" title="Suppression non autorisée">
-                        <i class="bi bi-trash"></i>
-                    </button>';
-    }
+                        <ul class="dropdown-menu dropdown-menu-end">';
 
-    // Menu dropdown pour actions supplémentaires
-    $actions .= '<div class="dropdown d-inline-block">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            title="Plus d\'actions">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">';
-
-    // Ajouter média
-    $actions .= '<li>
-                    <a class="dropdown-item"
-                       href="' . route('admin.medias.create') . '?contenu_id=' . $contenu->id_contenu . '">
-                        <i class="bi bi-image me-2"></i> Ajouter média
-                    </a>
-                </li>';
-
-    // Voir média
-    if ($contenu->medias && $contenu->medias->count() > 0) {
+        // Ajouter média
         $actions .= '<li>
                         <a class="dropdown-item"
-                           href="' . route('admin.medias.show', $contenu->medias->first()->id_media) . '">
-                            <i class="bi bi-eye me-2"></i> Voir média
+                           href="' . route('admin.medias.create') . '?contenu_id=' . $contenu->id_contenu . '">
+                            <i class="bi bi-image me-2"></i> Ajouter média
                         </a>
                     </li>';
-    }
 
-    // Modération rapide
-    if (in_array($userRole, ['Administrateur', 'Modérateur'])) {
-        $actions .= '<li><hr class="dropdown-divider"></li>';
-
-        if ($contenu->statut != 'validé') {
+        // Voir média
+        if ($contenu->medias && $contenu->medias->count() > 0) {
             $actions .= '<li>
-                            <form action="' . route('admin.contenus.valider', $contenu->id_contenu) . '"
-                                  method="POST" class="d-inline">
-                                ' . csrf_field() . '
-                                <button type="submit" class="dropdown-item text-success">
-                                    <i class="bi bi-check-circle me-2"></i> Valider
-                                </button>
-                            </form>
+                            <a class="dropdown-item"
+                               href="' . route('admin.medias.show', $contenu->medias->first()->id_media) . '">
+                                <i class="bi bi-eye me-2"></i> Voir média
+                            </a>
                         </li>';
         }
 
-        if ($contenu->statut != 'rejeté') {
-            $actions .= '<li>
-                            <form action="' . route('admin.contenus.rejeter', $contenu->id_contenu) . '"
-                                  method="POST" class="d-inline">
-                                ' . csrf_field() . '
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-x-circle me-2"></i> Rejeter
-                                </button>
-                            </form>
-                        </li>';
+        // Modération rapide
+        if (in_array($userRole, ['Administrateur', 'Modérateur'])) {
+            $actions .= '<li><hr class="dropdown-divider"></li>';
+
+            if ($contenu->statut != 'validé') {
+                $actions .= '<li>
+                                <form action="' . route('admin.contenus.valider', $contenu->id_contenu) . '"
+                                      method="POST" class="d-inline">
+                                    ' . csrf_field() . '
+                                    <button type="submit" class="dropdown-item text-success">
+                                        <i class="bi bi-check-circle me-2"></i> Valider
+                                    </button>
+                                </form>
+                            </li>';
+            }
+
+            if ($contenu->statut != 'rejeté') {
+                $actions .= '<li>
+                                <form action="' . route('admin.contenus.rejeter', $contenu->id_contenu) . '"
+                                      method="POST" class="d-inline">
+                                    ' . csrf_field() . '
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-x-circle me-2"></i> Rejeter
+                                    </button>
+                                </form>
+                            </li>';
+            }
         }
+
+        $actions .= '</ul></div></div>';
+
+        return $actions;
     }
-
-    $actions .= '</ul></div></div>';
-
-    return $actions;
-}
 
     /**
      * Formulaire de création
@@ -460,7 +439,7 @@ private function formatActions($contenu, $user, $userRole)
     }
 
     /**
-     * STORE - Version simplifiée
+     * STORE - Version simplifiée SANS CLOUDINARY
      */
     public function store(Request $request)
     {
@@ -490,8 +469,8 @@ private function formatActions($contenu, $user, $userRole)
             ]);
 
             // Gérer média si fourni
-            if (isset($_FILES['media_file']) && $_FILES['media_file']['error'] === UPLOAD_ERR_OK) {
-                $this->uploaderFichierSimple($_FILES['media_file'], $request, $contenu);
+            if ($request->hasFile('media_file')) {
+                $this->uploaderFichierSimple($request->file('media_file'), $request, $contenu);
             }
 
             return redirect()->route('admin.contenus.index')
@@ -546,7 +525,7 @@ private function formatActions($contenu, $user, $userRole)
     }
 
     /**
-     * UPDATE - Version simplifiée et fiable
+     * UPDATE - Version simplifiée SANS CLOUDINARY
      */
     public function update(Request $request, $id)
     {
@@ -564,7 +543,7 @@ private function formatActions($contenu, $user, $userRole)
         }
 
         try {
-            // Validation de base (sans validation de fichier)
+            // Validation de base
             $request->validate([
                 'titre' => 'required|string|max:255',
                 'texte' => 'required|string|min:10',
@@ -595,7 +574,7 @@ private function formatActions($contenu, $user, $userRole)
 
             Log::info('Contenu mis à jour: ' . $contenu->id_contenu);
 
-            // GESTION DES MÉDIAS - VERSION SIMPLE
+            // GESTION DES MÉDIAS - SANS CLOUDINARY
             $this->gererMediasSimple($request, $contenu);
 
             return redirect()->route('admin.contenus.index')
@@ -608,7 +587,7 @@ private function formatActions($contenu, $user, $userRole)
     }
 
     /**
-     * Gestion simple des médias - PAS de validation Laravel du fichier
+     * Gestion simple des médias - SANS CLOUDINARY
      */
     private function gererMediasSimple(Request $request, Contenu $contenu)
     {
@@ -629,15 +608,15 @@ private function formatActions($contenu, $user, $userRole)
         }
 
         // 2. Ajouter nouveau média si fourni
-        if (isset($_FILES['media_file']) && $_FILES['media_file']['error'] === UPLOAD_ERR_OK) {
-            $this->uploaderFichierSimple($_FILES['media_file'], $request, $contenu);
+        if ($request->hasFile('media_file')) {
+            $this->uploaderFichierSimple($request->file('media_file'), $request, $contenu);
         }
     }
 
     /**
-     * Uploader fichier avec gestion manuelle
+     * Uploader fichier avec gestion manuelle - SANS CLOUDINARY
      */
-    private function uploaderFichierSimple($fileInfo, Request $request, Contenu $contenu)
+    private function uploaderFichierSimple($file, Request $request, Contenu $contenu)
     {
         // Supprimer ancien média si existe
         if ($contenu->medias->count() > 0) {
@@ -650,55 +629,33 @@ private function formatActions($contenu, $user, $userRole)
             }
         }
 
-        // Vérifier erreur PHP
-        if ($fileInfo['error'] !== UPLOAD_ERR_OK) {
-            throw new \Exception('Erreur upload PHP: ' . $fileInfo['error']);
-        }
-
         // Vérifier taille (100MB max)
-        if ($fileInfo['size'] > 100 * 1024 * 1024) {
+        if ($file->getSize() > 100 * 1024 * 1024) {
             throw new \Exception('Fichier trop volumineux. Maximum: 100MB');
         }
 
-        // Vérifier type MIME basique
-        $allowedMimes = [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-            'video/mp4', 'video/avi', 'video/quicktime',
-            'audio/mpeg', 'audio/wav', 'audio/ogg'
-        ];
-
-        if (!in_array($fileInfo['type'], $allowedMimes)) {
-            throw new \Exception('Type de fichier non autorisé: ' . $fileInfo['type']);
-        }
-
         // Générer nom sécurisé
-        $extension = pathinfo($fileInfo['name'], PATHINFO_EXTENSION);
+        $extension = $file->getClientOriginalExtension();
         $fileName = time() . '_' . uniqid() . '.' . $extension;
         $destination = public_path('adminlte/img/' . $fileName);
 
         Log::info('Upload fichier:', [
-            'nom_original' => $fileInfo['name'],
+            'nom_original' => $file->getClientOriginalName(),
             'nom_final' => $fileName,
-            'taille' => $fileInfo['size'],
-            'type' => $fileInfo['type'],
-            'temp' => $fileInfo['tmp_name']
+            'taille' => $file->getSize(),
+            'type' => $file->getMimeType()
         ]);
 
-        // Vérifier que le fichier temporaire existe
-        if (!file_exists($fileInfo['tmp_name'])) {
-            throw new \Exception('Fichier temporaire non trouvé. Vérifiez php.ini');
-        }
-
         // Déplacer le fichier
-        if (!move_uploaded_file($fileInfo['tmp_name'], $destination)) {
+        if (!$file->move(public_path('adminlte/img/'), $fileName)) {
             throw new \Exception('Impossible de déplacer le fichier uploadé');
         }
 
         // Déterminer type de média
         $typeMedia = 1; // Image par défaut
-        if (strpos($fileInfo['type'], 'video/') === 0) {
+        if (strpos($file->getMimeType(), 'video/') === 0) {
             $typeMedia = 2;
-        } elseif (strpos($fileInfo['type'], 'audio/') === 0) {
+        } elseif (strpos($file->getMimeType(), 'audio/') === 0) {
             $typeMedia = 3;
         }
 
@@ -708,6 +665,8 @@ private function formatActions($contenu, $user, $userRole)
             'description' => $request->input('media_description', 'Média: ' . $contenu->titre),
             'id_contenu' => $contenu->id_contenu,
             'id_type_media' => $typeMedia,
+            'type_fichier' => $file->getMimeType(),
+            'taille' => $file->getSize(),
         ]);
 
         Log::info('Média uploadé avec succès: ' . $fileName);
@@ -762,7 +721,7 @@ private function formatActions($contenu, $user, $userRole)
     }
 
     /**
-     * Valider un contenu (pour modérateurs/admins)
+     * Valider un contenu
      */
     public function valider($id)
     {
@@ -788,7 +747,7 @@ private function formatActions($contenu, $user, $userRole)
     }
 
     /**
-     * Rejeter un contenu (pour modérateurs/admins)
+     * Rejeter un contenu
      */
     public function rejeter($id)
     {

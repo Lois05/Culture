@@ -14,7 +14,8 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('login')
+            // ⚠️ CORRECTION : Supprimez l'espace entre "front" et ".connexion"
+            return redirect()->route('front.connexion')  // Pas 'front .connexion'
                 ->with('error', 'Veuillez vous connecter pour accéder à cette page.');
         }
 
@@ -23,7 +24,8 @@ class RoleMiddleware
         // Vérifie si l'utilisateur a un rôle
         if (!$user->id_role) {
             Auth::logout();
-            return redirect()->route('login')
+            // ⚠️ CORRECTION : Utilisez 'front.connexion' pas 'login'
+            return redirect()->route('front.connexion')
                 ->with('error', 'Votre compte n\'a pas de rôle défini.');
         }
 
@@ -32,7 +34,8 @@ class RoleMiddleware
 
         if (!$role) {
             Auth::logout();
-            return redirect()->route('login')
+            // ⚠️ CORRECTION : Utilisez 'front.connexion' pas 'login'
+            return redirect()->route('front.connexion')
                 ->with('error', 'Rôle introuvable.');
         }
 
@@ -47,7 +50,8 @@ class RoleMiddleware
 
         if ($user->statut !== 'actif') {
             Auth::logout();
-            return redirect()->route('login')
+            // ⚠️ CORRECTION : Utilisez 'front.connexion' pas 'login'
+            return redirect()->route('front.connexion')
                 ->with('error', 'Votre compte est désactivé.');
         }
 

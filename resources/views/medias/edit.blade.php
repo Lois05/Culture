@@ -3,6 +3,14 @@
 @section('page-title', 'Modifier le Média')
 
 @section('content')
+@php
+use App\Helpers\ImageHelper;
+$fileUrl = ImageHelper::content($media->chemin);
+$isImage = $media->typeMedia && $media->typeMedia->id_type_media == 1;
+$isVideo = $media->typeMedia && $media->typeMedia->id_type_media == 2;
+$isAudio = $media->typeMedia && $media->typeMedia->id_type_media == 3;
+@endphp
+
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-8">
@@ -79,37 +87,47 @@
                                         <h5 class="mb-0"><i class="bi bi-image me-2"></i>Média actuel</h5>
                                     </div>
                                     <div class="card-body text-center">
-                                        @if($media->id_type_media == 1) {{-- Image --}}
-                                            <img src="{{ asset('adminlte/img/' . $media->chemin) }}"
-                                                 class="img-fluid rounded border mb-3"
-                                                 style="max-height: 150px; object-fit: cover;"
-                                                 alt="Image actuelle"
-                                                 onerror="this.style.display='none'; document.getElementById('currentMediaFallback').style.display='flex';">
-                                            <div id="currentMediaFallback" class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 150px; height: 100px; display: none;">
-                                                <i class="bi bi-image text-muted fs-1"></i>
+                                        @if($isImage)
+                                            <!-- Image -->
+                                            <div class="media-preview mb-3">
+                                                <img src="{{ $fileUrl }}"
+                                                     class="img-fluid rounded border"
+                                                     style="max-height: 150px; max-width: 100%; object-fit: contain;"
+                                                     alt="Image actuelle"
+                                                     onerror="this.style.display='none'; document.getElementById('currentMediaFallback').style.display='flex';">
+                                                <div id="currentMediaFallback"
+                                                     class="bg-light rounded border d-flex flex-column align-items-center justify-content-center mx-auto"
+                                                     style="width: 150px; height: 150px; display: none;">
+                                                    <i class="bi bi-image text-muted fs-1"></i>
+                                                    <small class="text-muted mt-1">Image non chargée</small>
+                                                </div>
                                             </div>
-                                        @elseif($media->id_type_media == 2) {{-- Vidéo --}}
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 150px; height: 100px;">
-                                                <i class="bi bi-play-circle text-primary fs-1"></i>
+                                        @elseif($isVideo)
+                                            <!-- Vidéo -->
+                                            <div class="bg-dark rounded border d-flex flex-column align-items-center justify-content-center mx-auto mb-3"
+                                                 style="width: 150px; height: 150px;">
+                                                <i class="bi bi-play-circle text-white fs-1"></i>
+                                                <small class="text-white mt-1">Vidéo</small>
                                             </div>
-                                            <p class="text-muted mt-2">Vidéo</p>
-                                        @elseif($media->id_type_media == 3) {{-- Audio --}}
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 150px; height: 100px;">
-                                                <i class="bi bi-music-note text-success fs-1"></i>
+                                        @elseif($isAudio)
+                                            <!-- Audio -->
+                                            <div class="bg-secondary rounded border d-flex flex-column align-items-center justify-content-center mx-auto mb-3"
+                                                 style="width: 150px; height: 150px;">
+                                                <i class="bi bi-music-note-beamed text-white fs-1"></i>
+                                                <small class="text-white mt-1">Audio</small>
                                             </div>
-                                            <p class="text-muted mt-2">Audio</p>
                                         @else
-                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center mx-auto"
-                                                 style="width: 150px; height: 100px;">
+                                            <!-- Type inconnu -->
+                                            <div class="bg-light rounded border d-flex flex-column align-items-center justify-content-center mx-auto mb-3"
+                                                 style="width: 150px; height: 150px;">
                                                 <i class="bi bi-file-earmark text-secondary fs-1"></i>
+                                                <small class="text-muted mt-1">Fichier</small>
                                             </div>
                                         @endif
 
-                                        <div class="mt-3">
-                                            <small class="text-muted">{{ $media->chemin }}</small>
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block">{{ basename($media->chemin) }}</small>
+                                            <small class="text-muted" style="font-size: 0.75rem;">{{ $media->chemin }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -156,5 +174,85 @@
         </div>
     </div>
 </div>
+
+<!-- Preview du nouveau fichier -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Aperçu du nouveau fichier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" class="img-fluid" style="max-height: 70vh;">
+                <video id="previewVideo" controls class="w-100 d-none" style="max-height: 70vh;"></video>
+                <div id="previewAudio" class="d-none">
+                    <audio controls class="w-100"></audio>
+                    <div class="mt-3">
+                        <i class="bi bi-music-note-beamed fs-1 text-primary"></i>
+                    </div>
+                </div>
+                <div id="previewUnknown" class="d-none">
+                    <i class="bi bi-file-earmark fs-1 text-muted"></i>
+                    <p class="mt-2 text-muted">Prévisualisation non disponible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
+@section('scripts')
+<script>
+// Prévisualiser le fichier sélectionné
+document.querySelector('input[name="media_file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const previewImage = document.getElementById('previewImage');
+    const previewVideo = document.getElementById('previewVideo');
+    const previewAudio = document.getElementById('previewAudio');
+    const previewUnknown = document.getElementById('previewUnknown');
+
+    // Cacher tous les prévisualisations
+    previewImage.style.display = 'none';
+    previewVideo.classList.add('d-none');
+    previewAudio.classList.add('d-none');
+    previewUnknown.classList.add('d-none');
+
+    // Afficher la bonne prévisualisation
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else if (file.type.startsWith('video/')) {
+        previewVideo.src = URL.createObjectURL(file);
+        previewVideo.classList.remove('d-none');
+    } else if (file.type.startsWith('audio/')) {
+        const audio = previewAudio.querySelector('audio');
+        audio.src = URL.createObjectURL(file);
+        previewAudio.classList.remove('d-none');
+    } else {
+        previewUnknown.classList.remove('d-none');
+    }
+
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+});
+</script>
+
+<style>
+.media-preview {
+    position: relative;
+    min-height: 150px;
+}
+
+#currentMediaFallback {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+}
+</style>
+@endsection

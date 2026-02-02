@@ -27,10 +27,9 @@
                 <table id="typecontenusTable" class="table table-striped table-hover align-middle w-100">
                     <thead class="table-primary">
                         <tr>
-                            <th>#</th>
+                            <th width="50">#</th>
                             <th>Nom du type</th>
-                            <th>Description</th>
-                            <th class="text-center">Actions</th>
+                            <th width="120" class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,27 +37,31 @@
                         <tr>
                             <td><span class="badge bg-secondary">{{ $type->id_type_contenu }}</span></td>
                             <td><span class="badge bg-info text-dark">{{ $type->nom_contenu }}</span></td>
-                            <td>{{ Str::limit($type->description, 80) }}</td>
                             <td class="text-center">
-                                <div class="btn-group" role="group">
+                                <div class="btn-group btn-group-sm" role="group">
                                     <!-- Voir -->
                                     <a href="{{ route('admin.typecontenus.show', $type->id_type_contenu) }}"
-                                       class="btn btn-sm btn-outline-info rounded-circle" title="Voir">
+                                       class="btn btn-outline-info rounded-circle"
+                                       title="Voir"
+                                       data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <!-- Modifier -->
                                     <a href="{{ route('admin.typecontenus.edit', $type->id_type_contenu) }}"
-                                       class="btn btn-sm btn-outline-warning rounded-circle" title="Modifier">
+                                       class="btn btn-outline-warning rounded-circle"
+                                       title="Modifier"
+                                       data-bs-toggle="tooltip">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <!-- Supprimer -->
-                                    <form action="{{ route('admin.typecontenus.destroy', $type->id_type_contenu) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle btn-delete" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="btn btn-outline-danger rounded-circle btn-delete"
+                                            data-id="{{ $type->id_type_contenu }}"
+                                            data-name="{{ $type->nom_contenu }}"
+                                            title="Supprimer"
+                                            data-bs-toggle="tooltip">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -69,9 +72,51 @@
         </div>
     </div>
 </main>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le type de contenu :</p>
+                <p class="fw-bold" id="deleteTypeName"></p>
+                <p class="text-danger small">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
 <script>
 $(document).ready(function() {
     $('#typecontenusTable').DataTable({
@@ -83,39 +128,58 @@ $(document).ready(function() {
         "responsive": true,
         "columnDefs": [{
             "orderable": false,
-            "targets": 3 // Colonne Actions
-        }]
+            "targets": 2 // Changé de 3 à 2 car on a une colonne en moins
+        }],
+        "initComplete": function() {
+            // Initialiser les tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
     });
 
-    // Confirmation moderne avec SweetAlert2
+    // Gestion de la suppression avec modal
     $('.btn-delete').on('click', function(e) {
         e.preventDefault();
-        let form = $(this).closest('form');
-        Swal.fire({
-            title: 'Supprimer ce type de contenu ?',
-            text: "Cette action est irréversible.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Oui, supprimer',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
+
+        const typeId = $(this).data('id');
+        const typeName = $(this).data('name');
+
+        // Mettre à jour le modal
+        $('#deleteTypeName').text(typeName);
+        $('#deleteForm').attr('action', '/admin/typecontenus/' + typeId);
+
+        // Afficher le modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
     });
 });
 </script>
 
 <style>
-    .btn-gradient {
-        background: linear-gradient(45deg, #0d6efd, #6610f2);
-        color: #fff;
-        border: none;
-        transition: 0.3s;
-    }
-    .btn-gradient:hover { transform: scale(1.05); opacity: 0.9; }
+.btn-group-sm .btn {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-group-sm .btn i {
+    font-size: 0.9rem;
+}
+
+.btn-gradient {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-gradient:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
 </style>
-@endsection

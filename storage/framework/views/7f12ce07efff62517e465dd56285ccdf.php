@@ -1,0 +1,1 @@
+<?php /**PATH C:\wamp64\www\culture\resources\views\moderateur\show.blade.php ENDPATH**/ ?>

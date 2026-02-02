@@ -3,6 +3,46 @@
 @section('page-title', 'Détail du Média')
 
 @section('content')
+@php
+use App\Helpers\ImageHelper;
+
+$isImage = $media->typeMedia && $media->typeMedia->id_type_media == 1;
+$isVideo = $media->typeMedia && $media->typeMedia->id_type_media == 2;
+$isAudio = $media->typeMedia && $media->typeMedia->id_type_media == 3;
+
+// Utiliser ImageHelper pour obtenir l'URL correcte
+$fileUrl = ImageHelper::content($media->chemin);
+
+// Vérifier si c'est un chemin local
+$isLocalPath = !filter_var($media->chemin, FILTER_VALIDATE_URL) &&
+              !str_starts_with($media->chemin, 'http') &&
+              !str_contains($media->chemin, 'cloudinary');
+
+// Pour les fichiers locaux, vérifier l'existence
+if ($isLocalPath) {
+    // Chercher le fichier dans différents répertoires
+    $possiblePaths = [
+        public_path('adminlte/img/' . basename($media->chemin)),
+        public_path('storage/' . $media->chemin),
+        public_path($media->chemin),
+        storage_path('app/public/' . $media->chemin)
+    ];
+
+    $filePath = null;
+    $fileExists = false;
+
+    foreach ($possiblePaths as $path) {
+        if (file_exists($path)) {
+            $filePath = $path;
+            $fileExists = true;
+            break;
+        }
+    }
+} else {
+    $fileExists = true; // Pour les URLs externes, on suppose qu'elles existent
+}
+@endphp
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -35,51 +75,54 @@
                                         <i class="bi bi-file-earmark me-2"></i> Aperçu
                                     </h5>
                                 </div>
-                                <div class="card-body d-flex align-items-center justify-content-center">
-                                    @php
-                                        $isImage = $media->typeMedia && $media->typeMedia->id_type_media == 1;
-                                        $isVideo = $media->typeMedia && $media->typeMedia->id_type_media == 2;
-                                        $isAudio = $media->typeMedia && $media->typeMedia->id_type_media == 3;
-                                        $filePath = public_path('adminlte/img/' . $media->chemin);
-                                        $fileExists = file_exists($filePath);
-                                        $fileUrl = asset('adminlte/img/' . $media->chemin);
-                                    @endphp
-
+                                <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 400px;">
                                     @if($isImage)
-                                        @if($fileExists)
-                                            <div class="text-center">
-                                                <img src="{{ $fileUrl }}"
-                                                     class="img-fluid rounded border"
-                                                     style="max-height: 400px; object-fit: contain;"
-                                                     alt="{{ $media->description }}"
-                                                     onerror="this.onerror=null; this.src='{{ App\Helpers\CloudinaryHelper::static('placeholder.jpg') }}'">
-                                                <div class="mt-3">
-                                                    <a href="{{ $fileUrl }}"
-                                                       target="_blank"
-                                                       class="btn btn-outline-primary me-2">
-                                                        <i class="bi bi-arrows-fullscreen me-1"></i> Agrandir
-                                                    </a>
-                                                    <button onclick="downloadMedia()" class="btn btn-outline-success">
-                                                        <i class="bi bi-download me-1"></i> Télécharger
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        @else
+                                        <!-- Image -->
+                                        @if($isLocalPath && !$fileExists)
+                                            <!-- Fichier local manquant -->
                                             <div class="text-center py-5">
-                                                <i class="bi bi-file-excel text-danger fs-1 mb-3"></i>
+                                                <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3"></i>
                                                 <h5 class="text-danger">Fichier non trouvé</h5>
                                                 <p class="text-muted">
                                                     <code>{{ $media->chemin }}</code>
                                                 </p>
-                                                <p class="text-muted small">
-                                                    Chemin recherché : {{ $filePath }}
+                                                <p class="small text-muted">
+                                                    URL générée: {{ $fileUrl }}
                                                 </p>
+                                            </div>
+                                        @else
+                                            <!-- Image existante (locale ou externe) -->
+                                            <div class="text-center w-100">
+                                                <img src="{{ $fileUrl }}"
+                                                     class="img-fluid rounded border shadow"
+                                                     style="max-height: 300px; max-width: 100%; object-fit: contain;"
+                                                     alt="{{ $media->description }}"
+                                                     onerror="this.onerror=null; this.src='{{ ImageHelper::defaultContent() }}'; this.nextElementSibling.style.display='block';">
+                                                <div class="fallback d-none text-center mt-3">
+                                                    <i class="bi bi-image text-muted fs-1"></i>
+                                                    <p class="text-muted">Image non chargée</p>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                    <a href="{{ $fileUrl }}"
+                                                       target="_blank"
+                                                       class="btn btn-outline-primary me-2">
+                                                        <i class="bi bi-arrows-fullscreen me-1"></i> Ouvrir dans un nouvel onglet
+                                                    </a>
+                                                    <a href="{{ $fileUrl }}"
+                                                       download="{{ basename($media->chemin) }}"
+                                                       class="btn btn-outline-success">
+                                                        <i class="bi bi-download me-1"></i> Télécharger
+                                                    </a>
+                                                </div>
                                             </div>
                                         @endif
                                     @elseif($isVideo)
+                                        <!-- Vidéo -->
                                         <div class="text-center w-100">
-                                            <div class="bg-dark rounded p-5 mb-3">
+                                            <div class="bg-dark rounded p-4 mb-3">
                                                 <i class="bi bi-play-circle text-white fs-1"></i>
+                                                <p class="text-white mb-0">Vidéo</p>
                                             </div>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="{{ $fileUrl }}"
@@ -87,41 +130,46 @@
                                                    class="btn btn-primary">
                                                     <i class="bi bi-play-fill me-1"></i> Lire la vidéo
                                                 </a>
-                                                <button onclick="downloadMedia()" class="btn btn-outline-success">
+                                                <a href="{{ $fileUrl }}"
+                                                   download="{{ basename($media->chemin) }}"
+                                                   class="btn btn-outline-success">
                                                     <i class="bi bi-download me-1"></i> Télécharger
-                                                </button>
+                                                </a>
                                             </div>
-                                            @if($fileExists)
-                                                <div class="mt-3 text-success">
-                                                    <i class="bi bi-check-circle me-1"></i> Fichier disponible ({{ round(filesize($filePath) / 1024 / 1024, 2) }} MB)
-                                                </div>
-                                            @else
-                                                <div class="mt-3 text-danger">
-                                                    <i class="bi bi-exclamation-circle me-1"></i> Fichier manquant
-                                                </div>
-                                            @endif
                                         </div>
                                     @elseif($isAudio)
+                                        <!-- Audio -->
                                         <div class="text-center w-100">
-                                            <div class="bg-secondary rounded p-5 mb-3">
+                                            <div class="bg-secondary rounded p-4 mb-3">
                                                 <i class="bi bi-music-note-beamed text-white fs-1"></i>
+                                                <p class="text-white mb-0">Audio</p>
                                             </div>
-                                            @if($fileExists)
-                                                <audio controls class="w-100 mb-3">
-                                                    <source src="{{ $fileUrl }}" type="audio/mpeg">
-                                                    Votre navigateur ne supporte pas l'élément audio.
-                                                </audio>
+
+                                            @if(str_contains($fileUrl, 'mp3') || str_contains($fileUrl, 'wav') || str_contains($fileUrl, 'ogg'))
+                                            <audio controls class="w-100 mb-3">
+                                                <source src="{{ $fileUrl }}" type="audio/mpeg">
+                                                Votre navigateur ne supporte pas l'élément audio.
+                                            </audio>
                                             @endif
+
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="{{ $fileUrl }}"
                                                    target="_blank"
                                                    class="btn btn-primary">
                                                     <i class="bi bi-play-fill me-1"></i> Écouter
                                                 </a>
-                                                <button onclick="downloadMedia()" class="btn btn-outline-success">
+                                                <a href="{{ $fileUrl }}"
+                                                   download="{{ basename($media->chemin) }}"
+                                                   class="btn btn-outline-success">
                                                     <i class="bi bi-download me-1"></i> Télécharger
-                                                </button>
+                                                </a>
                                             </div>
+                                        </div>
+                                    @else
+                                        <!-- Type inconnu -->
+                                        <div class="text-center">
+                                            <i class="bi bi-question-circle text-muted fs-1"></i>
+                                            <p class="text-muted">Type de média non reconnu</p>
                                         </div>
                                     @endif
                                 </div>
@@ -149,12 +197,14 @@
                                                 <span class="badge
                                                     @if($isImage) bg-success
                                                     @elseif($isVideo) bg-danger
-                                                    @else bg-warning text-dark
+                                                    @elseif($isAudio) bg-warning text-dark
+                                                    @else bg-secondary
                                                     @endif">
                                                     <i class="bi
                                                         @if($isImage) bi-image
                                                         @elseif($isVideo) bi-play-circle
-                                                        @else bi-music-note-beamed
+                                                        @elseif($isAudio) bi-music-note-beamed
+                                                        @else bi-question-circle
                                                         @endif me-1">
                                                     </i>
                                                     {{ $media->typeMedia->nom_type_media ?? 'Non défini' }}
@@ -163,15 +213,21 @@
                                         </tr>
                                         <tr>
                                             <td><strong>Nom du fichier :</strong></td>
-                                            <td><code>{{ $media->chemin }}</code></td>
+                                            <td><code>{{ basename($media->chemin) }}</code></td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Chemin complet :</strong></td>
+                                            <td><strong>Chemin/URL :</strong></td>
                                             <td>
-                                                <small class="text-muted">{{ $filePath }}</small>
+                                                <small class="text-muted" style="word-break: break-all;">{{ $media->chemin }}</small>
                                             </td>
                                         </tr>
-                                        @if($fileExists)
+                                        <tr>
+                                            <td><strong>URL accessible :</strong></td>
+                                            <td>
+                                                <small class="text-muted" style="word-break: break-all;">{{ $fileUrl }}</small>
+                                            </td>
+                                        </tr>
+                                        @if($fileExists && $filePath)
                                             @php
                                                 $size = filesize($filePath);
                                                 $sizeFormatted = $size > 1024*1024
@@ -191,21 +247,42 @@
                                                 <td><strong>Date modif fichier :</strong></td>
                                                 <td>{{ date('d/m/Y H:i', $lastModified) }}</td>
                                             </tr>
-                                        @else
+                                            <tr>
+                                                <td><strong>Statut :</strong></td>
+                                                <td>
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i> Fichier disponible
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @elseif($isLocalPath)
                                             <tr>
                                                 <td colspan="2" class="text-center text-danger">
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                                     Fichier physique non trouvé sur le serveur
                                                 </td>
                                             </tr>
+                                        @else
+                                            <tr>
+                                                <td><strong>Statut :</strong></td>
+                                                <td>
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-cloud me-1"></i> URL externe
+                                                    </span>
+                                                </td>
+                                            </tr>
                                         @endif
                                     </table>
 
                                     <!-- Description -->
-                                    <div class="mt-3">
+                                    <div class="mt-4">
                                         <label class="form-label"><strong>Description :</strong></label>
-                                        <div class="border rounded p-3 bg-light">
-                                            {{ $media->description ?? 'Aucune description' }}
+                                        <div class="border rounded p-3 bg-light min-height-100">
+                                            @if($media->description)
+                                                {{ $media->description }}
+                                            @else
+                                                <span class="text-muted">Aucune description</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -335,17 +412,23 @@
                 <p>Êtes-vous sûr de vouloir supprimer ce média ?</p>
                 <p><strong>{{ $media->chemin }}</strong></p>
 
-                @if($fileExists)
+                @if($isLocalPath && $fileExists && $filePath)
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-1"></i>
                         <strong>Fichier trouvé :</strong>
                         {{ round(filesize($filePath) / 1024 / 1024, 2) }} MB
                     </div>
-                @else
+                @elseif($isLocalPath)
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-circle me-1"></i>
                         <strong>Fichier manquant :</strong>
                         Le fichier physique n'existe plus sur le serveur.
+                    </div>
+                @else
+                    <div class="alert alert-info">
+                        <i class="bi bi-cloud me-1"></i>
+                        <strong>URL externe :</strong>
+                        Seul le lien sera supprimé de la base de données.
                     </div>
                 @endif
 
@@ -377,19 +460,39 @@
 
 @section('scripts')
 <script>
-function downloadMedia() {
-    @php
-        $fileUrl = asset('adminlte/img/' . $media->chemin);
-    @endphp
-
-    // Créer un lien de téléchargement temporaire
-    const link = document.createElement('a');
-    link.href = '{{ $fileUrl }}';
-    link.download = '{{ $media->chemin }}';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+// Gérer l'erreur de chargement de l'image
+document.addEventListener('DOMContentLoaded', function() {
+    const img = document.querySelector('#mediaPreview img');
+    if (img) {
+        img.addEventListener('error', function() {
+            const fallback = this.nextElementSibling;
+            if (fallback && fallback.classList.contains('fallback')) {
+                this.style.display = 'none';
+                fallback.style.display = 'block';
+            }
+        });
+    }
+});
 </script>
-@endsection
 
+<style>
+.min-height-100 {
+    min-height: 100px;
+}
+
+/* Style pour le fallback */
+.fallback {
+    display: none;
+}
+
+/* Style pour les URLs longues */
+.text-muted[style*="word-break"] {
+    font-family: monospace;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    padding: 5px;
+    border-radius: 4px;
+    display: block;
+}
+</style>
+@endsection

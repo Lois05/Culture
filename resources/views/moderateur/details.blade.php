@@ -50,19 +50,19 @@
                             <div class="col-xl-4 col-lg-6 col-md-6">
                                 <div class="card border h-100">
                                     @if($media->id_type_media == 1) <!-- Image -->
-                                        <img src="@if($media->has_cloudinary && $media->cloudinary_url)
-    {{ $media->cloudinary_url }}
+                                        <img src="@if($media->has_cloudinary && $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))
+    {{ $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg') }}
 @elseif($media->chemin)
-@if($media->has_cloudinary && $media->cloudinary_url)
-    <img src="{{ $media->cloudinary_url }}" alt="{{ $media->description ?? 'Image' }}"
+@if($media->has_cloudinary && $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))
+    <img src="{{ $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg') }}" alt="{{ $media->description ?? 'Image' }}"
 @elseif($media->chemin)
-    @if($media->has_cloudinary && $media->cloudinary_url)
-    <img src="{{ $media->cloudinary_url }}" alt="{{ $media->description ?? 'Image' }}"
+    @if($media->has_cloudinary && $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))
+    <img src="{{ $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg') }}" alt="{{ $media->description ?? 'Image' }}"
 @elseif($media->chemin)
-    @if($media->has_cloudinary && $media->cloudinary_url)
-    <img src="{{ $media->cloudinary_url }}" alt="{{ $media->description ?? 'Image' }}"
+    @if($media->has_cloudinary && $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))
+    <img src="{{ $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg') }}" alt="{{ $media->description ?? 'Image' }}"
 @elseif($media->chemin)
-@if($media->has_cloudinary && $media->cloudinary_url)
+@if($media->has_cloudinary && $media->chemin ? asset('adminlte/img/' . $media->chemin) : asset('adminlte/img/default.jpg'))
 @elseif($media->chemin)
     <img src="{{ asset('storage/' . $media->
 @endif
@@ -465,3 +465,4 @@
     });
 </script>
 @endsection
+

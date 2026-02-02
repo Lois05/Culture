@@ -597,7 +597,7 @@
                     @endif
 
                     <!-- Login Form -->
-                    <form method="POST" action="{{ route('front.connexion') }}" id="loginForm">
+                    <form method="POST" action="{{ route('front.connexion.post') }}" id="loginForm">
                         @csrf
 
                         <!-- Email Field -->
